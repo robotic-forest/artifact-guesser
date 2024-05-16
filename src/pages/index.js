@@ -1,30 +1,26 @@
-import { Home } from "@/components/nav/Home"
 import useWindowDimensions from "@/hooks/useWindowDimensions"
 import { useEffect, useState } from "react"
 import useSWR from "swr"
 import { MapInteractionCSS } from 'react-map-interaction'
 import { Button } from "@/components/buttons/Button"
+import useUser from "@/hooks/useUser"
+import { AuthHeader } from "@/components/layout/AuthHeader"
 
 export default () => {
+  const { user } = useUser()
   const { height, width } = useWindowDimensions()
   const [dimensions, setDimensions] = useState()
   const [value, setValue] = useState()
   const [revealed, setRevealed] = useState(false)
+  
 
   useEffect(() => {
     if (dimensions && height && width && !value) {
-      // console.log({ windowWidth: width, windowHeight: height, imageWidth: dimensions.width, imageHeight: dimensions.height })
       const w = width / dimensions.width
       const h = height / dimensions.height
       const scale = Math.min(w, h)
 
-      setValue({
-        scale,
-        translation: {
-          x: 0,
-          y: 0
-        }
-      })
+      setValue({ scale, translation: { x: 0, y: 0 } })
     }
   }, [dimensions, height, width])
   
@@ -32,21 +28,22 @@ export default () => {
   const { data } = useSWR(!id ? `/api/artifacts/random` : `/api/artifacts/${id}`)
   useEffect(() => { if (data?.id && !id) setId(data.id) }, [data])
   const object = data?.data
-  
-  // console.log({ object })
+
+  console.log({ user })
 
   return (
     <div css={{ height: '100vh', width: '100vw' }}>
-      <div className='fixed flex items-center m-1 top-0 left-0 bg-black z-10 pr-2 rounded-[6px] text-sm overflow-hidden'>
-        <Home style={{ margin: '2px 8px 2px 2px' }} />
-        Context - The Ancient Artifact Game
+      <div className='fixed flex items-center m-1 top-0 left-0 bg-black z-10 p-[1px_5px] rounded-[4px] text-sm overflow-hidden'>
+        Ur Context - The Ancient Artifact Game
       </div>
+
+      <AuthHeader />
 
       {!dimensions && <div className='fixed flex w-full h-full justify-center items-center overflow-hidden'>Loading...</div>}
 
       <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
         <div className='flex'>
-          <img src={object?.primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} onLoad={({ target: img }) => {
+          <img src={object?.primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s', height: 'fit-content' }} onLoad={({ target: img }) => {
             setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
           }} />
           {object?.additionalImages?.length > 0 && object.additionalImages.map((img, i) => (
@@ -71,7 +68,7 @@ export default () => {
             </div>
           )}
           <div>
-            <Button onClick={() => setRevealed(!revealed)} css={{ marginRight: 4 }}>
+            <Button onClick={() => setRevealed(!revealed)}>
               {revealed ? 'Hide' : 'Reveal'}
             </Button>
           </div>

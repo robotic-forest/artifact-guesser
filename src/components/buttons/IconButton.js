@@ -46,7 +46,7 @@ const IconButtonUI = styled.a`
   min-width: ${p => p.size || 22}px;
   border-radius: 5px;
   cursor: ${p => p.disabled ? 'initial' : 'pointer'};
-  background: var(--bg);
+  background: var(--backgroundColor);
   border: none;
   font-size: ${p => (p.innerSize) + 2}px;
   display: grid;
@@ -59,7 +59,7 @@ const IconButtonUI = styled.a`
   & > * { transform: ${p => p.ri ? `rotate(${p.ri}deg)` : 'none'} }
 
   &:hover {
-    background: ${p => p.disabled ? 'transparent' : 'white'};
-    color: ${p => p.hc || 'black'};
+    background: ${p => p.disabled ? 'transparent' : '#424242'};
+    /* color: ${p => p.hc || 'black'}; */
   }
 `

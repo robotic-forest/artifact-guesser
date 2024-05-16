@@ -9,16 +9,34 @@
 body, html, h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0 }
 
 html, body {
-  --bg: #000000;
-  --t: #ffffff;
+  /* Global Color Vars */
+  --backgroundColor: #000000;
+  --backgroundKindaLowOpacity: #000000dd;
+  --backgroundLowOpacity: #000000aa;
+  --backgroundVeryLowOpacity: #00000077;
 
-  --t1: #ffffff11;
-  --t2: #ffffff22;
+  --primaryColor: #35ad8d;
+  --primaryLowOpacity: #35ad8d77;
+  --primaryVeryLowOpacity: #35ad8d33;
 
-  background-color: var(--bg);
-  color: var(--t);
+  --textColor: #ffffff;
+  --textLowOpacity: #ffffff77;
+  --textKindaLowOpacity: #ffffff55;
+  --textVeryLowOpacity: #ffffff33;
+  --textVeryLowOpacity27: #ffffff27;
+  --textSuperLowOpacity: #ffffff11;
+  --ghostText: #ffffff07;
+  --whiffOfText: #ffffff04;
+
+  /* Global Other Vars */
+  --br: 5px;
+  --brr: 6px;
+  --fs: 14px;
+
+  background-color: var(--backgroundColor);
+  color: var(--textColor);
 }
 
-a { text-decoration: underline}
+a { text-decoration: underline }
 
 /* *::-webkit-scrollbar { width: 0px } fuck off, scrollbars */
