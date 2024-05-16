@@ -141,7 +141,7 @@ const DialogBackground = styled.div`
 
 const DialogContainer = styled.div`
   display: ${p => p.visible ? 'flex' : 'none'};
-  background-color: var(--backgroundLowOpacity);
+  background-color: var(--backgroundVeryLowOpacity);
   color: var(--textColor);
   opacity: ${p => p.hidden && !p.inContent ? 0 : 1};
 
@@ -185,7 +185,7 @@ const DialogBox = styled.div`
   background-color: ${p => p.noBoxBg ? 'transparent' : 'var(--backgroundColor)'};
   border: 1px solid ${p => p.noBoxBg ? 'transparent' : 'var(--textVeryLowOpacity)'};
   border-radius: 6px;
-  box-shadow: 0 10px 35px -5px var(--textKindaLowOpacity);
+  /* box-shadow: 0 10px 35px -5px var(--textKindaLowOpacity); */
   padding: 10px;
   min-height: min-content;
   height: ${p => p.height};
