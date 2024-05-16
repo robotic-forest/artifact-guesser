@@ -1,5 +1,5 @@
 import { createAccount } from "@/lib/apiUtils/createAccount"
-import { withSessionRoute } from "@/lib/session"
+import { withSessionRoute } from "@/lib/apiUtils/session"
 import jwt from 'jsonwebtoken'
 
 const signupRoute = async (req, res) => {
@@ -18,7 +18,7 @@ const signupRoute = async (req, res) => {
   }, { confirmEmail: false }) // set this to true if its needed. Debug first.
 
   if (error) return res.send({ success: false, message: error })
-  
+
   req.session.user = {
     _id,
     ...newUser,

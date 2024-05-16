@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import { initDB } from "@/lib/mongodb"
+import { initDB } from "@/lib/apiUtils/mongodb"
 import { getUser } from '@/lib/utils'
 import { serverError } from '@/lib/apiUtils/misc'
-import { withSessionRoute } from '@/lib/session'
+import { withSessionRoute } from '@/lib/apiUtils/session'
 
 async function loginRoute(req, res) {
   const db = await initDB()

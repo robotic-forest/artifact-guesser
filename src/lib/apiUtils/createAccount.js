@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
 import sha1 from 'sha1'
 import { sendEmail } from '@/lib/apiUtils/email'
-import { initDB } from '../mongodb'
+import { initDB } from './mongodb'
 
 /* Type (
   newAccount: {

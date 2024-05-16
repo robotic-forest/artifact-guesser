@@ -1,5 +1,5 @@
-import { initDB } from "@/lib/mongodb"
-import { withSessionRoute } from "@/lib/session"
+import { initDB } from "@/lib/apiUtils/mongodb"
+import { withSessionRoute } from "@/lib/apiUtils/session"
 import { ObjectId } from "mongodb"
 
 export default withSessionRoute(userRoute)

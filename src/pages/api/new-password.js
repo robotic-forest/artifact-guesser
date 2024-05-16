@@ -1,6 +1,6 @@
 import sha1 from 'sha1'
 import bcrypt from 'bcryptjs'
-import { initDB } from '@/lib/mongodb'
+import { initDB } from '@/lib/apiUtils/mongodb'
 import { ObjectId } from 'mongodb'
 
 export default async function setNewPasswordRoute(req, res) {

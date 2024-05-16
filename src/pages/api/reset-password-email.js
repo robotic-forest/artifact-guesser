@@ -1,5 +1,5 @@
 import sha1 from 'sha1'
-import { initDB } from '@/lib/mongodb'
+import { initDB } from '@/lib/apiUtils/mongodb'
 import { sendEmail } from '@/lib/apiUtils/email'
 
 export default async function resetPasswordEmailRoute(req, res) {
