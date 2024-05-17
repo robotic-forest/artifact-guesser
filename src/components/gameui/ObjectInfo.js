@@ -4,7 +4,7 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
   console.log({ object })
 
   const dateIsCorrect = object?.objectEndDate >= selectedDate && object?.objectBeginDate <= selectedDate
-  const countryIsCorrect = object?.country === selectedCountry
+  const countryIsCorrect = object?.country.includes(selectedCountry)
 
   const points = (dateIsCorrect ? 1 : 0) + (countryIsCorrect ? 1 : 0)
 
@@ -34,7 +34,10 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
         </div>
         <div className='flex justify-between items-start mb-1'>
           {/* <div>{object?.objectDate}{object?.period ? ` - ${object.period}` : ''}</div> */}
-          {object?.objectBeginDate !== object?.objectEndDate && `${formatDate(object?.objectBeginDate)} → ${formatDate(object?.objectEndDate)}`}
+          {object?.objectBeginDate == object?.objectEndDate
+            ? formatDate(object?.objectBeginDate)
+            : `${formatDate(object?.objectBeginDate)} → ${formatDate(object?.objectEndDate)}`
+          }
           <div
             className='p-[0px_4px] rounded text-black min-w-[64px]'
             css={{ background: dateIsCorrect ? '#7ae990' : '#ff9999' }}
@@ -56,6 +59,7 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
       <div css={{
         color: 'black',
         padding: '3px 8px',
+        border: '3px solid #ffffff55',
         background: points === 1 ? '#ffc045' : points === 2 ? '#7ae990' : '#ff9999'
       }}>
         <div className='flex justify-between text-sm mb-2'>
@@ -63,7 +67,7 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
           <div>{points} / 2</div>
         </div>
         <div>
-          {points === 1 ? 'Almost!' : points === 2 ? 'Perfect!' : 'Try again!'}
+          {points === 1 ? 'Almost! You got one!' : points === 2 ? 'Perfect! Exceptional!' : 'Sad. Try again!'}
         </div>
       </div>
     </div>

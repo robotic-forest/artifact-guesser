@@ -16,15 +16,15 @@ export const Map = ({ selectedCountry, setSelectedCountry, setHover }) => {
                 style={{
                   default: {
                     outline: "none",
-                    fill: selectedCountry === geo.properties.name ? '#35ad8d' : "#eee",
+                    fill: selectedCountry === geo.properties.name ? '#90d6f8' : "#eee",
                   },
                   hover: {
                     outline: "none",
-                    fill: "#35ad8d",
+                    fill: "#90d6f8",
                     cursor: "pointer",
                   },
                   pressed: {
-                    fill: "#35ad8d",
+                    fill: "#90d6f8",
                     outline: "none"
                   },
                 }}

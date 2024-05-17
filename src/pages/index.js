@@ -11,6 +11,7 @@ import { ObjectInfo } from "@/components/gameui/ObjectInfo"
 import { Range } from "@/components/form/FormRange"
 import { Map } from "@/components/gameui/Map"
 import { GrRefresh } from "react-icons/gr"
+import toast from "react-hot-toast"
 
 // the MET API: https://metmuseum.github.io/
 
@@ -65,23 +66,23 @@ export default () => {
       </MapInteractionCSS>
 
       {!dimensions ? null : !guessed ? (
-        <div className='fixed p-1 pb-2 bottom-0 right-0 z-10 flex flex-col' css={{ userSelect: 'none' }}>
-          <div className='mb-2 w-[400px] flex justify-between'>
-            <div className='bg-[#35ad8d] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
-              Selected: {selectedCountry ? <b>{selectedCountry}</b> : <span className='text-black/70'>None</span>}
-            </div>
-            {hoverCountry && (
+        <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col' css={{ userSelect: 'none', width: 400, maxWidth: '100vw' }}>
+          <div className='mb-2 w-full flex justify-between'>
+            {hoverCountry ? (
               <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
                 {hoverCountry}
               </div>
-            )}
+            ) : <div />}
+            <div className='bg-[#90d6f8] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
+              Selected: {selectedCountry ? <b>{selectedCountry}</b> : <span className='text-black/70'>None</span>}
+            </div>
           </div>
-          <div className='bg-black rounded border border-white/30 mb-2 overflow-hidden' css={{ width: 400, height: 200 }}>
+          <div className='bg-black rounded border border-white/30 mb-2 overflow-hidden' css={{ width: '100%', height: 200 }}>
             <Map setHover={setHoverCountry} setSelectedCountry={setSelctedCountry} selectedCountry={selectedCountry} />
           </div>
-          <div className='flex' css={{ width: 400 }}>
+          <div className='flex w-full'>
             <div className='flex items-center bg-black p-[4px_8px] rounded-[3px] text-sm h-[24px] mr-2' css={{
-              flexGrow: 1, maxWidth: 400
+              flexGrow: 1, maxWidth: '100%'
             }}>
               <span className='mr-2 min-w-[64px]'>
                 {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
@@ -100,10 +101,13 @@ export default () => {
                 <GrRefresh />
               </IconButton> */}
               <Button
-                onClick={() => setGuessed(true)}
+                onClick={() => {
+                  if (!selectedCountry) return toast.error('Select a country!')
+                  else setGuessed(true)
+                }}
                 className='w-[82px] justify-center'
                 css={{
-                  background: '#35ad8d',
+                  background: '#90d6f8',
                   color: '#000000',
                   ':hover': { background: '#7dddc3' }
                 }}
@@ -121,9 +125,9 @@ export default () => {
             onClick={() => router.reload()}
             className='w-[82px] justify-center'
             css={{
-              background: '#35ad8d',
+              background: '#90d6f8',
               color: '#000000',
-              ':hover': { background: '#7dddc3' }
+              ':hover': { background: '#4db4e6' }
             }}
           >
             <GrRefresh className='mr-2' />
