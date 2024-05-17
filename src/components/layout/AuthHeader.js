@@ -13,7 +13,7 @@ export const AuthHeader = () => {
   const [loginOpen, setLoginOpen] = useState(false)
   const [signupOpen, setSignupOpen] = useState(false)
 
-  return (
+  return !user ? null : (
     <>
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
       <LoginDialog open={loginOpen} onClose={() => setLoginOpen(false)} />

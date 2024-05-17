@@ -6,6 +6,8 @@ import { Button } from "@/components/buttons/Button"
 import useUser from "@/hooks/useUser"
 import { AuthHeader } from "@/components/layout/AuthHeader"
 
+// the MET API: https://metmuseum.github.io/
+
 export default () => {
   const { user } = useUser()
   const { height, width } = useWindowDimensions()
@@ -29,7 +31,7 @@ export default () => {
   useEffect(() => { if (data?.id && !id) setId(data.id) }, [data])
   const object = data?.data
 
-  console.log({ user })
+  console.log(object)
 
   return (
     <div css={{ height: '100vh', width: '100vw' }}>
