@@ -37,6 +37,13 @@ html, body {
   color: var(--textColor);
 }
 
-a { text-decoration: underline }
+a {
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--textLowOpacity)
+}
+
 
 /* *::-webkit-scrollbar { width: 0px } fuck off, scrollbars */

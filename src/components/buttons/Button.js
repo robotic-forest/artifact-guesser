@@ -6,6 +6,8 @@ export const Button = styled.button`
   border: 1px solid ${p => p.active ? 'black' : '#ffffff66'};
   text-decoration: none;
   font-size: 0.9em;
+  display: inline-flex;
+  align-items: center;
   cursor: ${p => p.active ? 'default' : 'pointer'};
 
   background: ${p => p.active ? '#ffffff' : 'black'};
