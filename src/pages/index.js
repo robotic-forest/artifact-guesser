@@ -14,7 +14,7 @@ export default () => {
   const [dimensions, setDimensions] = useState()
   const [value, setValue] = useState()
   const [revealed, setRevealed] = useState(false)
-  
+  const isMobile = width < 768
 
   useEffect(() => {
     if (dimensions && height && width && !value) {
@@ -36,7 +36,7 @@ export default () => {
   return (
     <div css={{ height: '100vh', width: '100vw' }}>
       <div className='fixed flex items-center m-1 top-0 left-0 bg-black z-10 p-[1px_5px] rounded-[4px] text-sm overflow-hidden'>
-        Ur Context - The Ancient Artifact Game
+        Ur Context{!isMobile && ' - The Ancient Artifact Game'}
       </div>
 
       <AuthHeader />
@@ -44,12 +44,12 @@ export default () => {
       {!dimensions && <div className='fixed flex w-full h-full justify-center items-center overflow-hidden'>Loading...</div>}
 
       <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
-        <div className='flex'>
-          <img src={object?.primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s', height: 'fit-content' }} onLoad={({ target: img }) => {
+        <div>
+          <img src={object?.primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} onLoad={({ target: img }) => {
             setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
           }} />
           {object?.additionalImages?.length > 0 && object.additionalImages.map((img, i) => (
-            <img key={i} src={img} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s', height: 'fit-content' }} />
+            <img key={i} src={img} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} />
           ))}
         </div>
       </MapInteractionCSS>
