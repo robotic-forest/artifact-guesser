@@ -8,6 +8,7 @@ export const Button = styled.button`
   font-size: 0.9em;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   cursor: ${p => p.active ? 'default' : 'pointer'};
 
   background: ${p => p.active ? '#ffffff' : 'black'};

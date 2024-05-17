@@ -6,10 +6,11 @@ import { Button } from "@/components/buttons/Button"
 import { AuthHeader } from "@/components/layout/AuthHeader"
 import { GiGreekSphinx } from "react-icons/gi"
 import { IoMdEye } from "react-icons/io"
-import { VscLinkExternal } from "react-icons/vsc"
-import { IconButton } from "@/components/buttons/IconButton"
-import { GrRefresh } from "react-icons/gr"
 import { useRouter } from "next/router"
+import { ObjectInfo } from "@/components/gameui/ObjectInfo"
+import { Range } from "@/components/form/FormRange"
+import { Map } from "@/components/gameui/Map"
+import { GrRefresh } from "react-icons/gr"
 
 // the MET API: https://metmuseum.github.io/
 
@@ -19,6 +20,12 @@ export default () => {
   const [dimensions, setDimensions] = useState()
   const [value, setValue] = useState()
   const [revealed, setRevealed] = useState(false)
+
+  const [selectedDate, setSelectedDate] = useState(0)
+  const [selectedCountry, setSelctedCountry] = useState()
+  const [hoverCountry, setHoverCountry] = useState()
+
+  const [guessed, setGuessed] = useState()
 
   useEffect(() => {
     if (dimensions && height && width && !value) {
@@ -35,13 +42,11 @@ export default () => {
   useEffect(() => { if (data?.id && !id) setId(data.id) }, [data])
   const object = data?.data
 
-  console.log(object)
-
   return (
     <div css={{ height: '100vh', width: '100vw' }}>
       <div className='fixed flex items-center m-1 top-0 left-0 bg-black z-10 p-[1px_5px] rounded-[4px] text-sm overflow-hidden'>
         <GiGreekSphinx className='mr-2' />
-        Ur Context
+        Artifact Guesser
       </div>
 
       <AuthHeader />
@@ -59,66 +64,73 @@ export default () => {
         </div>
       </MapInteractionCSS>
 
-      {dimensions && (
-        <div className='fixed m-1 mb-2 bottom-0 right-0 z-10 flex flex-col items-end'>
-          {revealed && (
-            <div className='bg-black rounded mb-1 w-[300px] border border-white/20' css={{ padding: '3px 8px' }}>
-              <div className='mb-2 flex justify-between items-start'>
-                <b>{object?.title}</b>
-                <a css={{ float: 'right', display: 'inline-flex', alignItems: 'center' }} href={object?.objectURL} target='_blank' rel='noreferrer'>
-                  <VscLinkExternal className='mr-2' />
-                  View
-                </a>
-              </div>
-              <div className='mb-1'>
-                {object?.objectDate}{object?.period ? ` - ${object.period}` : ''}
-                {/* {object?.objectBeginDate !== object?.objectEndDate && `${formatDate(object?.objectBeginDate)} to ${formatDate(object?.objectEndDate)}`} */}
-              </div>
-              <div>{createArea(object)}</div>
+      {!dimensions ? null : !guessed ? (
+        <div className='fixed p-1 pb-2 bottom-0 right-0 z-10 flex flex-col' css={{ userSelect: 'none' }}>
+          <div className='mb-2 w-[400px] flex justify-between'>
+            <div className='bg-[#35ad8d] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
+              Selected: {selectedCountry ? <b>{selectedCountry}</b> : <span className='text-black/70'>None</span>}
             </div>
-          )}
-          <div className='flex'>
-            <IconButton className='mr-1.5' css={{ border: '1px solid #ffffff44' }} onClick={() => router.reload()}>
-              <GrRefresh />
-            </IconButton>
-            <Button onClick={() => setRevealed(!revealed)} css={!revealed && {
+            {hoverCountry && (
+              <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
+                {hoverCountry}
+              </div>
+            )}
+          </div>
+          <div className='bg-black rounded border border-white/30 mb-2 overflow-hidden' css={{ width: 400, height: 200 }}>
+            <Map setHover={setHoverCountry} setSelectedCountry={setSelctedCountry} selectedCountry={selectedCountry} />
+          </div>
+          <div className='flex' css={{ width: 400 }}>
+            <div className='flex items-center bg-black p-[4px_8px] rounded-[3px] text-sm h-[24px] mr-2' css={{
+              flexGrow: 1, maxWidth: 400
+            }}>
+              <span className='mr-2 min-w-[64px]'>
+                {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
+              </span>
+              <Range
+                min={-5000}
+                max={2024}
+                value={selectedDate}
+                defaultValue={0}
+                width='100%'
+                onChange={e => setSelectedDate(e.target.value)}
+              />
+            </div>
+            <div className='flex'>
+              {/* <IconButton className='mr-1.5' css={{ border: '1px solid #ffffff44' }} onClick={() => router.reload()}>
+                <GrRefresh />
+              </IconButton> */}
+              <Button
+                onClick={() => setGuessed(true)}
+                className='w-[82px] justify-center'
+                css={{
+                  background: '#35ad8d',
+                  color: '#000000',
+                  ':hover': { background: '#7dddc3' }
+                }}
+              >
+                <IoMdEye className='mr-2' />
+                Guess
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className='fixed p-1 pb-2 bottom-0 right-0 z-10 flex flex-col items-end w-[400px]' css={{ userSelect: 'none' }}>
+          <ObjectInfo object={object} selectedDate={selectedDate} selectedCountry={selectedCountry} />
+          <Button
+            onClick={() => router.reload()}
+            className='w-[82px] justify-center'
+            css={{
               background: '#35ad8d',
               color: '#000000',
               ':hover': { background: '#7dddc3' }
-            }}>
-              <IoMdEye className='mr-2' />
-              {revealed ? 'Hide' : 'Reveal'}
-            </Button>
-          </div>
+            }}
+          >
+            <GrRefresh className='mr-2' />
+            Next
+          </Button>
         </div>
       )}
     </div>
   )
-}
-
-const formatDate = d => {
-  const date = String(d)
-  if (!date) return
-
-  if (date.includes('-')) {
-    return `${date.replace(/-/g, '')} BC`
-  } else {
-    return `${date} AD`
-  }
-}
-
-const createArea = (object) => {
-  if (!object) return
-
-  let s = ''
-  if (object.city) s += object.city + ', '
-  if (object.river) s += object.river + ', '
-  if (object.state) s += object.state + ', '
-  if (object.subregion) s += object.subregion + ', '
-  if (object.region) s += object.region + ', '
-  if (object.country) s += object.country
-
-  if (s.endsWith(', ')) s = s.slice(0, -2)
-
-  return s
 }

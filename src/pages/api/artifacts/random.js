@@ -18,7 +18,7 @@ const recursiveFetch = async (id) => {
     const response = await axios.get(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`)
 
     // skip if no image
-    if (!response.data.primaryImage || !hasArea(response.data)) {
+    if (!response.data.primaryImage || !response.data?.country) {
       return recursiveFetch(newId)
     }
 
