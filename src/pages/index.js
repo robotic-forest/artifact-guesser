@@ -63,7 +63,7 @@ export default () => {
         <div className='fixed m-1 mb-2 bottom-0 right-0 z-10 flex flex-col items-end'>
           {revealed && (
             <div className='bg-black rounded mb-1 w-[300px] border border-white/20' css={{ padding: '3px 8px' }}>
-              <div className='mb-2 flex justify-between items-center'>
+              <div className='mb-2 flex justify-between items-start'>
                 <b>{object?.title}</b>
                 <a css={{ float: 'right', display: 'inline-flex', alignItems: 'center' }} href={object?.objectURL} target='_blank' rel='noreferrer'>
                   <VscLinkExternal className='mr-2' />
