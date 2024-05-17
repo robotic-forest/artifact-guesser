@@ -118,5 +118,7 @@ const createArea = (object) => {
   if (object.region) s += object.region + ', '
   if (object.country) s += object.country
 
+  if (s.endsWith(', ')) s = s.slice(0, -2)
+
   return s
 }
