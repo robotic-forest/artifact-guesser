@@ -6,21 +6,17 @@ import { Button } from "@/components/buttons/Button"
 import { AuthHeader } from "@/components/layout/AuthHeader"
 import { GiGreekSphinx } from "react-icons/gi"
 import { IoMdEye } from "react-icons/io"
-import { useRouter } from "next/router"
 import { ObjectInfo } from "@/components/gameui/ObjectInfo"
 import { Range } from "@/components/form/FormRange"
 import { Map } from "@/components/gameui/Map"
-import { GrRefresh } from "react-icons/gr"
 import toast from "react-hot-toast"
 
 // the MET API: https://metmuseum.github.io/
 
 export default () => {
-  const router = useRouter()
   const { height, width } = useWindowDimensions()
   const [dimensions, setDimensions] = useState()
   const [value, setValue] = useState()
-  const [revealed, setRevealed] = useState(false)
 
   const [selectedDate, setSelectedDate] = useState(0)
   const [selectedCountry, setSelctedCountry] = useState()
@@ -114,18 +110,6 @@ export default () => {
       ) : (
         <div className='fixed p-1 pb-2 bottom-0 right-0 z-10 flex flex-col items-end w-[400px]' css={{ userSelect: 'none' }}>
           <ObjectInfo object={object} selectedDate={selectedDate} selectedCountry={selectedCountry} />
-          <Button
-            onClick={() => router.reload()}
-            className='w-[82px] justify-center'
-            css={{
-              background: '#90d6f8',
-              color: '#000000',
-              ':hover': { background: '#4db4e6' }
-            }}
-          >
-            <GrRefresh className='mr-2' />
-            Next
-          </Button>
         </div>
       )}
     </div>

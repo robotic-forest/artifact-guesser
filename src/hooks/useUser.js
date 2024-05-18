@@ -53,7 +53,7 @@ export default function useUser({
     mutate("/api/user", { ...user, ...data })
   }
 
-  const isAdmin = user?.roles?.includes('admin')
+  const isAdmin = user?.role === 'Admin'
 
   const loading = !user?.isLoggedIn || (roles && !roles.includes(user?.role))
 

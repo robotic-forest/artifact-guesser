@@ -8,8 +8,6 @@ import { withSessionRoute } from '@/lib/apiUtils/session'
 async function loginRoute(req, res) {
   const db = await initDB()
   const existingSession = await getUser(req)
-
-  console.log(db)
   
   try {
     const { email: formEmail, password: formPassword } = req.body
