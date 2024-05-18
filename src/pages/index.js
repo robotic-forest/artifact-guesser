@@ -67,28 +67,18 @@ export default () => {
 
       {!dimensions ? null : !guessed ? (
         <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col' css={{ userSelect: 'none', width: 400, maxWidth: '100vw' }}>
-          <div className='mb-2 w-full flex justify-between'>
-            {hoverCountry ? (
-              <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
+          <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative' css={{ width: '100%', height: 200 }}>
+            <Map setHover={setHoverCountry} setSelectedCountry={setSelctedCountry} selectedCountry={selectedCountry} />
+            {hoverCountry && (
+              <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] absolute bottom-1 right-1 invisible md:visible'>
                 {hoverCountry}
               </div>
-            ) : <div />}
-            <div className='bg-[#90d6f8] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
-              Selected: {selectedCountry ? <b>{selectedCountry}</b> : <span className='text-black/70'>None</span>}
-            </div>
+            )}
           </div>
-          <div className='bg-black rounded border border-white/30 mb-2 overflow-hidden' css={{ width: '100%', height: 200 }}>
-            <Map setHover={setHoverCountry} setSelectedCountry={setSelctedCountry} selectedCountry={selectedCountry} />
-          </div>
-          <div className='flex w-full'>
-            <div className='flex items-center bg-black p-[4px_8px] rounded-[3px] text-sm h-[24px] mr-2' css={{
-              flexGrow: 1, maxWidth: '100%'
-            }}>
-              <span className='mr-2 min-w-[64px]'>
-                {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
-              </span>
+          <div className='w-full'>
+            <div className='flex items-center bg-black p-[4.5px_6px_4px] rounded-[3px] border border-white/30 text-sm h-[24px] mb-1 w-full'>
               <Range
-                min={-5000}
+                min={-3000}
                 max={2024}
                 value={selectedDate}
                 defaultValue={0}
@@ -97,9 +87,12 @@ export default () => {
               />
             </div>
             <div className='flex'>
-              {/* <IconButton className='mr-1.5' css={{ border: '1px solid #ffffff44' }} onClick={() => router.reload()}>
-                <GrRefresh />
-              </IconButton> */}
+              <div className='bg-[#69aacb] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] mr-1' css={{ flexGrow: 1 }}>
+                {selectedCountry ? <b>{selectedCountry}</b> : <span className='text-black/60'>No country selected</span>}
+              </div>
+              <span className='mr-1 min-w-[72px] bg-[#90d6f8] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
+                {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
+              </span>
               <Button
                 onClick={() => {
                   if (!selectedCountry) return toast.error('Select a country!')
@@ -107,9 +100,9 @@ export default () => {
                 }}
                 className='w-[82px] justify-center'
                 css={{
-                  background: '#90d6f8',
+                  background: '#7dddc3',
                   color: '#000000',
-                  ':hover': { background: '#7dddc3' }
+                  ':hover': { background: '#40f59a' }
                 }}
               >
                 <IoMdEye className='mr-2' />

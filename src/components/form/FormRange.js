@@ -37,6 +37,7 @@ export const FormRange = ({
 export const Range = forwardRef(({ width, style, inputStyle, ...props }, ref) => {
   return (
     <InputStyles ref={ref} width={width} style={style}>
+      <div id='track' />
       <input
         type='range'
         style={{ width: '100%', ...inputStyle }}
@@ -47,6 +48,7 @@ export const Range = forwardRef(({ width, style, inputStyle, ...props }, ref) =>
 })
 
 const InputStyles = styled.div`
+  position: relative;
   width: ${p => p.width};
 
   input[type=range] {
@@ -55,17 +57,36 @@ const InputStyles = styled.div`
     background: transparent; /* Otherwise white in Chrome */
     position: relative;
     top: -5px;
+  }
+
+  div#track {
+    width: ${p => p.width}; /* Specific width is required for Firefox. */
+    background: transparent; /* Otherwise white in Chrome */
+    position: absolute;
+    top: 0px;
+    z-index: 0;
+    height: 10px;
+    border-bottom: 1px solid white;
 
     &::after, &::before {
       content: "";
       position: absolute;
-      top: 3px;
-      height: 14px;
-      width: 1px;
+      top: 6px;
+      left: 4px;
+      height: 7px;
+      width: 7px;
+      border-radius: 50%;
       background: var(--textColor);
     }
 
-    &::before { left: ${p => p.width} }
+    &::before {
+      left: calc(${p => p.width} - 12px);
+      box-shadow: 4px 0px 0px 3px black;
+    }
+
+    &::after {
+      box-shadow: -4px 0px 0px 3px black;
+    }
   }
 
   input[type=range]::-webkit-slider-thumb {
@@ -90,7 +111,8 @@ const InputStyles = styled.div`
   input[type=range]::-webkit-slider-runnable-track {
     width: 100%;
     height: 10px;
-    border-bottom: 1px solid var(--textColor);
+    border-bottom: 1px solid transparent;
+    z-index: 1
   }
 
   input[type=range]:focus {

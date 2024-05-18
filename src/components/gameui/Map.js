@@ -2,7 +2,7 @@ import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simp
 
 export const Map = ({ selectedCountry, setSelectedCountry, setHover }) => {
   return (
-    <ComposableMap>
+    <ComposableMap width={800} height={480}>
       <ZoomableGroup center={[0, 0]} zoom={1}>
         <Geographies geography="/features.json">
           {({ geographies }) =>
