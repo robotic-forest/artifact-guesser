@@ -20,7 +20,7 @@ export const EditableDate = ({ selectedDate, setSelectedDate }) => {
         }}
         onFocus={() => setEditing(true)}
         onBlur={() => setEditing(false)}
-        autoFocus
+        // autoFocus
         css={{
           ':focus': { outline: 'none' },
           width: 40,

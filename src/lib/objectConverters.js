@@ -1,9 +1,10 @@
 
 
 export const convertMet = object => ({
-  name: object.objectName || object.title,
+  name: object.title || object.objectName,
   culture: object.culture || object.department,
   medium: object.medium,
+  dimensions: object.dimensions,
   location: {
     country: object.country,
     county: object.county,
