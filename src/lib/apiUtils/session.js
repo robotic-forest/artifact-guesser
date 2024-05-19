@@ -15,3 +15,19 @@ export function withSessionRoute(handler) {
 export function withSessionSsr(handler) {
   return withIronSessionSsr(handler, sessionOptions)
 }
+
+export const verifyAuth = (req, res, roles) => {
+  if (!req.session.user) {
+    res.status(401).send({ error: 'Unauthorised' })
+    return false
+  }
+
+  if (roles) {
+    if (!roles.includes(req.session.user.role)) {
+      res.status(403).send({ error: 'Forbidden' })
+      return false
+    }
+  }
+
+  return req.session.user
+}

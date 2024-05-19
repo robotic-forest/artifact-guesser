@@ -10,6 +10,7 @@ import { ObjectInfo } from "@/components/gameui/ObjectInfo"
 import { Range } from "@/components/form/FormRange"
 import { Map } from "@/components/gameui/Map"
 import toast from "react-hot-toast"
+import { EditableDate } from "@/components/gameui/EditableDate"
 
 // the MET API: https://metmuseum.github.io/
 
@@ -35,7 +36,7 @@ export default () => {
   }, [dimensions, height, width])
   
   const [id, setId] = useState()
-  const { data } = useSWR(!id ? `/api/artifacts/random` : `/api/artifacts/${id}`)
+  const { data } = useSWR(!id ? `/api/external/met/random` : `/api/external/met/${id}`)
   useEffect(() => { if (data?.id && !id) setId(data.id) }, [data])
   const object = data?.data
 
@@ -86,9 +87,7 @@ export default () => {
               <div className='bg-[#69aacb] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] mr-1' css={{ flexGrow: 1 }}>
                 {selectedCountry ? <b>{selectedCountry}</b> : <span className='text-black/60'>No country selected</span>}
               </div>
-              <span className='mr-1 min-w-[72px] bg-[#90d6f8] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px]'>
-                {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
-              </span>
+              <EditableDate {...{ selectedDate, setSelectedDate }} />
               <Button
                 onClick={() => {
                   if (!selectedCountry) return toast.error('Select a country!')

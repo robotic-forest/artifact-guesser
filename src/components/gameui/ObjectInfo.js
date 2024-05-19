@@ -5,16 +5,22 @@ import { IoIosArrowRoundForward } from "react-icons/io"
 import { FaHeart, FaSave } from "react-icons/fa"
 import { IconButton } from "../buttons/IconButton"
 import useUser from "@/hooks/useUser"
+import { convertMet } from "@/lib/objectConverters"
+import { useArtifacts } from "@/hooks/useArtifacts"
 
 export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
   const { isAdmin } = useUser()
   const router = useRouter()
-  console.log({ object })
+  const { createArtifact } = useArtifacts()
 
-  const dateIsCorrect = object?.objectEndDate >= selectedDate && object?.objectBeginDate <= selectedDate
-  const countryIsCorrect = object?.country.includes(selectedCountry)
+  const dateIsCorrect = object?.objectBeginDate <= selectedDate && object?.objectEndDate >= selectedDate
+  const distanceToDate = Math.min(Math.abs(object?.objectBeginDate - selectedDate), Math.abs(object?.objectEndDate - selectedDate))
+  const datePoints = dateIsCorrect ? 100 : Math.round(distanceToDate > 300 ? 0 : 100 - (distanceToDate / 3))
+  const countryIsCorrect = convertCountries(object?.country).includes(selectedCountry)
 
-  const points = (dateIsCorrect ? 1 : 0) + (countryIsCorrect ? 1 : 0)
+  const points = datePoints + (countryIsCorrect ? 100 : 0)
+
+  const saveForPublic = () => createArtifact(convertMet(object))
 
   return (
     <div className='w-[300px]'>
@@ -33,8 +39,8 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
             : `${formatDate(object?.objectBeginDate)} → ${formatDate(object?.objectEndDate)}`
           }
           <div
-            className='p-[0px_4px] rounded text-black min-w-[64px]'
-            css={{ background: dateIsCorrect ? '#7ae990' : '#ff9999' }}
+            className='p-[0px_4px] rounded text-black flex'
+            css={{ background: datePoints === 100 ? '#7ae990' : datePoints > 50 ? '#ffc045' : datePoints > 0 ? '#ff7145' :'#ff9999' }}
           >
             {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
           </div>
@@ -51,7 +57,7 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
         </div>
         <div className='flex justify-end mb-1.5'>
           {isAdmin && (
-            <IconButton tooltip='Save for Public' css={{
+            <IconButton onClick={saveForPublic} tooltip='Save for Public' css={{
               border: '1px solid #ffffff66',
               marginRight: 4,
               borderRadius: 3
@@ -86,14 +92,14 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
         color: 'black',
         padding: '3px 8px',
         border: '3px solid #ffffff55',
-        background: points === 1 ? '#ffc045' : points === 2 ? '#7ae990' : '#ff9999'
+        background: points > 175 ? '#7ae990' : points > 100 ? '#ffc045' : '#ff9999'
       }}>
         <div className='flex justify-between text-sm mb-2'>
           <div className='text-black/70'>Points</div>
-          <div>{points} / 2</div>
+          <div>{points} / 200</div>
         </div>
         <div className='flex justify-between'>
-          {points === 1 ? 'Almost! You got one!' : points === 2 ? 'Perfect! Exceptional!' : 'Sad. Try again!'}
+          {points === 200 ? 'Perfect! Thats amazing!' : points > 160 ? 'Wow, impressive!' : points > 100 ? 'Not bad!' : points > 0 ? 'Oh well. Try again!' : 'Oof.'}
           <Button
             onClick={() => router.reload()}
             className='relative right-[-5px]'
@@ -110,6 +116,22 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
       </div>
     </div>
   )
+}
+
+const convertCountries = country => {
+  if (['United States', 'USA', 'US'].includes(country)) return 'United States'
+  if (['United Kingdom', 'UK', 'England', 'Great Britain'].includes(country)) return 'United Kingdom'
+  if (['South Korea', 'Korea'].includes(country)) return 'South Korea'
+  if (['Czech Republic', 'Czechia'].includes(country)) return 'Czech Republic'
+  if (['Congo', 'Congo Republic', 'Republic of Congo'].includes(country)) return 'Congo'
+  if (['Congo Democratic Republic', 'DR Congo', 'DRC'].includes(country)) return 'Democratic Republic of the Congo'
+  if (['Ivory Coast', 'Côte d’Ivoire'].includes(country)) return 'Ivory Coast'
+  if (['Burma', 'Myanmar'].includes(country)) return 'Myanmar'
+  if (['East Timor', 'Timor-Leste'].includes(country)) return 'Timor-Leste'
+  if (['Cape Verde', 'Cabo Verde'].includes(country)) return 'Cape Verde'
+  if (['São Tomé and Príncipe', 'Sao Tome and Principe'].includes(country)) return 'São Tomé and Príncipe'
+
+  return country
 }
 
 const formatDate = d => {
