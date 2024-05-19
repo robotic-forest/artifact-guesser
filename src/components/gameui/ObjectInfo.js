@@ -23,7 +23,9 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
   const saveForPublic = () => createArtifact(convertMet(object))
 
   return (
-    <div className='w-[300px]'>
+    <div className='fixed p-1 pb-2 bottom-0 right-0 z-10 w-[350px] select-none' css={{
+      '@media (max-width: 500px)': { width: '100vw' }
+    }}>
       <div className='bg-black rounded border border-white/30 mb-1' css={{ padding: '3px 8px' }}>
         <div className='mb-2 flex justify-between items-start'>
           <b><span dangerouslySetInnerHTML={{ __html: object?.title }} /></b>

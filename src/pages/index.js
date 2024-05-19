@@ -63,7 +63,9 @@ export default () => {
       </MapInteractionCSS>
 
       {!dimensions ? null : !guessed ? (
-        <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col' css={{ userSelect: 'none', width: 400, maxWidth: '100vw' }}>
+        <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col select-none w-[400px]' css={{ 
+          '@media (max-width: 500px)': { width: '100vw' }
+        }}>
           <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative' css={{ width: '100%', height: 200 }}>
             <Map setHover={setHoverCountry} setSelectedCountry={setSelctedCountry} selectedCountry={selectedCountry} />
             {hoverCountry && (
@@ -106,11 +108,7 @@ export default () => {
             </div>
           </div>
         </div>
-      ) : (
-        <div className='fixed p-1 pb-2 bottom-0 right-0 z-10 flex flex-col items-end w-[400px]' css={{ userSelect: 'none' }}>
-          <ObjectInfo object={object} selectedDate={selectedDate} selectedCountry={selectedCountry} />
-        </div>
-      )}
+      ) : <ObjectInfo object={object} selectedDate={selectedDate} selectedCountry={selectedCountry} />}
     </div>
   )
 }
