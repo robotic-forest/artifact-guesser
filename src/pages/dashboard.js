@@ -3,13 +3,15 @@ import { GoatStats } from "@/components/info/GoatCounter"
 import { Layout } from "@/components/layout/Layout"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
+import { useGames } from "@/hooks/games/useGames"
 import { FaUser } from "react-icons/fa"
-import { GiAmphora, GiGoat } from "react-icons/gi"
+import { GiAbstract042, GiAmphora, GiGoat } from "react-icons/gi"
 import { MdDashboard } from "react-icons/md"
 
 export default () => {
   const { artifacts } = useArtifacts({ total: true })
   const { accounts } = useAccounts({ total: true })
+  const { games } = useGames({ total: true })
 
   return (
     <Layout title='Dashboard'>
@@ -26,7 +28,8 @@ export default () => {
       <div className='flex flex-wrap'>
         <GoatStats /> 
         <DashInfo title={<><GiAmphora className='mr-2'/>Artifacts</>} count={artifacts} />
-        <DashInfo title={<><FaUser className='text-sm mr-2'/>Accounts</>} count={accounts} />  
+        <DashInfo title={<><GiAbstract042 className='text-sm mr-2'/>Games played</>} count={games} />
+        <DashInfo title={<><FaUser className='text-sm mr-2'/>Accounts</>} count={accounts} />
       </div>
     </Layout>
   )

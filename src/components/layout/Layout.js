@@ -1,7 +1,7 @@
 import Head from "next/head"
 import { IconButton } from "../buttons/IconButton"
 import { MdDashboard } from "react-icons/md"
-import { GiAmphora, GiGreekSphinx } from "react-icons/gi"
+import { GiAbstract042, GiAmphora, GiGreekSphinx } from "react-icons/gi"
 import Link from "next/link"
 import useUser from "@/hooks/useUser"
 import { GrLogout } from "react-icons/gr"
@@ -30,6 +30,11 @@ export const Layout = ({ title, children }) => {
             <Link href='/artifacts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
               <IconButton tooltip='Artifacts' className='mb-3'>
                 <GiAmphora />
+              </IconButton>
+            </Link>
+            <Link href='/games' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+              <IconButton tooltip='Games' className='mb-3'>
+                <GiAbstract042 />
               </IconButton>
             </Link>
             <Link href='/accounts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
