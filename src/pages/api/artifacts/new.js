@@ -12,4 +12,4 @@ const createArtifact = async (req, res) => {
   res.send({ success: true })
 }
 
-export default  withSessionRoute(createArtifact)
+export default withSessionRoute(createArtifact)

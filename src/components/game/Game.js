@@ -1,18 +1,18 @@
 import useWindowDimensions from "@/hooks/useWindowDimensions"
 import { useEffect, useState } from "react"
-import useSWR from "swr"
 import { MapInteractionCSS } from 'react-map-interaction'
 import { Button } from "@/components/buttons/Button"
 import { AuthHeader } from "@/components/layout/AuthHeader"
 import { GiGreekSphinx } from "react-icons/gi"
 import { IoMdEye } from "react-icons/io"
-import { ObjectInfo } from "@/components/gameui/ObjectInfo"
+import { ArtifactInfo } from "@/components/gameui/ArtifactInfo"
 import { Range } from "@/components/form/FormRange"
 import { Map } from "@/components/gameui/Map"
 import toast from "react-hot-toast"
 import { EditableDate } from "@/components/gameui/EditableDate"
 import Head from "next/head"
 import dynamic from "next/dynamic"
+import { useRandomArtifact } from "@/hooks/artifacts/useRandomArtifact"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -36,11 +36,11 @@ const GameComponent = () => {
       setValue({ scale, translation: { x: 0, y: 0 } })
     }
   }, [dimensions, height, width])
-  
-  const [id, setId] = useState()
-  const { data } = useSWR(!id ? `/api/external/met/random` : `/api/external/met/${id}`)
-  useEffect(() => { if (data?.id && !id) setId(data.id) }, [data])
-  const object = data?.data
+
+  const { artifact, getNewArtifact } = useRandomArtifact()
+
+  const primaryImage = artifact?.images.external[0]
+  const additionalImages = artifact?.images.external.slice(1)
 
   return (
     <>
@@ -60,10 +60,10 @@ const GameComponent = () => {
 
         <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
           <div>
-            <img src={object?.primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} onLoad={({ target: img }) => {
+            <img src={primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} onLoad={({ target: img }) => {
               setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
             }} />
-            {object?.additionalImages?.length > 0 && object.additionalImages.map((img, i) => (
+            {additionalImages?.length > 0 && additionalImages.map((img, i) => (
               <img key={i} src={img} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} />
             ))}
           </div>
@@ -115,7 +115,19 @@ const GameComponent = () => {
               </div>
             </div>
           </div>
-        ) : <ObjectInfo object={object} selectedDate={selectedDate} selectedCountry={selectedCountry} />}
+        ) : (
+          <ArtifactInfo
+            artifact={artifact}
+            getNewArtifact={() => {
+              getNewArtifact()
+              setGuessed(false)
+              setSelectedDate(0)
+              setSelctedCountry()
+            }}
+            selectedDate={selectedDate}
+            selectedCountry={selectedCountry}
+          />
+        )}
       </div>
     </>
   )

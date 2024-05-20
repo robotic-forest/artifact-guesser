@@ -1,23 +1,18 @@
 import { VscLinkExternal } from "react-icons/vsc"
 import { Button } from "../buttons/Button"
-import { useRouter } from "next/router"
 import { IoIosArrowRoundForward } from "react-icons/io"
 import { FaHeart, FaSave } from "react-icons/fa"
 import { IconButton } from "../buttons/IconButton"
 import useUser from "@/hooks/useUser"
-import { convertMet } from "@/lib/objectConverters"
 import { DetailsDoubleItem, DetailsItem } from "../info/Details"
 import { convertCountries, formatDate, formatLoaction, formatTime } from "@/lib/artifactUtils"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 
-export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
-  const router = useRouter()
-  const artifact = convertMet(object)
-
+export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedCountry }) => {
   const dateIsCorrect = artifact?.time.start <= selectedDate && artifact?.time.end >= selectedDate
   const distanceToDate = Math.min(Math.abs(artifact?.time.start - selectedDate), Math.abs(artifact?.time.end - selectedDate))
   const datePoints = dateIsCorrect ? 100 : Math.round(distanceToDate > 300 ? 0 : 100 - (distanceToDate / 3))
-  const countryIsCorrect = convertCountries(object?.country).includes(selectedCountry)
+  const countryIsCorrect = convertCountries(artifact?.location.country).includes(selectedCountry)
 
   const points = datePoints + (countryIsCorrect ? 100 : 0)
 
@@ -43,7 +38,6 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
             <div>Your Guess</div>
           </div>
           <div className='flex justify-between items-start mb-1'>
-            {/* <div>{object?.objectDate}{object?.period ? ` - ${object.period}` : ''}</div> */}
             {artifact?.time.start == artifact?.time.end
               ? formatDate(artifact?.time.start)
               : `${formatDate(artifact?.time.start)} → ${formatDate(artifact?.time.end)}`
@@ -56,8 +50,7 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
             </div>
           </div>
           <div className='flex justify-between items-start mb-1 border-white/30'>
-            {/* <div>{createArea(object)}</div> */}
-            <div>{object?.country}</div>
+            <div>{artifact?.location.country}</div>
             <div
               className='p-[0px_4px] rounded text-black'
               css={{ background: countryIsCorrect ? '#7ae990' : '#ff9999' }}
@@ -79,7 +72,7 @@ export const ObjectInfo = ({ object, selectedDate, selectedCountry }) => {
           <div className='flex justify-between'>
             {points === 200 ? 'Perfect! Thats amazing!' : points > 160 ? 'Wow, impressive!' : points > 100 ? 'Not bad!' : points > 0 ? 'Oh well. Try again!' : 'Oof.'}
             <Button
-              onClick={() => router.reload()}
+              onClick={() => getNewArtifact()}
               className='relative right-[-5px]'
               css={{
                 background: '#90d6f8',
