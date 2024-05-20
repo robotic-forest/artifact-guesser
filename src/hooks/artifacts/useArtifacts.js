@@ -16,7 +16,7 @@ export const useArtifacts = args => {
 
   if (args?.paginate) {
     const swr = usePagination({ url: args?.skip ? null : apiUrl, options: args?.paginate })
-    return { sort, ...swr, artifacts: swr.data, mutate: swr.mutate, createArtifact }
+    return { sort, ...swr, artifacts: swr.data, mutate: swr.mutate }
   } else {
     const { data } = useSWR(!args?.skip && apiUrl)
     return { sort, artifacts: data?.data, mutate }
