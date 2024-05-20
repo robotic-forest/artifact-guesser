@@ -7,6 +7,7 @@ import useUser from "@/hooks/useUser"
 import { DetailsDoubleItem, DetailsItem } from "../info/Details"
 import { convertCountries, formatDate, formatLoaction, formatTime } from "@/lib/artifactUtils"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
+import { GameInfo } from "./GameInfo"
 
 export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedCountry }) => {
   const dateIsCorrect = artifact?.time.start <= selectedDate && artifact?.time.end >= selectedDate
@@ -24,12 +25,13 @@ export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedC
         <ExtraInfo artifact={artifact} />
       </div>
 
-      <div className='fixed p-1 bottom-0 right-0 z-10 w-[350px] select-none' css={{
+      <div className='fixed p-1 bottom-0 right-0 z-10 w-[350px] select-none flex flex-col items-end' css={{
         '@media (max-width: 800px)': {
           width: '100vw',
         }
       }}>
-        <div className='bg-black rounded border border-white/30 mb-1' css={{ padding: '6px 8px' }}>
+        <GameInfo />
+        <div className='bg-black rounded border border-white/30 mb-1 w-full' css={{ padding: '6px 8px' }}>
           {/* <div className='mb-2 flex justify-between items-start'>
             <b><span dangerouslySetInnerHTML={{ __html: artifact?.name }} /></b>
           </div> */}
@@ -59,8 +61,7 @@ export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedC
             </div>
           </div>
         </div>
-        <div className='rounded' css={{
-          color: 'black',
+        <div className='rounded w-full text-black' css={{
           padding: '3px 8px',
           border: '3px solid #ffffff55',
           background: points > 175 ? '#7ae990' : points > 100 ? '#ffc045' : '#ff9999'

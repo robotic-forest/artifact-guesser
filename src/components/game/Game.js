@@ -13,6 +13,7 @@ import { EditableDate } from "@/components/gameui/EditableDate"
 import Head from "next/head"
 import dynamic from "next/dynamic"
 import { useRandomArtifact } from "@/hooks/artifacts/useRandomArtifact"
+import { GameInfo } from "../gameui/GameInfo"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -70,10 +71,14 @@ const GameComponent = () => {
         </MapInteractionCSS>
 
         {!dimensions ? null : !guessed ? (
-          <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col select-none w-[400px]' css={{ 
+          <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
             '@media (max-width: 500px)': { width: '100vw' }
           }}>
-            <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative' css={{ width: '100%', height: 200 }}>
+            <GameInfo />
+            <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full' css={{
+              height: 200,
+              '@media (max-width: 500px)': { height: 150 }
+            }}>
               <Map setHover={setHoverCountry} setSelectedCountry={setSelctedCountry} selectedCountry={selectedCountry} />
               {hoverCountry && (
                 <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] absolute bottom-1 right-1 invisible md:visible'>
