@@ -76,7 +76,7 @@ const IconButtonUI = styled.a`
   & > * { transform: ${p => p.ri ? `rotate(${p.ri}deg)` : 'none'} }
 
   &:hover {
-    background: ${p => p.disabled ? 'transparent' : 'var(--textVeryLowOpacity27)'};
+    background: ${p => p.disabled ? 'transparent' : '#303030'};
     color: ${p => p.hc || 'var(--textColor)'};
   }
 `

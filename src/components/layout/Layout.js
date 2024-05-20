@@ -18,8 +18,10 @@ export const Layout = ({ title, children }) => {
       </Head>
       <div className='flex w-[100vw]'>
         <div className='sticky top-0 h-screen flex flex-col justify-between items-center'>
-          <div className=' flex flex-col items-center p-2 z-50'>
-            <GiGreekSphinx className='mt-2 mb-6' />
+            <div className=' flex flex-col items-center p-2 z-50'>
+            <Link href='/' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+              <GiGreekSphinx className='mt-2 mb-6' />
+            </Link>
             <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
               <IconButton tooltip='Dashboard' className='mb-3'>
                 <MdDashboard />
