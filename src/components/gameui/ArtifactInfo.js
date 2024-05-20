@@ -1,21 +1,17 @@
 import { VscLinkExternal } from "react-icons/vsc"
 import { Button } from "../buttons/Button"
 import { IoIosArrowRoundForward } from "react-icons/io"
-import { FaHeart, FaSave } from "react-icons/fa"
+import { FaHeart } from "react-icons/fa"
 import { IconButton } from "../buttons/IconButton"
-import useUser from "@/hooks/useUser"
 import { DetailsDoubleItem, DetailsItem } from "../info/Details"
-import { convertCountries, formatDate, formatLoaction, formatTime } from "@/lib/artifactUtils"
-import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
+import { formatDate, formatLoaction, formatTime } from "@/lib/artifactUtils"
 import { GameInfo } from "./GameInfo"
+import { useGame } from "../game/GameProvider"
 
-export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedCountry }) => {
-  const dateIsCorrect = artifact?.time.start <= selectedDate && artifact?.time.end >= selectedDate
-  const distanceToDate = Math.min(Math.abs(artifact?.time.start - selectedDate), Math.abs(artifact?.time.end - selectedDate))
-  const datePoints = dateIsCorrect ? 100 : Math.round(distanceToDate > 300 ? 0 : 100 - (distanceToDate / 3))
-  const countryIsCorrect = convertCountries(artifact?.location.country).includes(selectedCountry)
-
-  const points = datePoints + (countryIsCorrect ? 100 : 0)
+export const ArtifactInfo = () => {
+  const { game, artifact, startNextRound, startNewGame, currentRound, selectedDate, selectedCountry } = useGame()
+  const { countryIsCorrect, datePoints, points } = currentRound
+  const isLastRound = game.round === game.rounds
 
   return (
     <>
@@ -32,9 +28,6 @@ export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedC
       }}>
         <GameInfo />
         <div className='bg-black rounded border border-white/30 mb-1 w-full' css={{ padding: '6px 8px' }}>
-          {/* <div className='mb-2 flex justify-between items-start'>
-            <b><span dangerouslySetInnerHTML={{ __html: artifact?.name }} /></b>
-          </div> */}
           <div className='text-white/70 flex justify-between text-sm mb-1'>
             <div>Origin</div>
             <div>Your Guess</div>
@@ -73,7 +66,7 @@ export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedC
           <div className='flex justify-between'>
             {points === 200 ? 'Perfect! Thats amazing!' : points > 160 ? 'Wow, impressive!' : points > 100 ? 'Not bad!' : points > 0 ? 'Oh well. Try again!' : 'Oof.'}
             <Button
-              onClick={() => getNewArtifact()}
+              onClick={isLastRound ? startNewGame : startNextRound}
               className='relative right-[-5px]'
               css={{
                 background: '#90d6f8',
@@ -82,7 +75,7 @@ export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedC
               }}
             >
               <IoIosArrowRoundForward className='mr-1' />
-              Next Artifact
+              {isLastRound ? 'Start New Game' : 'Next Artifact'}
             </Button>
           </div>
         </div>
@@ -97,8 +90,6 @@ export const ArtifactInfo = ({ artifact, getNewArtifact, selectedDate, selectedC
 }
 
 const ExtraInfo = ({ artifact }) => {
-  const { isAdmin } = useUser()
-  const { createArtifact } = useArtifacts({ skip: true })
 
   return (
     <div className='bg-black rounded border border-white/30 mb-1' css={{ padding: '5px 5px 5px 8px' }}>
@@ -123,22 +114,13 @@ const ExtraInfo = ({ artifact }) => {
           </div>
         </div>
         <div className='flex justify-end mb-1.5'>
-          {isAdmin && (
-            <IconButton onClick={() => createArtifact(artifact)} tooltip='Save for Public' css={{
-              border: '1px solid #ffffff66',
-              marginRight: 4,
-              borderRadius: 3
-            }}>
-              <FaSave />
-            </IconButton>
-          )}
-          <IconButton tooltip='Favorite' css={{
+          {/* <IconButton tooltip='Favorite' css={{
             border: '1px solid #ffffff66',
             marginRight: 4,
             borderRadius: 3
           }}>
             <FaHeart />
-          </IconButton>
+          </IconButton> */}
           <a
             css={{
               textDecoration: 'none',

@@ -12,21 +12,36 @@ import toast from "react-hot-toast"
 import { EditableDate } from "@/components/gameui/EditableDate"
 import Head from "next/head"
 import dynamic from "next/dynamic"
-import { useRandomArtifact } from "@/hooks/artifacts/useRandomArtifact"
 import { GameInfo } from "../gameui/GameInfo"
+import { GameProvider, useGame } from "./GameProvider"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
 const GameComponent = () => {
+
+  return (
+    <GameProvider>
+      <GameUI />
+    </GameProvider>
+  )
+}
+
+const GameUI = () => {
+  const {
+    selectedDate,
+    setSelectedDate,
+    selectedCountry,
+    setSelectedCountry,
+    guessed,
+    makeGuess,
+    artifact,
+    loading
+  } = useGame()
+  
   const { height, width } = useWindowDimensions()
   const [dimensions, setDimensions] = useState()
   const [value, setValue] = useState()
-
-  const [selectedDate, setSelectedDate] = useState(0)
-  const [selectedCountry, setSelctedCountry] = useState()
   const [hoverCountry, setHoverCountry] = useState()
-
-  const [guessed, setGuessed] = useState()
 
   useEffect(() => {
     if (dimensions && height && width && !value) {
@@ -37,8 +52,6 @@ const GameComponent = () => {
       setValue({ scale, translation: { x: 0, y: 0 } })
     }
   }, [dimensions, height, width])
-
-  const { artifact, getNewArtifact } = useRandomArtifact()
 
   const primaryImage = artifact?.images.external[0]
   const additionalImages = artifact?.images.external.slice(1)
@@ -57,20 +70,22 @@ const GameComponent = () => {
 
         <AuthHeader />
 
-        {!dimensions && <div className='fixed flex w-full h-full justify-center items-center overflow-hidden'>Loading...</div>}
+        {(!dimensions || loading) && <div className='fixed flex w-full h-full justify-center items-center overflow-hidden'>Loading...</div>}
 
-        <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
-          <div>
-            <img src={primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} onLoad={({ target: img }) => {
-              setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
-            }} />
-            {additionalImages?.length > 0 && additionalImages.map((img, i) => (
-              <img key={i} src={img} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} />
-            ))}
-          </div>
-        </MapInteractionCSS>
+        {!loading && (
+          <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
+            <div>
+              <img src={primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} onLoad={({ target: img }) => {
+                setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
+              }} />
+              {additionalImages?.length > 0 && additionalImages.map((img, i) => (
+                <img key={i} src={img} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} />
+              ))}
+            </div>
+          </MapInteractionCSS>
+        )}
 
-        {!dimensions ? null : !guessed ? (
+        {(!dimensions || loading) ? null : !guessed ? (
           <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
             '@media (max-width: 500px)': { width: '100vw' }
           }}>
@@ -79,7 +94,7 @@ const GameComponent = () => {
               height: 200,
               '@media (max-width: 500px)': { height: 150 }
             }}>
-              <Map setHover={setHoverCountry} setSelectedCountry={setSelctedCountry} selectedCountry={selectedCountry} />
+              <Map setHover={setHoverCountry} setSelectedCountry={setSelectedCountry} selectedCountry={selectedCountry} />
               {hoverCountry && (
                 <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] absolute bottom-1 right-1 invisible md:visible'>
                   {hoverCountry}
@@ -105,7 +120,7 @@ const GameComponent = () => {
                 <Button
                   onClick={() => {
                     if (!selectedCountry) return toast.error('Select a country!')
-                    else setGuessed(true)
+                    else makeGuess()
                   }}
                   className='w-[82px] justify-center'
                   css={{
@@ -120,19 +135,7 @@ const GameComponent = () => {
               </div>
             </div>
           </div>
-        ) : (
-          <ArtifactInfo
-            artifact={artifact}
-            getNewArtifact={() => {
-              getNewArtifact()
-              setGuessed(false)
-              setSelectedDate(0)
-              setSelctedCountry()
-            }}
-            selectedDate={selectedDate}
-            selectedCountry={selectedCountry}
-          />
-        )}
+        ) : <ArtifactInfo />}
       </div>
     </>
   )
