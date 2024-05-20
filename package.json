@@ -1,5 +1,5 @@
 {
-  "name": "artifact-guesser-monolith",
+  "name": "artifact-guesser",
   "version": "0.0.7",
   "private": true,
   "scripts": {
