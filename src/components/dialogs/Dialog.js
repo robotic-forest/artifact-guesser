@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef, createContext, useContext } from 'react'
 import ReactDOM from 'react-dom'
 import styled from '@emotion/styled'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -7,6 +7,154 @@ import { useMediaQuery } from 'react-responsive'
 import useWindowDimensions from '@/hooks/useWindowDimensions'
 import { IoMdClose } from 'react-icons/io'
 import { IconButton } from '../buttons/IconButton'
+import { Button } from '../buttons/Button'
+
+export const ConfirmDialog = ({
+  msg,
+  visible,
+  closeDialog,
+  confirmText,
+  onConfirm,
+  confirmColor
+}) => {
+
+  return (
+    <Dialog
+      visible={visible}
+      closeDialog={closeDialog}
+    >
+      <div css={{ marginBottom: 32 }}>
+        {msg || 'Are you sure?'}
+      </div>
+      <div css={{ display: 'flex', float: 'right' }}>
+        <Button
+        small
+          css={{ marginRight: 8 }}
+          variant='outlined'
+          onClick={closeDialog}
+        >
+          Cancel
+        </Button>
+        <Button onClick={onConfirm} color={confirmColor}>
+          {confirmText || 'Confirm'}
+        </Button>
+      </div>
+    </Dialog>
+  )
+}
+
+const PromiseDialogContext = createContext()
+
+export const useConfirmation = () => useContext(PromiseDialogContext)
+
+export const PromiseDialog = ({ children }) => {
+  const [confirmationState, setConfirmationState] = useState(null)
+
+  const awaitingPromiseRef = useRef()
+
+  const openConfirmation = options => {
+    setConfirmationState(options)
+    return new Promise(resolve => {
+      awaitingPromiseRef.current = { resolve }
+    })
+  }
+
+  const handleClose = () => {
+    if (awaitingPromiseRef.current) {
+      awaitingPromiseRef.current.resolve(false)
+    }
+
+    setConfirmationState(null)
+  }
+
+  const onSubmit = data => {
+    
+    if (awaitingPromiseRef.current) {
+      awaitingPromiseRef.current.resolve(data)
+    }
+
+    setConfirmationState(null)
+  }
+
+  return (
+    <>
+      <PromiseDialogContext.Provider value={openConfirmation} children={children} />
+      <Dialog
+        visible={!!confirmationState}
+        closeDialog={() => handleClose()}
+        contentStyle={{ width: 600 }}
+      >
+        {confirmationState?.title && (
+          <div css={{
+            marginBottom: 10 
+          }}>
+            <b>{confirmationState?.title}</b>
+          </div>
+        )}
+        {confirmationState?.description && (
+          <div css={{
+            marginBottom: 16
+          }}>
+            {confirmationState?.description}
+          </div>
+        )}
+        {confirmationState?.form && (
+          <PromiseDialogForm {...{ confirmationState, onSubmit, handleClose }} />
+        )}
+        {!confirmationState?.form && (
+          <div css={{ display: 'flex', float: 'right' }}>
+            {!confirmationState?.noCancel && (
+              <Button
+                small
+                css={{ marginRight: 10 }}
+                variant='outlined'
+                onClick={handleClose}
+              >
+                {confirmationState?.cancelText || 'Cancel'}
+              </Button>
+            )}
+            <Button onClick={onSubmit} color={confirmationState?.confirmColor}>
+              {confirmationState?.confirmText || 'Confirm'}
+            </Button>
+          </div>
+        )}
+      </Dialog>
+    </>
+  )
+}
+
+const PromiseDialogForm = ({ confirmationState, onSubmit, handleClose }) => {
+  const formProps = useForm({
+    defaultValues: confirmationState.formDefaults
+  })
+
+  return (
+    <form onSubmit={formProps.handleSubmit(onSubmit)}>
+      <div css={{
+        marginBottom: 16
+      }}>
+        <FormProvider {...formProps}>
+          {confirmationState?.form(formProps)}
+        </FormProvider>
+        <div css={{ display: 'flex', float: 'right' }}>
+          {!confirmationState.noCancel && (
+            <Button
+              css={{ marginRight: 10 }}
+              variant='outlined'
+              onClick={handleClose}
+            >
+              Cancel
+            </Button>
+          )}
+          <Button type='submit'>
+            {confirmationState?.confirmText || 'Confirm'}
+          </Button>
+        </div>
+      </div>
+    </form>
+  )
+}
+
 
 export const Dialog = props => {
 

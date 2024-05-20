@@ -5,6 +5,7 @@ export const convertMet = object => ({
   culture: object.culture || object.department,
   medium: object.medium,
   dimensions: object.dimensions,
+  isHighlight: object.isHighlight,
   location: {
     country: object.country,
     county: object.county,

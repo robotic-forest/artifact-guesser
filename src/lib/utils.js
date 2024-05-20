@@ -2,7 +2,7 @@ import axios from "axios"
 
 // Don't put server-side code here
 
-export const browser = () => typeof window !== 'undefined'
+export const isBrowser = () => typeof window !== 'undefined'
 
 export const email = async args => axios.post('/api/sendEmail', args)
 
@@ -15,6 +15,13 @@ export const getUser = async req => {
   }
 
   return user
+}
+
+export const uploadFiles = async (uploadProps, setProcessing) => {
+  if (uploadProps.files.length > 0) {
+    setProcessing && setProcessing('Uploading Files...')
+    await axios.post('/api/upload', uploadProps.createFormData(), { 'content-type': 'multipart/form-data' })
+  }
 }
 
 const googleGeoCoding = async addressLine => {

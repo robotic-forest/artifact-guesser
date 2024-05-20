@@ -3,8 +3,12 @@ import { v4 as uuidv4 } from 'uuid'
 import React, { forwardRef, useState } from 'react'
 import { useMediaQuery } from 'react-responsive'
 import { Tooltip } from "react-tooltip"
+import { createPortal } from 'react-dom'
+import dynamic from 'next/dynamic'
 
-export const IconButton = forwardRef(({
+export const IconButton = dynamic(() => Promise.resolve(IconButtonComponent), { ssr: false })
+
+const IconButtonComponent = forwardRef(({
   children,
   style,
   tooltip,
@@ -26,16 +30,29 @@ export const IconButton = forwardRef(({
 
   return (
     <>
-      <IconButtonUI onClick={!disabled ? onClick : () => {}}
-        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-        data-tooltip-id={toolTipId} data-tooltip-content={tooltip} data-tooltip-place={tooltipPlace}
+      <IconButtonUI
+        onClick={!disabled ? onClick : () => {}}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        data-tooltip-id={toolTipId}
+        data-tooltip-content={tooltip}
+        data-tooltip-place={tooltipPlace}
         {...{ ref, disabled, size, innerSize, hc, ri }}
         {...props}
       >
         {React.cloneElement(children, { hover: hover ? String(hover) : 'undefined' })}
       </IconButtonUI>
-      {tooltip && !disabled && !isMobile && (
-        <Tooltip id={toolTipId} style={{ backgroundColor: "#33", color: "white", padding: '2px 6px' }} />
+      {tooltip && !disabled && process.browser && !isMobile && createPortal(
+        <Tooltip
+          id={toolTipId}
+          style={{
+            backgroundColor: "#333",
+            color: "white",
+            padding: '2px 6px',
+            zIndex: 1000
+          }}
+        />,
+        document.getElementById('__next')
       )}
     </>
   )
@@ -59,7 +76,7 @@ const IconButtonUI = styled.a`
   & > * { transform: ${p => p.ri ? `rotate(${p.ri}deg)` : 'none'} }
 
   &:hover {
-    background: ${p => p.disabled ? 'transparent' : '#424242'};
-    color: ${p => p.hc || 'white'};
+    background: ${p => p.disabled ? 'transparent' : 'var(--textVeryLowOpacity27)'};
+    color: ${p => p.hc || 'var(--textColor)'};
   }
 `

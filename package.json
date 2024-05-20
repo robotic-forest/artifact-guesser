@@ -24,6 +24,7 @@
     "node-mailjet": "^6.0.5",
     "polished": "^4.2.2",
     "react": "18.2.0",
+    "react-data-table-component": "^7.6.2",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.4",
     "react-hot-toast": "^2.4.1",
@@ -37,11 +38,13 @@
     "react-spinners": "^0.13.8",
     "react-textarea-autosize": "^8.5.3",
     "react-tooltip": "^5.18.0",
+    "react-use-file-upload": "^0.9.5",
     "react-use-measure": "^2.1.1",
     "sha1": "^1.1.1",
+    "styled-components": "^6.1.11",
     "swr": "^2.2.5",
     "three": "^0.154.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",
