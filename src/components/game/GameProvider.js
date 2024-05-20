@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import useUser from "../../hooks/useUser"
-import useSWR from "swr"
 import axios from "axios"
 import { convertCountries } from "@/lib/artifactUtils"
 
@@ -20,8 +19,6 @@ export const GameProvider = ({ children }) => {
   const [selectedDate, setSelectedDate] = useState(0)
   const [selectedCountry, setSelectedCountry] = useState()
   const [loading, setLoading] = useState(false)
-
-  console.log(game)
 
   // if logged in, get game info from user, otherwise get from localStorage, otherwise initialize game
   useEffect(() => {
@@ -72,6 +69,7 @@ export const GameProvider = ({ children }) => {
     } else {
       if (startNew) localStorage.removeItem('game')
       else localStorage.setItem('game', JSON.stringify(newGame))
+      if (startNew) setGame(null)
     }
   }
 
