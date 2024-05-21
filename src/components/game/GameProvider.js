@@ -38,6 +38,7 @@ export const GameProvider = ({ children }) => {
           const { data: newArtifact } = await axios.get('/api/artifacts/random')
 
           const newGame = {
+            startedAt: new Date(),
             round: 1,
             rounds: 5,
             score: 0,

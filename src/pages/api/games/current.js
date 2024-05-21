@@ -14,6 +14,7 @@ const current = async (req, res) => {
     const artifact = await getRandomArtifact()
 
     const newGame = {
+      startedAt: new Date(),
       userId: user._id.toString(),
       ongoing: true,
       round: 1,
