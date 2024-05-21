@@ -61,13 +61,13 @@ export const SignupDialog = ({ open, onClose }) => {
                 message: "Only lowercase alphanumeric allowed."
               },
               maxLength: {
-                value: 8,
-                message: "Must have 10 or less characters"
+                value: 12,
+                message: "Must have 12 or less characters"
               }
             }}
           />
           <div css={{ fontSize: '0.8em', marginBottom: '1em', position: 'relative', top: -8 }}>
-            Only lowercase letters and numbers allowed. Max 10 characters.
+            Only lowercase letters and numbers allowed. Max 12 characters.
           </div>
           <FormInput
             type='password'
