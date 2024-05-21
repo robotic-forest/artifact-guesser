@@ -135,6 +135,8 @@ export const GameProvider = ({ children }) => {
   }
 
   const startNewGame = () => {
+    setSelectedCountry(null)
+    setSelectedDate(0)
     updateGame({ ...game, ongoing: false }, true)
   }
 

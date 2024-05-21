@@ -43,6 +43,7 @@ const GameUI = () => {
   const [value, setValue] = useState()
   const [hoverCountry, setHoverCountry] = useState()
 
+  // BUG: new artifact gets loaded, zoom doesnt adjust
   useEffect(() => {
     if (dimensions && height && width && !value) {
       const w = width / dimensions.width
