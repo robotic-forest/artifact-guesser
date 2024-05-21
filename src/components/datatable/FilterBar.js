@@ -236,7 +236,6 @@ export const FilterBar = ({
                     display: 'none'
                   },
                 }}>
-                  
                   {customFilter}
                 </div>
               )}
@@ -269,12 +268,7 @@ export const FilterBar = ({
             </div>
           </div>
         </div>
-        {filterItems.length === 0 && noLayoutShift && (
-          <div css={{
-            width: '100%',
-            height: 41
-          }} />
-        )}
+        {filterItems.length === 0 && noLayoutShift && <div css={{ width: '100%', height: 41 }} />}
         {filterItems.length > 0 && (
           <div css={{
             padding: '0 0px 8px 0px',

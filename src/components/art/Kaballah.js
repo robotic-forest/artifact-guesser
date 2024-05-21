@@ -167,7 +167,7 @@ export const SuperKaballah = ({ n = 3, style, speed = 1000, smol }) => {
         radius={0}
         unit={smol ? 6 : 8}
         speed={speed}
-        fill={`#000000${smol ? '88' : ''}`}
+        fill={`#ffffff${smol ? '88' : ''}`}
         style={{ position: 'absolute' }}
       />
       {n> 1 && <AnimatedKaballah
@@ -175,7 +175,7 @@ export const SuperKaballah = ({ n = 3, style, speed = 1000, smol }) => {
         unit={smol ? 10 : 12}
         maxNodes={smol ? 8 : 16} 
         speed={speed}
-        fill={`#000000${smol ? '66' : '88'}`}
+        fill={`#ffffff${smol ? '66' : '88'}`}
         style={{ position: 'absolute', transform: 'rotate(180deg)' }}
       />}
       {n > 2 && <AnimatedKaballah
@@ -183,7 +183,7 @@ export const SuperKaballah = ({ n = 3, style, speed = 1000, smol }) => {
         radius={0}
         unit={smol ? 10 : 16}
         speed={speed}
-        fill={`#000000${smol ? '22' : '44'}`}
+        fill={`#ffffff${smol ? '22' : '44'}`}
         style={{ position: 'absolute', transform: 'rotate(180deg)' }}
       />}
     </div>

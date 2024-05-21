@@ -55,15 +55,15 @@ export const Intergram = ({
       <Multigram
         nodeNumber={nodes}
         diameter={diameter}
-        color={props.color ? props.color : hover ? 'var(--t2)' : 'var(--t)'}
+        color={props.color ? props.color : hover ? 'var(--textColorextLowOpacity)' : 'var(--textColor)'}
         nodeObjectOptions={{
-          stroke: props.color ? props.color : 'var(--t)',
+          stroke: props.color ? props.color : 'var(--textColor)',
           multiplier: props.color ? 1.5 : 0.5,
-          fill: props.color ? props.color : 'var(--t)',
+          fill: props.color ? props.color : 'var(--textColor)',
           strokeWidth: 1,
         }}
         circleOptions={{
-          fill: props.background ? props.background : 'var(--bg)',
+          fill: props.background ? props.background : 'var(--backgroundColor)',
           strokeWidth: 2.5
         }}
         {...props}
@@ -86,7 +86,7 @@ export const Multigram = ({
     fill: 'none',
     strokeWidth: 0,
   },
-  color = 'var(--t)',
+  color = 'var(--textColor)',
   onMouseEnter,
   onMouseLeave,
   style

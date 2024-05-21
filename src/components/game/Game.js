@@ -14,6 +14,9 @@ import Head from "next/head"
 import dynamic from "next/dynamic"
 import { GameInfo } from "../gameui/GameInfo"
 import { GameProvider, useGame } from "./GameProvider"
+import { AnimatedIntergram } from "../art/Multigram"
+import { SuperKaballah } from "../art/Kaballah"
+import { LoadingArtifact } from "../loading/LoadingArtifact"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -35,7 +38,8 @@ const GameUI = () => {
     guessed,
     makeGuess,
     artifact,
-    loading
+    loading,
+    setLoading
   } = useGame()
   
   const { height, width } = useWindowDimensions()
@@ -43,16 +47,18 @@ const GameUI = () => {
   const [value, setValue] = useState()
   const [hoverCountry, setHoverCountry] = useState()
 
+  const stringifiedDimensions = JSON.stringify(dimensions)
+
   // BUG: new artifact gets loaded, zoom doesnt adjust
   useEffect(() => {
-    if (dimensions && height && width && !value) {
+    if (dimensions && height && width) {
       const w = width / dimensions.width
       const h = height / dimensions.height
       const scale = Math.min(w, h)
 
       setValue({ scale, translation: { x: 0, y: 0 } })
     }
-  }, [dimensions, height, width])
+  }, [stringifiedDimensions])
 
   const primaryImage = artifact?.images.external[0]
   const additionalImages = artifact?.images.external.slice(1)
@@ -71,20 +77,19 @@ const GameUI = () => {
 
         <AuthHeader />
 
-        {(!dimensions || loading) && <div className='fixed flex w-full h-full justify-center items-center overflow-hidden'>Loading...</div>}
+        {loading && <LoadingArtifact />}
 
-        {!loading && (
-          <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
-            <div>
-              <img src={primaryImage} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} onLoad={({ target: img }) => {
-                setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
-              }} />
-              {additionalImages?.length > 0 && additionalImages.map((img, i) => (
-                <img key={i} src={img} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} />
-              ))}
-            </div>
-          </MapInteractionCSS>
-        )}
+        <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
+          <div>
+            <img src={primaryImage} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }} onLoad={({ target: img }) => {
+              setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
+              setLoading(false)
+            }} />
+            {additionalImages?.length > 0 && additionalImages.map(img => (
+              <img key={img} src={img} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} />
+            ))}
+          </div>
+        </MapInteractionCSS>
 
         {(!dimensions || loading) ? null : !guessed ? (
           <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 

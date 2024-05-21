@@ -18,7 +18,7 @@ export const GameProvider = ({ children }) => {
   const [game, setGame] = useState()
   const [selectedDate, setSelectedDate] = useState(0)
   const [selectedCountry, setSelectedCountry] = useState()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   // if logged in, get game info from user, otherwise get from localStorage, otherwise initialize game
   useEffect(() => {
@@ -113,11 +113,9 @@ export const GameProvider = ({ children }) => {
 
     setSelectedCountry(null)
     setSelectedDate(0)
-
     setLoading(true)
-    const { data: newArtifact } = await axios.get('/api/artifacts/random')
-    setLoading(false)
 
+    const { data: newArtifact } = await axios.get('/api/artifacts/random')
     const newGame = {
       ...game,
       round: game.round + 1,
@@ -138,6 +136,7 @@ export const GameProvider = ({ children }) => {
   const startNewGame = () => {
     setSelectedCountry(null)
     setSelectedDate(0)
+    setLoading(true)
     updateGame({ ...game, ongoing: false }, true)
   }
 
@@ -153,7 +152,9 @@ export const GameProvider = ({ children }) => {
       guessed,
       makeGuess,
       startNextRound,
-      startNewGame
+      startNewGame,
+      loading,
+      setLoading
     }}>
       {children}
     </GameContext.Provider>
