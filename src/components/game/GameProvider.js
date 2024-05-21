@@ -26,10 +26,14 @@ export const GameProvider = ({ children }) => {
       if (user?.isLoggedIn) {
         const { data } = await axios.get('/api/games/current')
         setGame(data)
+        if (data.roundData[data.round - 1].selectedDate) setSelectedDate(data.roundData[data.round - 1].selectedDate)
+        if (data.roundData[data.round - 1].selectedCountry) setSelectedCountry(data.roundData[data.round - 1].selectedCountry)
       } else if (user && !user?.isLoggedIn) {
         const game = JSON.parse(localStorage.getItem('game'))
         if (game) {
           setGame(game)
+          if (game.roundData[game.round - 1].selectedDate) setSelectedDate(game.roundData[game.round - 1].selectedDate)
+          if (game.roundData[game.round - 1].selectedCountry) setSelectedCountry(game.roundData[game.round - 1].selectedCountry)
         } else {
           const { data: newArtifact } = await axios.get('/api/artifacts/random')
 
