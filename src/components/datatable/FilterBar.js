@@ -176,7 +176,7 @@ export const FilterBar = ({
                   css={{
                     fontSize: '0.9em',
                     padding: '4px 16px 4px 32px',
-                    height: 25,
+                    height: 28,
                     border: `1px solid var(--textVeryLowOpacity)`,
                     borderRadius: 5,
                     marginRight: 8,
@@ -194,13 +194,15 @@ export const FilterBar = ({
                     <button
                       css={{
                         position: 'absolute',
-                        right: 8,
-                        top: -8,
+                        right: 14,
+                        top: -12,
                         background: 'transparent',
                         display: 'inline-flex',
+                        alignItems: 'center',
                         border: 'none',
                         outline: 'none',
                         cursor: 'pointer',
+                        fontSize: '0.9em',
                         '&:hover': {
                           color: 'var(--primaryColor)'
                         }

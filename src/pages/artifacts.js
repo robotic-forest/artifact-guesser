@@ -5,7 +5,12 @@ export default () => {
 
   return (
     <Layout title='Artifacts List'>
-      <ArtifactsList />
+      <ArtifactsList
+        searchFields={[
+          { label: 'Name', value: 'name' },
+          { label: 'Country', value: 'location.country' },
+        ]}
+      />
     </Layout>
   )
 }

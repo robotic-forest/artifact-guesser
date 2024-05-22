@@ -58,6 +58,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields }) => {
       {...sort}
       noDataComponent='No artifacts found with this filter.'
       highlightOnHover
+      onRowClicked={r => window.open(r.source.url, '_blank')}
     />
   )
 }

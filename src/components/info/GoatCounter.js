@@ -33,7 +33,7 @@ const Views = ({ amount, unit, title }) => {
     <div css={{
       marginRight: 16
     }}>
-      {title}: {data?.total || <span className='text-white/50'>N/A</span>}
+      {title}: {data?.total}
     </div>
   )
 }

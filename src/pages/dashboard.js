@@ -27,9 +27,9 @@ export default () => {
       </div>
       <div className='flex flex-wrap'>
         <GoatStats /> 
-        <DashInfo title={<><GiAmphora className='mr-2'/>Artifacts</>} count={artifacts} />
-        <DashInfo title={<><GiAbstract042 className='text-sm mr-2'/>Games played</>} count={games} />
-        <DashInfo title={<><FaUser className='text-sm mr-2'/>Accounts</>} count={accounts} />
+        <DashInfo title={<><GiAmphora className='mr-2'/>Artifacts</>} count={artifacts} url='/artifacts' />
+        <DashInfo title={<><GiAbstract042 className='text-sm mr-2'/>Games played</>} count={games} url='/games' />
+        <DashInfo title={<><FaUser className='text-sm mr-2'/>Accounts</>} count={accounts} url='/accounts' />
       </div>
     </Layout>
   )

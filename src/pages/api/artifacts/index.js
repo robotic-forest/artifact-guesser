@@ -7,6 +7,8 @@ const artifacts = async (req, res) => {
   const db = await initDB()
 
   const criteria = req.query.filter && processCriteria(JSON.parse(req.query.filter))
+  console.log(criteria)
+
   const page = parseFloat(req.query.page) || 1
   const perPage = parseFloat(req.query.per_page) || 0
   const sort = req.query.sort && JSON.parse(req.query.sort)
