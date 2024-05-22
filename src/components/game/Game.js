@@ -2,7 +2,7 @@ import useWindowDimensions from "@/hooks/useWindowDimensions"
 import { useEffect, useState } from "react"
 import { MapInteractionCSS } from 'react-map-interaction'
 import { AuthHeader } from "@/components/layout/AuthHeader"
-import { GiGreekSphinx } from "react-icons/gi"
+import { GiAmphora, GiGreekSphinx } from "react-icons/gi"
 import { IoMdEye } from "react-icons/io"
 import { ArtifactInfo } from "@/components/gameui/ArtifactInfo"
 import { Range } from "@/components/form/FormRange"
@@ -15,6 +15,9 @@ import { GameInfo } from "../gameui/GameInfo"
 import { GameProvider, useGame } from "./GameProvider"
 import { LoadingArtifact } from "../loading/LoadingArtifact"
 import { GameButton } from "../buttons/GameButton"
+import Link from "next/link"
+import { MenuButton } from "../layout/Layout"
+import { artifactsTheme } from "@/pages/artifacts"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -68,9 +71,16 @@ const GameUI = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <div css={{ height: '100vh', width: '100vw' }}>
-        <div className='fixed flex items-center m-1 top-0 left-0 bg-black z-10 p-[1px_5px] rounded-[4px] text-sm overflow-hidden'>
-          <GiGreekSphinx className='mr-2' />
-          Artifact Guesser
+        <div className='fixed flex items-center m-1 top-0 left-0 text-sm z-[10]'>
+          <div className='flex items-center bg-black p-[2px_7px_2px_5px] rounded-[4px] overflow-hidden'>
+            <GiGreekSphinx className='mr-2' />
+            Artifact Guesser
+          </div>
+          <Link href='/artifacts'>
+            <MenuButton size={20} className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
+              <GiAmphora />
+            </MenuButton>
+          </Link>
         </div>
 
         <AuthHeader />

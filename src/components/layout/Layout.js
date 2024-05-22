@@ -12,9 +12,10 @@ import { dashbaordTheme } from "@/pages/dashboard"
 import { artifactsTheme } from "@/pages/artifacts"
 import { gamesTheme } from "@/pages/games"
 import { accountTheme } from "@/pages/accounts"
+import { ResumeGameButton } from "./components/ResumeGameButton"
 
 export const Layout = ({ title, theme, children }) => {
-  const { logout } = useUser()
+  const { logout, user } = useUser()
 
   const styles = theme && css`
     ${themeCSS(theme)}
@@ -30,49 +31,40 @@ export const Layout = ({ title, theme, children }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <div className='flex w-[100%]' css={styles}>
-        <div className='sticky top-0 h-[100vh] min-h-[100vh] flex flex-col justify-between items-center' css={{
-          background: 'var(--backgroundColorSlightlyLight)',
-        }}>
-          <div className=' flex flex-col items-center p-2 z-50'>
-            <Link href='/' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <IconButton tooltip='Resume Game' className='mt-1.5 mb-6' css={{
-                background: '#000000',
-                color: '#ffffff',
-                '&:hover': {
-                  background: '#ffffff',
-                  color: '#000000',
-                }
-              }}>
-                <GiGreekSphinx />
+        {user?.isLoggedIn && (
+          <div className='sticky top-0 h-[100vh] min-h-[100vh] flex flex-col justify-between items-center' css={{
+            background: 'var(--backgroundColorSlightlyLight)',
+          }}>
+            <div className=' flex flex-col items-center p-2 z-50'>
+              <ResumeGameButton className='mt-1.5 mb-6' />
+              <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                <MenuButton tooltip='Dashboard' className='mb-3' theme={dashbaordTheme}>
+                  <MdDashboard />
+                </MenuButton>
+              </Link>
+              <Link href='/artifacts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                <MenuButton tooltip='Artifacts' className='mb-3' theme={artifactsTheme}>
+                  <GiAmphora />
+                </MenuButton>
+              </Link>
+              <Link href='/games' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                <MenuButton tooltip='Games' className='mb-3' theme={gamesTheme}>
+                  <GiAbstract042 />
+                </MenuButton>
+              </Link>
+              <Link href='/accounts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                <MenuButton tooltip='Accounts' className='mb-3' theme={accountTheme}>
+                  <FaUser className='text-xs' />
+                </MenuButton>
+              </Link>
+            </div>
+            <div className='p-2'>
+              <IconButton onClick={logout} tooltip='Logout'>
+                <GrLogout />
               </IconButton>
-            </Link>
-            <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <MenuButton tooltip='Dashboard' className='mb-3' theme={dashbaordTheme}>
-                <MdDashboard />
-              </MenuButton>
-            </Link>
-            <Link href='/artifacts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <MenuButton tooltip='Artifacts' className='mb-3' theme={artifactsTheme}>
-                <GiAmphora />
-              </MenuButton>
-            </Link>
-            <Link href='/games' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <MenuButton tooltip='Games' className='mb-3' theme={gamesTheme}>
-                <GiAbstract042 />
-              </MenuButton>
-            </Link>
-            <Link href='/accounts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <MenuButton tooltip='Accounts' className='mb-3' theme={accountTheme}>
-                <FaUser className='text-xs' />
-              </MenuButton>
-            </Link>
+            </div>
           </div>
-          <div className='p-2'>
-            <IconButton onClick={logout} tooltip='Logout'>
-              <GrLogout />
-            </IconButton>
-          </div>
-        </div>
+        )}
         <div className='relative p-3' css={{
           flexGrow: 1,
           overflowY: 'auto',
@@ -84,10 +76,16 @@ export const Layout = ({ title, theme, children }) => {
   )
 }
 
-const MenuButton = ({ theme, children, ...props }) => {
+export const MenuButton = ({ theme, children, ...props }) => {
+  const styles = theme && css`
+    ${themeCSS(theme)}
+    background-color: var(--backgroundColor);
+    color: var(--textColor);
+    font-size: var(--fs);
+  `
 
   return (
-    <IconButton {...props} css={themeCSS(theme)}>
+    <IconButton {...props} css={{ ...styles, ...props.css }}>
       {children}
     </IconButton>
   )

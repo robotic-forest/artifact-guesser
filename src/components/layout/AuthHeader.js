@@ -47,8 +47,16 @@ export const AuthHeader = () => {
             <GameButton onClick={() => setLoginOpen(true)}>
               Log in
             </GameButton>
-            <GameButton onClick={() => setSignupOpen(true)} css={{ marginLeft: 4 }}>
-              Sign Up
+            <GameButton
+              onClick={() => setSignupOpen(true)}
+              css={{
+                marginLeft: 4,
+                background: '#E4C1F4',
+                color: '#000000',
+                ':hover': { background: '#CCA5DE' }
+              }}
+            >
+              <b>Sign Up</b>
             </GameButton>
           </>
         )}
