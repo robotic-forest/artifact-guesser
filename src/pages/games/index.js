@@ -7,11 +7,17 @@ import { GiAbstract042 } from 'react-icons/gi'
 import { useGames } from '@/hooks/games/useGames'
 import { useAccount } from '@/hooks/accounts/useAccount'
 
+export const gamesTheme =  {
+  backgroundColor: '#abb4f5',
+  primaryColor: '#ffc160',
+  textColor: '#000000',
+}
+
 export default () => {
   const { user, loading } = useUser()
   
   return !loading && (
-    <Layout>
+    <Layout title='Games' theme={gamesTheme}>
       <FilterBar
         title={(
           <b className='flex items-center'>
@@ -19,7 +25,6 @@ export default () => {
             Games
           </b>
         )}
-        noLayoutShift
         // searchFields={[
         //   { label: 'Last Name', value: 'lastName' },
         //   { label: 'First Name', value: 'firstName' },

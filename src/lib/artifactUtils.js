@@ -16,6 +16,8 @@ export const convertCountries = country => {
   return country
 }
 
+export const formatDateRange = (start, end) => start == end ? formatDate(start) : `${formatDate(start)} → ${formatDate(end)}`
+
 export const formatDate = d => {
   const date = String(d)
   if (!date) return
@@ -27,7 +29,7 @@ export const formatDate = d => {
   }
 }
 
-export const formatLoaction = l => {
+export const formatLocation = l => {
   if (!l) return
 
   let s = ''

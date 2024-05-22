@@ -1,21 +1,23 @@
 import { useGoat } from "@/hooks/useGoat"
 import moment from "moment"
+import { Tag } from "../tag/Tag"
+import { Spinner } from "../loading/Spinner"
 
 export const GoatStats = () => {
   
   return (
     <a href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
-      <div className='text-sm p-3 mr-2 mb-2 flex items-center cursor-pointer hover:bg-white/10' css={{
-        border: '1px solid var(--textVeryLowOpacity)',
+      <div className='p-3 mr-2 mb-2 flex items-center cursor-pointer' css={{
         borderRadius: 4,
         display: 'flex',
         flexFlow: 'row wrap',
         width: 'fit-content',
-        minHeight: 49.6
+        background: 'var(--backgroundColorBarelyLight)',
+        '&:hover': { background: 'var(--backgroundColorSlightlyLight)' }
       }}>
-        <Views {...{ amount: 10, unit: 'years', title: 'All Time' }} />
-        <Views {...{ amount: 1, unit: 'month', title: 'Last Month' }} />
-        <Views {...{ amount: 1, unit: 'day', title: 'Last Day' }} />
+        <Views {...{ amount: 10, unit: 'years', title: 'All time' }} />
+        <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
+        <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />
       </div>
     </a>
   )
@@ -30,10 +32,11 @@ const Views = ({ amount, unit, title }) => {
   })
 
   return (
-    <div css={{
+    <div className='flex items-center' css={{
       marginRight: 16
     }}>
-      {title}: {data?.total}
+      <span css={{ color: 'var(--textLowOpacity)', marginRight: 10 }}>{title}</span>
+      {data?.total ? <Tag bold big noBorder>{data?.total}</Tag> : <Spinner />}
     </div>
   )
 }

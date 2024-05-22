@@ -4,13 +4,14 @@ import { useAccount } from '@/hooks/accounts/useAccount'
 import { InfoBox } from '@/components/info/InfoBox'
 import useUser from '@/hooks/useUser'
 import { Layout } from '@/components/layout/Layout'
+import { accountTheme } from '..'
 
 export default function Account() {
   const { account } = useAccount()
   const { loading } = useUser({ redirectTo: '/' })
 
   return loading ? null : (
-    <Layout>
+    <Layout theme={accountTheme}>
       <div css={{
         display: 'flex',
         flexDirection: 'row',

@@ -508,7 +508,7 @@ export const minimalistStyles = {
 }
 
 export const superMinimalistStyles = {
-  control: (provided, state) => {
+  control: (provided) => {
     return {
       ...provided,
       background: 'transparent',
@@ -541,18 +541,19 @@ export const superMinimalistStyles = {
     }
   },
   placeholder: (provided) => {
-    const theme = useTheme()
     return {
       ...provided,
       fontWeight: 600,
-      color: theme.palette.text.primary
+      color: 'var(--textLowOpacity)'
     }
   },
   dropdownIndicator: (provided) => { 
     return {
       ...provided,
       padding: 0,
-      marginLeft: 4
+      marginLeft: 4,
+      color: 'var(--textLowOpacity)',
+      '&:hover': { color: 'var(--textColor)' },
     }
   },
   input: (provided) => { 

@@ -6,9 +6,22 @@ import Link from "next/link"
 import useUser from "@/hooks/useUser"
 import { GrLogout } from "react-icons/gr"
 import { FaUser } from "react-icons/fa"
+import { css } from "@emotion/react"
+import { themeCSS } from "../GlobalStyles"
+import { dashbaordTheme } from "@/pages/dashboard"
+import { artifactsTheme } from "@/pages/artifacts"
+import { gamesTheme } from "@/pages/games"
+import { accountTheme } from "@/pages/accounts"
 
-export const Layout = ({ title, children }) => {
+export const Layout = ({ title, theme, children }) => {
   const { logout } = useUser()
+
+  const styles = theme && css`
+    ${themeCSS(theme)}
+    background-color: var(--backgroundColor);
+    color: var(--textColor);
+    font-size: var(--fs);
+  `
 
   return (
     <>
@@ -16,31 +29,42 @@ export const Layout = ({ title, children }) => {
         <title>{title || 'Artifact Guesser'}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className='flex w-[100vw]'>
-        <div className='sticky top-0 h-screen flex flex-col justify-between items-center'>
-            <div className=' flex flex-col items-center p-2 z-50'>
+      <div className='flex w-[100%]' css={styles}>
+        <div className='sticky top-0 h-[100vh] min-h-[100vh] flex flex-col justify-between items-center' css={{
+          background: 'var(--backgroundColorSlightlyLight)',
+        }}>
+          <div className=' flex flex-col items-center p-2 z-50'>
             <Link href='/' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <GiGreekSphinx className='mt-2 mb-6' />
+              <IconButton tooltip='Resume Game' className='mt-1.5 mb-6' css={{
+                background: '#000000',
+                color: '#ffffff',
+                '&:hover': {
+                  background: '#ffffff',
+                  color: '#000000',
+                }
+              }}>
+                <GiGreekSphinx />
+              </IconButton>
             </Link>
             <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <IconButton tooltip='Dashboard' className='mb-3'>
+              <MenuButton tooltip='Dashboard' className='mb-3' theme={dashbaordTheme}>
                 <MdDashboard />
-              </IconButton>
+              </MenuButton>
             </Link>
             <Link href='/artifacts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <IconButton tooltip='Artifacts' className='mb-3'>
+              <MenuButton tooltip='Artifacts' className='mb-3' theme={artifactsTheme}>
                 <GiAmphora />
-              </IconButton>
+              </MenuButton>
             </Link>
             <Link href='/games' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <IconButton tooltip='Games' className='mb-3'>
+              <MenuButton tooltip='Games' className='mb-3' theme={gamesTheme}>
                 <GiAbstract042 />
-              </IconButton>
+              </MenuButton>
             </Link>
             <Link href='/accounts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-              <IconButton tooltip='Accounts' className='mb-3'>
+              <MenuButton tooltip='Accounts' className='mb-3' theme={accountTheme}>
                 <FaUser className='text-xs' />
-              </IconButton>
+              </MenuButton>
             </Link>
           </div>
           <div className='p-2'>
@@ -50,11 +74,21 @@ export const Layout = ({ title, children }) => {
           </div>
         </div>
         <div className='relative p-3' css={{
-          flexGrow: 1
+          flexGrow: 1,
+          overflowY: 'auto',
         }}>
           {children}
         </div>
       </div>
     </>
+  )
+}
+
+const MenuButton = ({ theme, children, ...props }) => {
+
+  return (
+    <IconButton {...props} css={themeCSS(theme)}>
+      {children}
+    </IconButton>
   )
 }

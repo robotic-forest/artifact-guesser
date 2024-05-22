@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { Button } from "@/components/buttons/Button"
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
 import useUser from "@/hooks/useUser"
 import { SignupDialog } from "@/components/dialogs/SignupDialog"
@@ -8,6 +7,7 @@ import { IconButton } from "@/components/buttons/IconButton"
 import { GrLogout } from "react-icons/gr"
 import Link from "next/link"
 import { MdDashboard } from "react-icons/md"
+import { GameButton } from "../buttons/GameButton"
 
 export const AuthHeader = () => {
   const { user, isAdmin, logout } = useUser()
@@ -44,12 +44,12 @@ export const AuthHeader = () => {
         )}
         {!user?.isLoggedIn && (
           <>
-            <Button onClick={() => setLoginOpen(true)}>
+            <GameButton onClick={() => setLoginOpen(true)}>
               Log in
-            </Button>
-            <Button onClick={() => setSignupOpen(true)} css={{ marginLeft: 4 }}>
+            </GameButton>
+            <GameButton onClick={() => setSignupOpen(true)} css={{ marginLeft: 4 }}>
               Sign Up
-            </Button>
+            </GameButton>
           </>
         )}
       </div>

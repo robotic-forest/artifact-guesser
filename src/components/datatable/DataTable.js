@@ -15,14 +15,14 @@ createTheme('default', {
     secondary: 'var(--textLowOpacity)',
   },
   background: {
-    default: 'var(--backgroundColor)',
+    default: 'transparent',
   },
   context: {
     background: 'var(--backgroundColor)',
     text: 'var(--textColor)',
   },
   divider: {
-    default: 'var(--textVeryLowOpacity27)',
+    default: 'var(--backgroundColorSlightlyDark)',
   },
 }, 'dark')
 
@@ -43,25 +43,46 @@ export const DataTable = ({ noDataComponent, customStyles, info, scrollOverflow,
         },
       },
     },
+    headRow: {
+      style: {
+        backgroundColor: 'var(--backgroundColor)',
+        minHeight: '52px',
+        borderBottomWidth: '1px',
+        borderBottomColor: 'transparent',
+        borderBottomStyle: 'solid',
+      }
+    },
     headCells: {
       style: {
-          paddingLeft: '0px', // override the cell padding for head cells
+          paddingLeft: '8px', // override the cell padding for head cells
           paddingRight: '8px',
       },
     },
     cells: {
       style: {
-          paddingLeft: '0px', // override the cell padding for data cells
+          paddingLeft: '8px', // override the cell padding for data cells
           paddingRight: '8px',
       },
     },
     rows: {
+      style: {
+        background: 'var(--backgroundColorBarelyDark)',
+        '&:first-of-type': {
+          borderTopLeftRadius: '6px',
+          borderTopRightRadius: '6px',
+        },
+        '&:last-of-type': {
+          borderBottomLeftRadius: '6px',
+          borderBottomRightRadius: '6px',
+        },
+      },
       highlightOnHoverStyle: {
         color: 'var(--textColor)',
-        backgroundColor: 'var(--ghostText)',
-        borderBottomColor: 'var(--textVeryLowOpacity27)',
+        backgroundColor: 'var(--backgroundColorSliightlyDark)',
+        borderBottomColor: 'var(--backgroundColorSlightlyDark)',
+        transition: 'all 0.3s ease',
         cursor: 'pointer',
-        outline: 'none'
+        outline: 'none',
       }
     },
     pagination: {
@@ -79,7 +100,7 @@ export const DataTable = ({ noDataComponent, customStyles, info, scrollOverflow,
     responsiveWrapper: {
       style: {
         overflowX: scrollOverflow ? 'auto' : 'unset',
-        overflowY: 'unset'
+        overflowY: 'unset',
       },
     },
   }
@@ -99,7 +120,6 @@ export const DataTable = ({ noDataComponent, customStyles, info, scrollOverflow,
       }
       noDataComponent={(
         <div css={{
-          border: '1px solid var(--textSuperLowOpacity)',
           borderRadius: 'var(--br)',
           padding: 16,
           width: '100%',

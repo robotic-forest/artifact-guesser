@@ -18,8 +18,7 @@ export const Loading = ({ inline, style, children, color, center }) => {
       height: 52,
       width: '100%',
       borderRadius: 'var(--br)',
-      border: '1px solid var(--textVeryLowOpacity27)',
-      background: 'var(--textSuperLowOpacity)',
+      background: 'var(--backgroundColorBarelyDark)',
       display: 'grid',
       placeItems: 'center',
     }

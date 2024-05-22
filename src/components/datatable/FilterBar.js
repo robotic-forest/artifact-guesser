@@ -9,9 +9,10 @@ import moment from 'moment'
 import { ToggleButton } from './components/ToggleButton'
 import { useQuery } from '@/hooks/useQuery'
 import { FormTextArea, Input, ReactSelect } from '../form/Form'
-import { delabelize, isNumeric } from '@/lib/utils'
+import { delabelize, isNumeric, renderMdbFilter } from '@/lib/utils'
 import { labelize } from '../form/formUtils'
 import { Button } from '../buttons/Button'
+import { EditableDate } from '../gameui/EditableDate'
 
 // create filtercontext
 const FilterContext = createContext(null)
@@ -101,8 +102,11 @@ export const FilterBar = ({
     return acc
   }, {})
 
+  // convert strings to regex n moere
+  const finalFilter = renderMdbFilter(purgedFilter, filterItems)
+
   return (
-    <FilterContext.Provider value={{ filter: purgedFilter, hiddenFields }}>
+    <FilterContext.Provider value={{ filter: finalFilter, hiddenFields }}>
       <div css={style}>
         <div css={{
           display: 'flex',
@@ -111,13 +115,15 @@ export const FilterBar = ({
           alignItems: 'center',
           marginBottom: 12,
         }}>
-          <div>
+          <div css={{
+            marginBottom: 8
+          }}>
             {title}
           </div>
           <div css={{
             display: 'flex',
-            flexFlow: 'row wrap',
             alignItems: 'center',
+            marginBottom: 8
           }}>
             <div css={{
               marginRight: 10,
@@ -152,20 +158,25 @@ export const FilterBar = ({
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
-                width: 320,
+                flexGrow: 1,
                 top: 1,
                 marginRight: renderFilter ? 4 : 0,
-                maxHeight: 25,
-                '@media (max-width: 696px)': {
-                  right: 0,
-                  width: 'calc(100vw - 32px)',
-                  marginRight: 0
+                height: 28,
+                background: 'var(--backgroundColorSlightlyLight)',
+                borderRadius: 5,
+                marginRight: 8,
+                paddingTop: 2,
+                transition: 'all 0.2s ease-in-out',
+                '&:focus': {
+                  background: 'var(--backgroundColorLight)',
+                  boxShadow: '0 2px 5px 0px var(--textSuperLowOpacity)'
                 },
+                '&:hover': {
+                  background: 'var(--backgroundColorLight)',
+                  boxShadow: '0 2px 5px 0px var(--textSuperLowOpacity)'
+                }
               }}>
-                <BiSearch id='search-icon' color='var(--primaryColor)' css={{
-                  position: 'absolute',
-                  left: 8,
-                }} />
+                <BiSearch css={{ margin: '0 4px 0 8px', minWidth: 18 }} />
                 <Input
                   type='text'
                   naked
@@ -175,17 +186,9 @@ export const FilterBar = ({
                   spellCheck={false}
                   css={{
                     fontSize: '0.9em',
-                    padding: '4px 16px 4px 32px',
-                    height: 28,
-                    border: `1px solid var(--textVeryLowOpacity)`,
-                    borderRadius: 5,
-                    marginRight: 8,
-                    '&:hover': {
-                      border: `1px solid var(--textKindaLowOpacity)`,
-                    },
-                    '&:focus': {
-                      border: `1px solid var(--textKindaLowOpacity)`,
-                    },
+                    padding: '4px 8px 7px 4px',
+                    background: 'transparent',
+                    flexGrow: 1,
                   }}
                 />
                 <Dropdown
@@ -193,9 +196,9 @@ export const FilterBar = ({
                   button={
                     <button
                       css={{
-                        position: 'absolute',
-                        right: 14,
-                        top: -12,
+                        position: 'relative',
+                        top: -2,
+                        marginRight: 8,
                         background: 'transparent',
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -204,7 +207,7 @@ export const FilterBar = ({
                         cursor: 'pointer',
                         fontSize: '0.9em',
                         '&:hover': {
-                          color: 'var(--primaryColor)'
+                          color: 'var(--textLowOpacity)'
                         }
                       }}
                     >
@@ -228,9 +231,9 @@ export const FilterBar = ({
             <div css={{
               display: 'flex',
               flexFlow: 'row wrap',
-              '@media (max-width: 696px)': {
-                width: '100%'
-              },
+              // '@media (max-width: 696px)': {
+              //   width: '100%'
+              // },
             }}>
               {(toggleFields?.length > 0 || customFilter) && (
                 <div css={{
@@ -241,7 +244,7 @@ export const FilterBar = ({
                   {customFilter}
                 </div>
               )}
-              {renderedButtons && (
+              {renderedButtons?.length > 0 && (
                 <div css={{
                   marginLeft: 'auto',
                   '@media (max-width: 696px)': {
@@ -252,9 +255,11 @@ export const FilterBar = ({
                     top={8}
                     button={
                       minimal ? (
-                        <IconButton iconSize={16} tooltip='Filter' tooltipPlace='top'>
-                          <BiFilter />
-                        </IconButton>
+                        <div>
+                          <IconButton iconSize={16} tooltip='Filter' tooltipPlace='top'>
+                            <BiFilter />
+                          </IconButton>
+                        </div>
                       ) : (
                         <Button css={{ padding: '1px 9px' }}>
                           <BiFilter style={{ fontSize: '1.3em', marginRight: 6 }} />
@@ -281,7 +286,7 @@ export const FilterBar = ({
               <div
                 key={item.name}
                 css={{
-                  border: '1px solid var(--textVeryLowOpacity)',
+                  boxShadow: '0 2px 5px 0px var(--textSuperLowOpacity)',
                   display: 'flex',
                   alignItems: 'center',
                   borderRadius: 6,
@@ -316,20 +321,31 @@ export const FilterBar = ({
                   borderRadius: 6,
                   padding: '4px 4px 4px 8px',
                   width: 'fit-content',
-                  '&:hover': {
-                    backgroundColor: 'var(--ghostText)'
-                  },
                   transition: 'background-color 0.1s ease-in-out',
                   margin: '0 6px 4px 0',
                   userSelect: 'none',
                   height: 29,
                   color: `var(--textLowOpacity)`,
-                  border: '1px solid var(--textVeryLowOpacity)',
+                  background: 'var(--backgroundColorBarelyLight)',
+                  '&:hover': {
+                    backgroundColor: 'var(--backgroundColorSlightlyLight)'
+                  },
+                  boxShadow: '0 2px 5px 0px var(--textSuperLowOpacity)'
                 }}
               >
-                {item.contents}
+                <span>
+                  {item.contents}
+                </span>
                 {['date'].includes(item.type) && (
                   <FilterDateInput filterValue={filter[item.name]} setFilter={setFilter} item={item} />
+                )}
+                {['year'].includes(item.type) && (
+                  <EditableDate
+                    value={Number(filter[item.name])}
+                    onChange={(v) => setFilter((f) => ({ ...f, [item.name]: v }))}
+                    dropDownPlace='bottom'
+                    className='relative top-[-1px]'
+                  />
                 )}
                 {item.type === 'text' && (
                   <FormTextArea
@@ -409,8 +425,12 @@ export const FilterBar = ({
                 {!item.forceOpen && (
                   <IconButton
                     size={20}
-                    style={{
-                      marginLeft: 2
+                    css={{
+                      marginLeft: 4,
+                      background: 'transparent',
+                      '&:hover': {
+                        background: 'var(--textSuperLowOpacity)'
+                      }
                     }}
                     onClick={() => {
                       setFilterItems((f) => f.filter((i) => i.name !== item.name))
@@ -447,12 +467,13 @@ const FilterDateInput = ({ filterValue, setFilter, item }) => {
     <input
       type='date'
       css={{
-        padding: 1,
+        padding: '0 2px',
         outline: 0,
         boxShadow: 'none',
         border: 'none',
         background: 'none',
         position: 'relative',
+        lineHeight: 20,
         marginLeft: 8
       }}
       value={value}

@@ -107,17 +107,18 @@ const ConfirmDropdown = ({ closeDropdown, confirm }) => {
 
 export const SimpleButton = styled.button`
   width: 100%;
-  padding: 4px 6px;
+  padding: 3px 7px;
   border-radius: 4px;
   cursor: ${p => p.disabled ? 'default' : 'pointer'};
-  background: var(--backgoroundColor);
+  background: var(--backgroundColor);
   border: none;
   font-size: 1em;
   text-align: start;
   color:  ${p => p.disabled ? 'var(--textLowOpacity)' : 'var(--textColor)'};
+  transition: background 0.2s ease;
 
   &:hover {
-    background: ${p => p.disabled ? 'none' : 'var(--textVeryLowOpacity)'};
+    background: ${p => p.disabled ? 'none' : 'var(--textSuperLowOpacity)'};
   }
 `
 
@@ -130,7 +131,7 @@ const DropDownUI = styled.div`
   box-shadow: 0 5px 25px -5px var(--textVeryLowOpacity);
   border-radius: 8px;
   width: 240px;
-  padding: ${p => p.dense ? '2px 8px' : '8px'};
+  padding: ${p => p.dense ? '2px 8px' : '5px'};
 
   & > .info {
     border-bottom: 1px solid var(--textSuperLowOpacity);

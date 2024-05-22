@@ -1,12 +1,11 @@
 import { VscLinkExternal } from "react-icons/vsc"
-import { Button } from "../buttons/Button"
 import { IoIosArrowRoundForward } from "react-icons/io"
-import { FaHeart } from "react-icons/fa"
 import { IconButton } from "../buttons/IconButton"
 import { DetailsDoubleItem, DetailsItem } from "../info/Details"
-import { formatDate, formatLoaction, formatTime } from "@/lib/artifactUtils"
+import { formatDateRange, formatLocation, formatTime } from "@/lib/artifactUtils"
 import { GameInfo } from "./GameInfo"
 import { useGame } from "../game/GameProvider"
+import { GameButton } from "../buttons/GameButton"
 
 export const ArtifactInfo = () => {
   const { game, artifact, startNextRound, startNewGame, currentRound, selectedDate, selectedCountry } = useGame()
@@ -33,10 +32,7 @@ export const ArtifactInfo = () => {
             <div>Your Guess</div>
           </div>
           <div className='flex justify-between items-start mb-1'>
-            {artifact?.time.start == artifact?.time.end
-              ? formatDate(artifact?.time.start)
-              : `${formatDate(artifact?.time.start)} → ${formatDate(artifact?.time.end)}`
-            }
+            {formatDateRange(artifact?.time.start, artifact?.time.end)}
             <div
               className='p-[0px_4px] rounded text-black flex'
               css={{ background: datePoints === 100 ? '#7ae990' : datePoints > 50 ? '#ffc045' : datePoints > 0 ? '#ff7145' :'#ff9999' }}
@@ -65,7 +61,7 @@ export const ArtifactInfo = () => {
           </div>
           <div className='flex justify-between'>
             {points === 200 ? 'Perfect! Thats amazing!' : points > 160 ? 'Wow, impressive!' : points > 100 ? 'Not bad!' : points > 0 ? 'Oh well. Try again!' : 'Oof.'}
-            <Button
+            <GameButton
               onClick={isLastRound ? startNewGame : startNextRound}
               className='relative right-[-5px]'
               css={{
@@ -76,7 +72,7 @@ export const ArtifactInfo = () => {
             >
               <IoIosArrowRoundForward className='mr-1' />
               {isLastRound ? 'Start New Game' : 'Next Artifact'}
-            </Button>
+            </GameButton>
           </div>
         </div>
         <div className='pt-1' css={{
@@ -130,12 +126,12 @@ const ExtraInfo = ({ artifact }) => {
             target='_blank'
             rel='noreferrer'
           >
-            <Button css={{ padding: '2px 6px', '@media (max-width: 800px)': { display: 'none' } }}>
+            <GameButton css={{ padding: '2px 6px', '@media (max-width: 800px)': { display: 'none' } }}>
               <VscLinkExternal className='mr-2 text-xs' />
               <span className='relative -top-[1px]'>
                 Source
               </span>
-            </Button>
+            </GameButton>
             <IconButton css={{
               '@media (min-width: 800px)': { display: 'none' },
               border: '1px solid #ffffff66',
@@ -148,7 +144,7 @@ const ExtraInfo = ({ artifact }) => {
       </div>
       <div>
         <DetailsDoubleItem mb={12}
-          item1={{ label: 'Location', value: formatLoaction(artifact?.location) }}
+          item1={{ label: 'Location', value: formatLocation(artifact?.location) }}
           item2={{ label: 'Time', value: formatTime(artifact?.time) }}
         />
         <DetailsDoubleItem mb={8}

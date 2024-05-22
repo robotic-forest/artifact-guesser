@@ -11,6 +11,7 @@ import { useAccount } from '@/hooks/accounts/useAccount'
 import { AccountForm } from '@/components/form/accounts/AccountForm'
 import { Layout } from '@/components/layout/Layout'
 import useUser from '@/hooks/useUser'
+import { accountTheme } from '..'
 
 export default () => {
   const { account } = useAccount()
@@ -44,7 +45,7 @@ const EditAccount = ({ account }) => {
   }
 
   return (!user?.isLoggedIn || editDisabled) ? null : processing ? <Loading>{processing}</Loading> : (
-    <Layout>
+    <Layout theme={accountTheme}>
       <FormProvider {...methods}>
         <AccountForm
           title='Edit Account'

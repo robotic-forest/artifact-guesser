@@ -13,25 +13,31 @@ import { IconButton } from '@/components/buttons/IconButton'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { DataTable } from '@/components/datatable/DataTable'
 import { ConfirmDialog } from '@/components/dialogs/Dialog'
+import { FiLogIn } from 'react-icons/fi'
+
+export const accountTheme = {
+  backgroundColor: '#91c3cb',
+  primaryColor: '#f3a8a8',
+  textColor: '#000000',
+}
 
 export default () => {
   const { loading } = useUser({ roles: ['Admin'] })
   
   return !loading && (
-    <Layout>
+    <Layout title='Accounts' theme={accountTheme} >
       <FilterBar
         title={(
           <b className='flex items-center'>
-            <BsFillPersonFill className='mr-3 text-lg relative top-[-1px]' />
+            <BsFillPersonFill className='mr-3' />
             Accounts Overview
           </b>
         )}
         noLayoutShift
-        // searchFields={[
-        //   { label: 'Last Name', value: 'lastName' },
-        //   { label: 'First Name', value: 'firstName' },
-        //   { label: 'Email', value: 'email' }
-        // ]}
+        searchFields={[
+          { label: 'Username', value: 'username' },
+          { label: 'Email', value: 'email' }
+        ]}
         renderFilter={[]}
       >
         <AccountList />
@@ -41,9 +47,9 @@ export default () => {
 }
 
 const AccountList = () => {
-  const { mdbFilter } = useFilter()
+  const { filter } = useFilter()
 
-  const { accounts, mutate, pagination, sort } = useAccounts({ filter: mdbFilter || {}, sort: true, paginate: true })
+  const { accounts, mutate, pagination, sort } = useAccounts({ filter, sort: true, paginate: true })
 
   return (
     <div>
@@ -138,17 +144,17 @@ const AccountActions = ({ row, mutate }) => {
         }}
         confirmColor='#ef7e7e'
       />
-      <div css={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
+      <div css={{ display: 'flex', width: '100%', justifyContent: 'flex-end', marginRight: 8 }}>
         <Link href={`/accounts/${row._id}`} passHref>
-          <Button small as='a' css={{ marginRight: 6 }} variant='outlined'>View</Button>
+          <Button small as='a' variant='outlined'>View</Button>
         </Link>
         {!editDisabled && (
           <Link href={`/accounts/${row._id}/edit`} passHref>
-            <Button small as='a' css={{ marginRight: 6 }} variant='outlined'>Edit</Button>
+            <Button small as='a' css={{ marginLeft: 6 }} variant='outlined'>Edit</Button>
           </Link>
         )}
         {!deleteDisabled && (
-          <IconButton size={22} tooltip='Delete' onClick={() => setShowDelete(true)}>
+          <IconButton size={22} tooltip='Delete' css={{ marginLeft: 6 }} onClick={() => setShowDelete(true)}>
             <AiFillDelete color='#ff7d7d' />
           </IconButton>
         )}

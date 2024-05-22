@@ -1,7 +1,6 @@
 import useWindowDimensions from "@/hooks/useWindowDimensions"
 import { useEffect, useState } from "react"
 import { MapInteractionCSS } from 'react-map-interaction'
-import { Button } from "@/components/buttons/Button"
 import { AuthHeader } from "@/components/layout/AuthHeader"
 import { GiGreekSphinx } from "react-icons/gi"
 import { IoMdEye } from "react-icons/io"
@@ -14,9 +13,8 @@ import Head from "next/head"
 import dynamic from "next/dynamic"
 import { GameInfo } from "../gameui/GameInfo"
 import { GameProvider, useGame } from "./GameProvider"
-import { AnimatedIntergram } from "../art/Multigram"
-import { SuperKaballah } from "../art/Kaballah"
 import { LoadingArtifact } from "../loading/LoadingArtifact"
+import { GameButton } from "../buttons/GameButton"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -122,8 +120,12 @@ const GameUI = () => {
                 <div className='bg-[#69aacb] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] mr-1' css={{ flexGrow: 1 }}>
                   {selectedCountry ? <b>{selectedCountry}</b> : <span className='text-black/60'>No country selected</span>}
                 </div>
-                <EditableDate {...{ selectedDate, setSelectedDate }} />
-                <Button
+                <EditableDate {...{
+                  value: selectedDate,
+                  onChange: setSelectedDate,
+                  className: `mr-1 bg-[#90d6f8] text-black rounded-[3px]`
+                }} />
+                <GameButton
                   onClick={() => {
                     if (!selectedCountry) return toast.error('Select a country!')
                     else makeGuess()
@@ -137,7 +139,7 @@ const GameUI = () => {
                 >
                   <IoMdEye className='mr-2' />
                   Guess
-                </Button>
+                </GameButton>
               </div>
             </div>
           </div>

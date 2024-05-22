@@ -72,11 +72,12 @@ const IconButtonUI = styled.a`
   color: var(--t);
   position: relative;
   user-select: none;
+  transition: background 0.2s ease;
 
   & > * { transform: ${p => p.ri ? `rotate(${p.ri}deg)` : 'none'} }
 
   &:hover {
-    background: ${p => p.disabled ? 'transparent' : '#303030'};
+    background: ${p => p.disabled ? 'transparent' : 'var(--backgroundColorSlightlyDark)'};
     color: ${p => p.hc || 'var(--textColor)'};
   }
 `

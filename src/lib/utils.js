@@ -24,6 +24,43 @@ export const uploadFiles = async (uploadProps, setProcessing) => {
   }
 }
 
+export const renderMdbFilter = (filter, filterItems) => {
+  // if filter is empty Object
+  if (Object.keys(filter).length === 0 && filter.constructor === Object) return {}
+
+  const mdbFilter = {}
+  for (const key of Object.keys(filter)) {
+    // General keys
+    if (Array.isArray(filter[key])) {
+      mdbFilter[key] = { $in: filter[key] }
+    }
+
+    if (typeof filter[key] === 'string') {
+      const filterItem = filterItems?.find(item => item.name === key)
+
+      if (filterItem?.type === 'multi-select') mdbFilter[key] = filter[key].split(',')
+      if (filterItem?.type === 'date') mdbFilter[key] = filter[key] // do nuthin
+      if (filterItem?.type === 'year') mdbFilter[key] = filter[key] // do nuthin
+      else mdbFilter[key] = { $regex: filter[key], $options: 'i' }
+    }
+
+    if (typeof filter[key] === 'boolean') {
+      mdbFilter[key] = filter[key]
+    }
+
+    if (typeof filter[key] === 'object' && filter[key] !== null) {
+      if (filter[key].hasOwnProperty('value')) {
+        mdbFilter[key] = filter[key].value
+      } else {
+        mdbFilter[key] = filter[key]
+      }
+    }
+  }
+
+  return mdbFilter
+}
+
+
 const googleGeoCoding = async addressLine => {
   try {
     const r = await axios.get(

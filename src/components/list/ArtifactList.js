@@ -1,8 +1,9 @@
-import { formatLoaction, formatTime } from "@/lib/artifactUtils"
+import { formatDateRange, formatLocation, formatTime } from "@/lib/artifactUtils"
 import { DataTable } from "../datatable/DataTable"
-import FilterBar, { useFilter } from "../datatable/FilterBar"
+import FilterBar, { buildFilterItems, useFilter } from "../datatable/FilterBar"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { GiAmphora } from "react-icons/gi"
+import { MdCalendarMonth } from "react-icons/md"
 
 export const ArtifactsList = ({
   title,
@@ -19,10 +20,10 @@ export const ArtifactsList = ({
   return (
     <FilterBar
       title={title || (
-        <div css={{ display: 'flex', alignItems: 'center' }}>
+        <b className='flex items-center'>
           <GiAmphora css={{ marginRight: 8 }} />
           Artifacts
-        </div>
+        </b>
       )}
       renderFilter={artifactFilter.filter(f => !excludeFilters?.includes(f.name))}
       toggleFields={toggleFields}
@@ -59,11 +60,93 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields }) => {
       noDataComponent='No artifacts found with this filter.'
       highlightOnHover
       onRowClicked={r => window.open(r.source.url, '_blank')}
+      scrollOverflow
     />
   )
 }
 
-const artifactFilter = []
+const artifactFilter = [
+  {
+    name: 'startDateAfter',
+    filter: (setFilterItems) => {
+      const contents = (
+        <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
+          <MdCalendarMonth css={{  marginRight: 8 }} color='var(--textLowOpacity)' />
+          Start Date After
+        </span>
+      )
+
+      return {
+        contents,
+        onClick: (init) => buildFilterItems(setFilterItems, init, {
+          name: 'startDateAfter',
+          type: 'year',
+          contents
+        })
+      }
+    }
+  },
+  {
+    name: 'startDateBefore',
+    filter: (setFilterItems) => {
+      const contents = (
+        <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
+          <MdCalendarMonth css={{  marginRight: 8 }} color='var(--textLowOpacity)' />
+          Start Date Before
+        </span>
+      )
+
+      return {
+        contents,
+        onClick: (init) => buildFilterItems(setFilterItems, init, {
+          name: 'startDateBefore',
+          type: 'year',
+          contents
+        })
+      }
+    }
+  },
+  {
+    name: 'endDateAfter',
+    filter: (setFilterItems) => {
+      const contents = (
+        <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
+          <MdCalendarMonth css={{  marginRight: 8 }} color='var(--textLowOpacity)' />
+          End Date After
+        </span>
+      )
+
+      return {
+        contents,
+        onClick: (init) => buildFilterItems(setFilterItems, init, {
+          name: 'endDateAfter',
+          type: 'year',
+          contents
+        })
+      }
+    }
+  },
+  {
+    name: 'endDateBefore',
+    filter: (setFilterItems) => {
+      const contents = (
+        <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
+          <MdCalendarMonth css={{  marginRight: 8 }} color='var(--textLowOpacity)' />
+          End Date Before
+        </span>
+      )
+
+      return {
+        contents,
+        onClick: (init) => buildFilterItems(setFilterItems, init, {
+          name: 'endDateBefore',
+          type: 'year',
+          contents
+        })
+      }
+    }
+  }
+]
 
 const artifactColumns = [
   {
@@ -83,7 +166,7 @@ const artifactColumns = [
           <img
             src={r.images.thumbnail || r.images.external[0]}
             alt={r.name}
-            css={{ width: 26, height: 26, margin: '5px 10px 5px 0', borderRadius: 4 }}
+            css={{ width: 26, height: 26, margin: '6px 10px 6px 0', borderRadius: 4 }}
           />
           {r.name}
         </div>
@@ -93,10 +176,12 @@ const artifactColumns = [
   },
   {
     name: 'Location',
-    selector: r => formatLoaction(r.location),
+    selector: r => formatLocation(r.location),
+    grow: 0.5
   },
   {
     name: 'Time',
-    selector: r => formatTime(r.time),
+    selector: r => formatDateRange(r.time.start, r.time.end),
+    grow: 0.5
   }
 ]
