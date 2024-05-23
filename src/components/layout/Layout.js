@@ -5,7 +5,7 @@ import { GiAbstract042, GiAmphora, GiGreekSphinx } from "react-icons/gi"
 import Link from "next/link"
 import useUser from "@/hooks/useUser"
 import { GrLogout } from "react-icons/gr"
-import { FaUser } from "react-icons/fa"
+import { FaHeart, FaUser } from "react-icons/fa"
 import { css } from "@emotion/react"
 import { themeCSS } from "../GlobalStyles"
 import { dashbaordTheme } from "@/pages/dashboard"
@@ -49,7 +49,7 @@ export const Layout = ({ title, theme, children }) => {
                 </MenuButton>
               </Link>
               <Link href='/artifacts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuButton tooltip='Artifacts' className='mb-3' theme={artifactsTheme}>
+                <MenuButton tooltip='Artifact Database' className='mb-3' theme={artifactsTheme}>
                   <GiAmphora />
                 </MenuButton>
               </Link>
@@ -64,7 +64,12 @@ export const Layout = ({ title, theme, children }) => {
                 </MenuButton>
               </Link>
             </div>
-            <div className='p-2'>
+            <div className='p-2 flex flex-col justify-between items-center'>
+              <Link href='/favorites' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                <MenuButton tooltip='Favorites' className='mb-3' theme={artifactsTheme}>
+                  <FaHeart color='#ff4f4f' />
+                </MenuButton>
+              </Link>
               <IconButton onClick={logout} tooltip='Logout'>
                 <GrLogout />
               </IconButton>
