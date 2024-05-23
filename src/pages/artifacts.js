@@ -27,6 +27,7 @@ export default () => {
         searchFields={[
           { label: 'Name', value: 'name' },
           { label: 'Country', value: 'location.country' },
+          { label: 'Medium', value: 'medium' },
         ]}
       />
     </Layout>

@@ -175,16 +175,22 @@ const artifactColumns = [
         </div>
       )
     },
-    grow: 1
+    grow: 0.8
   },
   {
     name: 'Location',
-    selector: r => formatLocation(r.location),
+    // selector: r => formatLocation(r.location),
+    selector: r => r.location.country,
     grow: 0.5
   },
   {
     name: 'Time',
     selector: r => formatDateRange(r.time.start, r.time.end),
     grow: 0.5
+  },
+  {
+    name: 'Medium',
+    selector: r => r.medium,
+    grow: 0.4
   }
 ]

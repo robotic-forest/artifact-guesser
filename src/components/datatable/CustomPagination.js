@@ -21,7 +21,11 @@ export const CustomPagination = props => {
       justifyContent: 'space-between',
       alignItems: 'center',
       fontSize: '0.9em',
-      marginTop: 8
+      marginTop: 8,
+      position: 'relative',
+      '@media (max-width: 870px)': {
+        top: -16
+      }
     }}>
       <div>
         {info}
@@ -33,9 +37,9 @@ export const CustomPagination = props => {
         alignItems: 'center'
       }}>
         <span css={{
-          marginRight: 16
+          marginRight: 8
         }}>
-          Rows per page
+          Rows
         </span>
         <div css={{
 
@@ -49,7 +53,7 @@ export const CustomPagination = props => {
             onChange={v => onChangeRowsPerPage(v.value)}
           />
         </div>
-        <span css={{ marginRight: 16 }}>
+        <span css={{ marginRight: 12 }}>
           {`${(currentPage - 1) * rowsPerPage + 1}-${Math.min(currentPage * rowsPerPage, rowCount)} of ${rowCount}`}
         </span>
         <TablePaginationActions
@@ -66,7 +70,7 @@ export const CustomPagination = props => {
 const TablePaginationActions = ({ count, page, rowsPerPage, onChangePage }) => {
 
   return (
-    <>
+    <div className='flex items-center'>
       <IconButton
         iconSize={18}
         onClick={() => onChangePage(1)}
@@ -112,6 +116,6 @@ const TablePaginationActions = ({ count, page, rowsPerPage, onChangePage }) => {
       >
         <MdLastPage />
       </IconButton>
-    </>
+    </div>
   )
 }
