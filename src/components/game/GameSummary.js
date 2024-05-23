@@ -4,48 +4,22 @@ import { ArtifactInfo } from "../gameui/RoundSummary/components/ArtifactInfo"
 import { RoundScore } from "../gameui/RoundSummary/components/RoundScore"
 import { YourGuess } from "../gameui/RoundSummary/components/YourGuess"
 import { useGame } from "./GameProvider"
-import { MapInteractionCSS } from 'react-map-interaction'
-import useMeasure from "react-use-measure"
-import useWindowDimensions from "@/hooks/useWindowDimensions"
-import { useEffect, useState } from "react"
-import { IconGenerator } from "../art/IconGenerator"
+import { useState } from "react"
 import useUser from "@/hooks/useUser"
 import { SignupDialog } from "../dialogs/SignupDialog"
+import { Img } from "../html/Img"
 
 export const GameSummary = () => {
   const [signupOpen, setSignupOpen] = useState(false)
   const { user } = useUser()
   const { startNewGame } = useGame()
 
-  const [ref, bounds] = useMeasure()
-  const { height, width } = useWindowDimensions()
-  const [value, setValue] = useState()
-
-  useEffect(() => {
-    if (bounds && height && width) {
-      const w = width / bounds.width
-      const h = height / bounds.height
-      const scale = Math.min(w, h)
-
-      setValue({ scale, translation: { x: w, y: h } })
-    }
-  }, [bounds])
-
   return (
     <>
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
-      <div css={{ '@media (max-width: 700px)': { display: 'none' } }}>
-        <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
-          <div ref={ref} css={{ opacity: bounds ? 1 : 0, marginTop: '10vh' }}>
-            <GameSummaryUI />
-          </div>
-        </MapInteractionCSS>
-      </div>
 
-      <div css={{ '@media (min-width: 700px)': { display: 'none' } }}>
-        <div css={{ marginTop: '8vh', padding: 4, width: '100vw' }}>
-          <GameSummaryUI />
-        </div>
+      <div css={{ marginTop: '8vh', padding: 4, width: '100vw' }}>
+        <GameSummaryUI />
       </div>
 
       <div className='fixed p-3 py-4 bottom-0 right-0 z-10 flex flex-wrap items-center select-none'
@@ -102,26 +76,36 @@ const GameSummaryUI = () => {
           </div>
         </div>
       </div>
-      <div className='flex' css={{
-        '@media (max-width: 800px)': { flexDirection: 'column' }
-      }}>
+      <div className='flex flex-wrap justify-center gap-6 m-2'>
         {game.roundData?.map(round => {
+          const imgs = round.artifact?.images.external
           
           return (
-            <div className='m-2'>
-              <div className='mb-2 text-lg text-center'>
+            <div className='mb-8 w-full md:w-[calc(48%)] lg:w-[calc(30%)]' css={{
+              '@media (min-width: 2400px)': { width: '18%' },
+            }}>
+              <div className='mb-3 text-xl text-center'>
                 <b>Round {round.round}</b>
               </div>
               <YourGuess {...round} />
               <RoundScore isSummary points={round.points} />
               <ArtifactInfo artifact={round.artifact} style={{ marginTop: 8 }} />
-              {round.artifact?.images.external.map((img, i) => (
-                <img key={i} src={img} css={{
-                  minWidth: 400, marginTop: 16, borderRadius: 4,
-                  '@media (max-width: 800px)': { minWidth: '100%', maxWidth: '100%' },
-                }} />
-              ))}
-              <div css={{
+              <div className='mb-2 mt-3'>
+                Images (Click to zoom):
+              </div>
+              <div className='flex flex-wrap'>
+                {imgs.map((img, i) => (
+                  <Img key={i} src={img} css={{
+                    width: imgs?.length === 1 ? '100%' : imgs?.length === 2 ? 'calc(50% - 4px)' : 72,
+                    margin: '0 4px 4px 0',
+                    '&:last-of-type': { marginRight: 0 },
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    ':hover': { opacity: 0.7, transition: 'all 0.2s' }
+                  }} />
+                ))}
+              </div>
+              {/* <div css={{
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'center',
@@ -130,7 +114,7 @@ const GameSummaryUI = () => {
                 '@media (min-width: 800px)': { display: 'none' }
               }}>
                 <IconGenerator />
-              </div>
+              </div> */}
             </div>
           )
         })}

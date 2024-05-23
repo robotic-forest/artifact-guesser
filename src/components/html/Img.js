@@ -5,7 +5,7 @@ export const Img = ({ src, source, ...p }) => {
   const [imageView, setImageView] = useState(false)
 
   return (
-    <div>
+    <>
       <ImageViewDialog
         closeDialog={() => setImageView(false)}
         visible={imageView}
@@ -17,7 +17,6 @@ export const Img = ({ src, source, ...p }) => {
         onClick={() => setImageView(src)}
         {...p}
       />
-      {source && <a href={source} target='_blank'>Source</a>}
-    </div>
+    </>
   )
 }

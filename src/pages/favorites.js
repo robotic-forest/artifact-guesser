@@ -3,7 +3,6 @@ import { ResumeGameButton } from "@/components/layout/components/ResumeGameButto
 import { ArtifactsList } from "@/components/list/ArtifactList"
 import useUser from "@/hooks/useUser"
 import { FaHeart } from "react-icons/fa"
-import { GiAmphora } from "react-icons/gi"
 
 export const artifactsTheme =  {
   backgroundColor: '#dfbf9e',
@@ -20,9 +19,8 @@ export default () => {
         title={(
           <div className='flex items-center font-bold'>
             {!isAdmin && <ResumeGameButton />}
-            <GiAmphora css={{ marginRight: 8, marginLeft: !isAdmin ? 8 : 0 }} />
+            <FaHeart color='#ff4f4f' css={{ marginRight: 8, marginLeft: !isAdmin ? 8 : 0 }} />
             Favorite Artifacts
-            <FaHeart color='#ff4f4f' css={{ marginLeft: 8 }} />
           </div>
         )}
         minimal
