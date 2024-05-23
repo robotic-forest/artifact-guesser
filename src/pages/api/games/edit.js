@@ -12,7 +12,13 @@ async function editGame(req, res) {
   const game = await db.collection('games').findOne({ _id: new ObjectId(_id) })
   if (game.userId !== user._id.toString()) return res.send({ success: false, error: 'You do not have permission to update this game' })
 
-  await db.collection('games').updateOne({ _id: new ObjectId(_id) }, { $set: data })
+  // remove artifact so as not to save it within a game object
+  const processedRounds = data.roundData.map(round => {
+    const { artifact, ...rest } = round
+    return rest
+  })
+
+  await db.collection('games').updateOne({ _id: new ObjectId(_id) }, { $set: { ...data, roundData: processedRounds } })
   res.send({ success: true })
 }
 

@@ -14,7 +14,8 @@ export const ArtifactsList = ({
   searchFields,
   customFilter,
   toggleFields,
-  minimal
+  minimal,
+  isFavorites
 }) => {
 
   return (
@@ -35,15 +36,17 @@ export const ArtifactsList = ({
       <ArtifactsDataTable
         baseFilter={baseFilter}
         excludeFields={excludeFields}
+        isFavorites={isFavorites}
       />
     </FilterBar>
   )
 }
 
-const ArtifactsDataTable = ({ baseFilter, excludeFields }) => {
+const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites }) => {
   const { filter, hiddenFields } = useFilter()
   const { artifacts, pagination, sort } = useArtifacts({
     filter: { ...baseFilter, ...filter },
+    isFavorites,
     paginate: true,
     sort: true
   })

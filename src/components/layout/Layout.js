@@ -22,6 +22,12 @@ export const Layout = ({ title, theme, children }) => {
     background-color: var(--backgroundColor);
     color: var(--textColor);
     font-size: var(--fs);
+
+    body, html {
+      background-color: var(--backgroundColor);
+      color: var(--textColor);
+      font-size: var(--fs);
+    }
   `
 
   return (

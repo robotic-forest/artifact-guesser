@@ -120,10 +120,11 @@ export const DataTable = ({ noDataComponent, customStyles, info, scrollOverflow,
       }
       noDataComponent={(
         <div css={{
-          borderRadius: 'var(--br)',
+          borderRadius: 6,
           padding: 16,
           width: '100%',
-          textAlign: 'center'
+          textAlign: 'center',
+          background: 'var(--backgroundColorBarelyDark)',
         }}>
           {noDataComponent}
         </div>

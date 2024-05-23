@@ -4,7 +4,6 @@ import { MapInteractionCSS } from 'react-map-interaction'
 import { AuthHeader } from "@/components/layout/AuthHeader"
 import { GiAmphora, GiGreekSphinx } from "react-icons/gi"
 import { IoMdEye } from "react-icons/io"
-import { ArtifactInfo } from "@/components/gameui/ArtifactInfo"
 import { Range } from "@/components/form/FormRange"
 import { Map } from "@/components/gameui/Map"
 import toast from "react-hot-toast"
@@ -18,6 +17,8 @@ import { GameButton } from "../buttons/GameButton"
 import Link from "next/link"
 import { MenuButton } from "../layout/Layout"
 import { artifactsTheme } from "@/pages/artifacts"
+import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
+import { GameSummary } from "./GameSummary"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -40,7 +41,8 @@ const GameUI = () => {
     makeGuess,
     artifact,
     loading,
-    setLoading
+    setLoading,
+    isViewingSummary
   } = useGame()
   
   const { height, width } = useWindowDimensions()
@@ -85,21 +87,25 @@ const GameUI = () => {
 
         <AuthHeader />
 
-        {loading && <LoadingArtifact />}
+        {loading && !isViewingSummary && <LoadingArtifact />}
 
-        <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
-          <div>
-            <img src={primaryImage} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }} onLoad={({ target: img }) => {
-              setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
-              setLoading(false)
-            }} />
-            {additionalImages?.length > 0 && additionalImages.map(img => (
-              <img key={img} src={img} css={{ opacity: dimensions ? 1 : 0, transition: 'all 0.4s' }} />
-            ))}
-          </div>
-        </MapInteractionCSS>
+        {isViewingSummary && <GameSummary />}
 
-        {(!dimensions || loading) ? null : !guessed ? (
+        {!isViewingSummary && (
+          <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
+            <div>
+              <img src={primaryImage} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }} onLoad={({ target: img }) => {
+                setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
+                setLoading(false)
+              }} />
+              {additionalImages?.length > 0 && additionalImages.map(img => (
+                <img key={img} src={img} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s' }} />
+              ))}
+            </div>
+          </MapInteractionCSS>
+        )}
+
+        {(!dimensions || loading || isViewingSummary) ? null : !guessed ? (
           <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
             '@media (max-width: 500px)': { width: '100vw' }
           }}>
@@ -153,7 +159,7 @@ const GameUI = () => {
               </div>
             </div>
           </div>
-        ) : <ArtifactInfo />}
+        ) : <RoundSummary />}
       </div>
     </>
   )

@@ -24,7 +24,7 @@ const artifacts = async (req, res) => {
   })
 }
 
-const buildArtifactCriteria = filter => {
+export const buildArtifactCriteria = filter => {
   filter.$and = []
 
   if (filter.startDateAfter) {

@@ -36,8 +36,14 @@ const current = async (req, res) => {
 
     res.send({ ...newGame, _id: insertedId })
   } else {
-    const artifact = await db.collection('artifacts').findOne({ _id: new ObjectId(game.roundData[game.round - 1].artifactId) })
-    game.roundData[game.round - 1].artifact = artifact
+    const artifactIDs = game.roundData.map(round => new ObjectId(round.artifactId))
+    const artifacts = await db.collection('artifacts').find({ _id: { $in: artifactIDs } }).toArray()
+    
+    game.roundData = game.roundData.map(round => {
+      const artifact = artifacts.find(art => art._id.toString() === round.artifactId)
+      return { ...round, artifact }
+    })
+
     res.send(game)
   }
 }

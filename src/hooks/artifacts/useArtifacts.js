@@ -8,7 +8,9 @@ export const useArtifacts = args => {
 
   let apiUrl = args?.total
     ? `/api/artifacts/total`
-    : `/api/artifacts?filter=${JSON.stringify(args?.filter)}`
+    : args?.isFavorites
+      ? `/api/artifacts/favorites?filter=${JSON.stringify(args?.filter)}`
+      : `/api/artifacts?filter=${JSON.stringify(args?.filter)}`
     
   if (args?.sort) apiUrl += sort.url
   

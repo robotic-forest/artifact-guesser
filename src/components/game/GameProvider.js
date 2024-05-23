@@ -8,7 +8,7 @@ const GameContext = createContext(null)
 export const useGame = () => {
   const context = useContext(GameContext)
   if (!context) {
-    return { game: null, currentRound, updateGame: null }
+    return { game: null, currentRound: null, updateGame: null }
   }
   return context
 }
@@ -19,6 +19,7 @@ export const GameProvider = ({ children }) => {
   const [selectedDate, setSelectedDate] = useState(0)
   const [selectedCountry, setSelectedCountry] = useState()
   const [loading, setLoading] = useState(true)
+  const [isViewingSummary, setIsViewingSummary] = useState(false)
 
   // if logged in, get game info from user, otherwise get from localStorage, otherwise initialize game
   useEffect(() => {
@@ -26,14 +27,17 @@ export const GameProvider = ({ children }) => {
       if (user?.isLoggedIn) {
         const { data } = await axios.get('/api/games/current')
         setGame(data)
+
         if (data.roundData[data.round - 1].selectedDate) setSelectedDate(data.roundData[data.round - 1].selectedDate)
         if (data.roundData[data.round - 1].selectedCountry) setSelectedCountry(data.roundData[data.round - 1].selectedCountry)
+        if (data.round === data.rounds && data.roundData.every(r => r.guessed)) setIsViewingSummary(true)
       } else if (user && !user?.isLoggedIn) {
         const game = JSON.parse(localStorage.getItem('game'))
         if (game) {
           setGame(game)
           if (game.roundData[game.round - 1].selectedDate) setSelectedDate(game.roundData[game.round - 1].selectedDate)
           if (game.roundData[game.round - 1].selectedCountry) setSelectedCountry(game.roundData[game.round - 1].selectedCountry)
+          if (game.round === game.rounds && game.roundData.every(r => r.guessed)) setIsViewingSummary(true)
         } else {
           const { data: newArtifact } = await axios.get('/api/artifacts/random')
 
@@ -68,7 +72,6 @@ export const GameProvider = ({ children }) => {
 
     if (user?.isLoggedIn) {
       const dbGame = { ...newGame }
-      dbGame.roundData = newGame.roundData.map(({ artifact, ...rest }) => rest)
       await axios.post('/api/games/edit', dbGame)
       if (startNew) setGame(null)
     } else {
@@ -137,8 +140,11 @@ export const GameProvider = ({ children }) => {
     setSelectedCountry(null)
     setSelectedDate(0)
     setLoading(true)
+    setIsViewingSummary(false)
     updateGame({ ...game, ongoing: false }, true)
   }
+
+  const viewSummary = () => setIsViewingSummary(true)
 
   return (
     <GameContext.Provider value={{
@@ -154,7 +160,9 @@ export const GameProvider = ({ children }) => {
       startNextRound,
       startNewGame,
       loading,
-      setLoading
+      setLoading,
+      viewSummary,
+      isViewingSummary
     }}>
       {children}
     </GameContext.Provider>

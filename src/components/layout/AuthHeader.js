@@ -2,7 +2,7 @@ import { useState } from "react"
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
 import useUser from "@/hooks/useUser"
 import { SignupDialog } from "@/components/dialogs/SignupDialog"
-import { FaUser } from "react-icons/fa"
+import { FaHeart, FaUser } from "react-icons/fa"
 import { IconButton } from "@/components/buttons/IconButton"
 import { GrLogout } from "react-icons/gr"
 import Link from "next/link"
@@ -31,12 +31,17 @@ export const AuthHeader = () => {
               </span>
             </div>
             {isAdmin && (
-              <Link href='/dashboard'>
+              <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
                 <IconButton size={22} css={{ marginRight: 6 }}>
                   <MdDashboard />
                 </IconButton>
               </Link>
             )}
+            <Link href='/favorites'>
+              <IconButton size={22} css={{ marginRight: 6 }} tooltip='Favorites' tooltipPlace='bottom'>
+                <FaHeart color='#ff4f4f' />
+              </IconButton>
+            </Link>
             <IconButton size={22} iconSize={10} onClick={() => logout()}>
               <GrLogout />
             </IconButton>
