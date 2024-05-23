@@ -96,7 +96,7 @@ const GameSummaryUI = () => {
               <div className='flex flex-wrap'>
                 {imgs.map((img, i) => (
                   <Img key={i} src={img} css={{
-                    width: imgs?.length === 1 ? '100%' : imgs?.length === 2 ? 'calc(50% - 4px)' : 72,
+                    width: imgs?.length === 1 ? '100%' : imgs?.length === 2 ? 'calc(50% - 4px)' : '17.5%',
                     margin: '0 4px 4px 0',
                     '&:last-of-type': { marginRight: 0 },
                     borderRadius: 4,
