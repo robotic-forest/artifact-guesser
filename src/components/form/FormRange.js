@@ -101,7 +101,7 @@ const InputStyles = styled.div`
     margin: 0 0px 0 1px;
     position: relative;
     left: -1px;
-    top: 2px;
+    top: 3px;
 
     &:hover {
       background: #424242;

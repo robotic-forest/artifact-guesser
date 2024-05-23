@@ -10,7 +10,7 @@ export const ArtifactInfo = ({ artifact, style }) => {
   const { isFavorite, toggleFavorite } = useFavorites({ artifactId: artifact?._id })
 
   return (
-    <div className='bg-black rounded border border-white/30 mb-1' css={{ padding: '5px 5px 5px 8px', ...style }}>
+    <div className='bg-black rounded border border-white/30 w-full' css={{ padding: '5px 5px 5px 8px', ...style }}>
       <div className='mb-4 flex justify-between items-start'>
         <div className='flex'>
           <img
@@ -36,9 +36,10 @@ export const ArtifactInfo = ({ artifact, style }) => {
             tooltip={isFavorite ? 'Unfavorite' : 'Favorite'}
             onClick={toggleFavorite}
             size={22}
+            iconSize={10}
             css={{
               border: '1px solid #ffffff66',
-              marginRight: 4,
+              marginRight: 6,
               borderRadius: 3
             }}
           >
@@ -59,7 +60,7 @@ export const ArtifactInfo = ({ artifact, style }) => {
                 Source
               </span>
             </GameButton>
-            <IconButton css={{
+            <IconButton size={22} css={{
               '@media (min-width: 800px)': { display: 'none' },
               border: '1px solid #ffffff66',
               borderRadius: 3

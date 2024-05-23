@@ -26,7 +26,8 @@ export const RoundSummary = () => {
         <YourGuess {...{ artifact, selectedDate, selectedCountry, datePoints, countryIsCorrect }} />
         <RoundScore {...{ points, isLastRound, startNextRound, viewSummary }} />
         <div className='pt-1' css={{
-          '@media (min-width: 800px)': { display: 'none' }
+          '@media (min-width: 800px)': { display: 'none' },
+          width: '100%'
         }}>
           <ArtifactInfo artifact={artifact} />
         </div>

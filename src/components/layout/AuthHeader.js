@@ -38,8 +38,8 @@ export const AuthHeader = () => {
               </Link>
             )}
             <Link href='/favorites'>
-              <IconButton size={22} css={{ marginRight: 6 }} tooltip='Favorites' tooltipPlace='bottom'>
-                <FaHeart color='#ff4f4f' />
+              <IconButton size={22} iconSize={10} css={{ marginRight: 6 }} tooltip='Favorites' tooltipPlace='bottom'>
+                <FaHeart color='#ff7c7c' />
               </IconButton>
             </Link>
             <IconButton size={22} iconSize={10} onClick={() => logout()}>
