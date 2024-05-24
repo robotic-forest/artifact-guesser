@@ -21,7 +21,7 @@ export const AuthHeader = () => {
       <div className='fixed flex items-center m-1 top-0 right-0 z-10 text-sm'>
         {user?.isLoggedIn && (
           <>
-            <div className='bg-black p-[1px_6px] rounded-[4px] mr-1.5 flex items-center min-h-[22px]'>
+            <div className='bg-black p-[1px_6px] rounded-[4px] mr-1 flex items-center min-h-[22px]'>
               <FaUser className='text-xs' />
               <span css={{
                 '@media (max-width: 800px)': { display: 'none' },
@@ -32,13 +32,13 @@ export const AuthHeader = () => {
             </div>
             {isAdmin && (
               <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <IconButton size={22} css={{ marginRight: 6 }}>
+                <IconButton size={22} css={{ marginRight: 4 }}>
                   <MdDashboard />
                 </IconButton>
               </Link>
             )}
             <Link href='/favorites'>
-              <IconButton size={22} iconSize={10} css={{ marginRight: 6 }} tooltip='Favorites' tooltipPlace='bottom'>
+              <IconButton size={22} iconSize={10} css={{ marginRight: 4 }} tooltip='Favorites' tooltipPlace='bottom'>
                 <FaHeart color='#ff7c7c' />
               </IconButton>
             </Link>
