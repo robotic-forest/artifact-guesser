@@ -115,12 +115,48 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         {...sort}
         noDataComponent='No artifacts found with this filter.'
         highlightOnHover
-        renderRow={(row, rowContent) => <Link key={row.id} href={row.source.url} css={{ textDecoration: 'none' }} target='_blank'>{rowContent}</Link>}
+        renderRow={(row, rowContent) => (
+          <Link
+            key={row.id}
+            href={row.source.url}
+            css={{
+              textDecoration: 'none',
+              '&:first-of-type': {
+                borderTopLeftRadius: '6px',
+                borderTopRightRadius: '6px',
+              },
+              '&:last-of-type': {
+                borderBottomLeftRadius: '6px',
+                borderBottomRightRadius: '6px',
+                borderBottom: 'none'
+              },
+              overflow: 'hidden',
+              borderBottom: '1px solid var(--backgroundColorSlightlyDark)'
+            }}
+            target='_blank'
+          >
+            {rowContent}
+          </Link>
+        )}
         scrollOverflow
-        customStyles={imageMode && {
+        customStyles={imageMode ? {
           table: {
             style: {
               display: 'none'
+            }
+          },
+        } : {
+          rows: {
+            style: {
+              background: 'var(--backgroundColorBarelyDark)',
+            },
+            highlightOnHoverStyle: {
+              color: 'var(--textColor)',
+              backgroundColor: 'var(--backgroundColorSliightlyDark)',
+              borderBottomColor: 'var(--backgroundColorSlightlyDark)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+              outline: 'none',
             }
           },
         }}
