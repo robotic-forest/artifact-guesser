@@ -19,7 +19,6 @@ import { MenuButton } from "../layout/Layout"
 import { artifactsTheme } from "@/pages/artifacts"
 import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
 import { GameSummary } from "./GameSummary"
-import { useDoubleTap } from "use-double-tap"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -50,10 +49,6 @@ const GameUI = () => {
   const [dimensions, setDimensions] = useState()
   const [value, setValue] = useState()
   const [hoverCountry, setHoverCountry] = useState()
-
-  const bind = useDoubleTap(() => {
-    setValue(v => ({ ...v, scale: v.scale * 1.4 }))
-  })
 
   const stringifiedDimensions = JSON.stringify(dimensions)
 
@@ -98,7 +93,7 @@ const GameUI = () => {
 
         {!isViewingSummary && (
           <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
-            <div {...bind}>
+            <div>
               <img src={primaryImage} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }} onLoad={({ target: img }) => {
                 setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
                 setLoading(false)
