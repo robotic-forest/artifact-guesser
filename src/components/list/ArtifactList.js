@@ -9,7 +9,7 @@ import { useQuery } from "@/hooks/useQuery"
 import { IconButton } from "../buttons/IconButton"
 import { GoEye } from "react-icons/go"
 import { MasonryLayout } from "../layout/MasonryLayout"
-import { ImmersiveDialog } from "../dialogs/IMmersiveDialog"
+import { ImmersiveDialog } from "../dialogs/ImmersiveDialog"
 import { ArtifactImage } from "./components.js/ArtifactImage"
 
 export const ArtifactsList = ({
@@ -94,13 +94,32 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         <ImmersiveDialog visible closeDialog={() => toggleImmersiveMode()}>
           <MasonryLayout gutter={0} breaks={{ default: 5 }}>
             {artifacts?.map(row => (
-              <ArtifactImage key={row.id} artifact={row} immersive />
+              <div key={row.id}>
+                <img
+                  src={row.images.external[0]}
+                  alt={row.name}
+                  css={{
+                    display: 'block',
+                    width: '100%',
+                    height: 'auto'
+                  }}
+                />
+                <div css={{ fontSize: '0.8em', padding: 4 }}>
+                  {row.name}, {row?.location.country}, {formatDateRange(row?.time.start, row?.time.end)}
+                </div>
+              </div>
             ))}
           </MasonryLayout>
         </ImmersiveDialog>
       )}
       {imageMode && artifacts && (
-        <MasonryLayout gutter={0} breaks={{ default: 5 }}>
+        <MasonryLayout style={{ borderRadius: 5, overflow: 'hidden' }} gutter={0} breaks={{
+          default: 6,
+          600: 2,
+          900: 3,
+          1200: 4,
+          1600: 5
+        }}>
           {artifacts?.map(row => (
             <ArtifactImage key={row.id} artifact={row} noTumbnail />
           ))}

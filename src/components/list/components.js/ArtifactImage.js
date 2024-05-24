@@ -1,4 +1,5 @@
 import { IconButton } from "@/components/buttons/IconButton"
+import { formatDateRange } from "@/lib/artifactUtils"
 import { BiLinkExternal } from "react-icons/bi"
 
 export const ArtifactImage = ({ artifact, immersive }) => {
@@ -39,7 +40,10 @@ export const ArtifactImage = ({ artifact, immersive }) => {
           transition: 'opacity 0.1s ease',
           background: immersive
             ? 'transparent'
-            : `linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0.1) 100%)`
+            : `linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0.1) 100%)`,
+          '@media (max-width: 800px)': {
+            background: 'transparent'
+          }
         }}
         href={artifact.source.url}
         target='_blank'
@@ -49,12 +53,15 @@ export const ArtifactImage = ({ artifact, immersive }) => {
             position: 'absolute',
             top: 8,
             right: 8,
+            '@media (max-width: 800px)': {
+              display: 'none'
+            }
           }}
           href={artifact.source.url}
           target='_blank'
           onClick={e => e.stopPropagation()}
         >
-          <IconButton tooltip='View Source' css={{
+          <IconButton tooltip='View Source' size={20} css={{
             background: '#ffffff55',
             '&:hover': {
               background: '#ffffffaa'
@@ -68,9 +75,13 @@ export const ArtifactImage = ({ artifact, immersive }) => {
           position: 'absolute',
           bottom: 0,
           padding: 8,
+          fontSize: '0.8em',
           display: immersive ? 'none' : 'block',
+          '@media (max-width: 800px)': {
+            display: 'none'
+          }
         }}>
-          {artifact.name.length > 60 ? `${artifact.name.slice(0, 60)}...` : artifact.name}
+          {artifact.name}, {artifact?.location.country}, {formatDateRange(artifact?.time.start, artifact?.time.end)}
         </div>
       </a>
     </div>
