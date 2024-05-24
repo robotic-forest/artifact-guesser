@@ -93,7 +93,7 @@ const GameUI = () => {
 
         {!isViewingSummary && (
           <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
-            <div>
+            <div onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
               <img src={primaryImage} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }} onLoad={({ target: img }) => {
                 setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
                 setLoading(false)
