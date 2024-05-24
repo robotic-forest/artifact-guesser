@@ -34,7 +34,7 @@ const GameScore = () => {
   const { game, startNewGame } = useGame()
   const [signupOpen, setSignupOpen] = useState(false)
 
-  const newHighscore = gameId !== game._id
+  const newHighscore = gameId === game._id
 
   return (
     <>
