@@ -6,6 +6,7 @@ import { DataTable } from '@/components/datatable/DataTable'
 import { GiAbstract042 } from 'react-icons/gi'
 import { useGames } from '@/hooks/games/useGames'
 import { useAccount } from '@/hooks/accounts/useAccount'
+import moment from 'moment'
 
 export const gamesTheme =  {
   backgroundColor: '#abb4f5',
@@ -25,11 +26,6 @@ export default () => {
             Games
           </b>
         )}
-        // searchFields={[
-        //   { label: 'Last Name', value: 'lastName' },
-        //   { label: 'First Name', value: 'firstName' },
-        //   { label: 'Email', value: 'email' }
-        // ]}
         renderFilter={[]}
       >
         <GameList user={user} />
@@ -46,7 +42,11 @@ const GameList = ({ user }) => {
     FileReader.userId = user._id
   }
 
-  const { games, pagination, sort } = useGames({ filter, sort: true, paginate: true })
+  const { games, pagination, sort } = useGames({
+    filter,
+    sort: true,
+    paginate: true
+  })
 
   return (
     <div>
@@ -78,6 +78,8 @@ const gameColumns = [
   {
     name: 'Score',
     selector: row => `${row.score} / 1000`,
+    sortable: true,
+    sortField: 'score'
   },
   {
     name: 'Progress',
@@ -86,5 +88,12 @@ const gameColumns = [
   {
     name: 'Mode',
     selector: row => row.mode,
+  },
+  {
+    id: 'startedAt',
+    name: 'Started',
+    selector: row => row.startedAt ? moment(row.startedAt).format('MMM D, YYYY HH:mm') : 'n/a',
+    sortable: true,
+    sortField: 'startedAt'
   }
 ]

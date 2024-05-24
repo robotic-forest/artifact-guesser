@@ -28,7 +28,7 @@ export const useSort = args => {
     sortProps.defaultSortAsc = parseInt(query?.__sortdirection) === 1
     sortProps.defaultSortFieldId = query?.__sortfield
   } else if (args?.default) {
-    sortProps.defaultSortAsc = Object.values(args.default)[0] === 1
+    sortProps.defaultSortAsc = args?.direction === 1
     sortProps.defaultSortFieldId = args?.fieldId
   }
 

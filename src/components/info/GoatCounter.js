@@ -2,11 +2,12 @@ import { useGoat } from "@/hooks/useGoat"
 import moment from "moment"
 import { Tag } from "../tag/Tag"
 import { Spinner } from "../loading/Spinner"
+import Link from "next/link"
 
 export const GoatStats = () => {
   
   return (
-    <a href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
+    <Link href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
       <div className='p-3 mr-2 mb-2 flex items-center cursor-pointer' css={{
         borderRadius: 4,
         display: 'flex',
@@ -19,7 +20,7 @@ export const GoatStats = () => {
         <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
         <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />
       </div>
-    </a>
+    </Link>
   )
 }
 

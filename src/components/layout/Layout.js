@@ -53,7 +53,7 @@ export const Layout = ({ title, theme, children }) => {
                   <GiAmphora />
                 </MenuButton>
               </Link>
-              <Link href='/games' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+              <Link href='/games?__sortfield=startedAt&__sortdirection=-1' css={{ '&:hover': { color: 'var(--textColor)'} }}>
                 <MenuButton tooltip='Games' className='mb-3' theme={gamesTheme}>
                   <GiAbstract042 />
                 </MenuButton>
