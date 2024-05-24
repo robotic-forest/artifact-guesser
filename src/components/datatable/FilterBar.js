@@ -49,18 +49,32 @@ export const FilterBar = ({
     query.setQuery({ ...newFilter, ...query.meta })
   }
 
+  const addFilterItem = (newItem) => {
+    setFilterItems(prev => {
+      const alreadyExists = prev.find((f) => f.name === newItem.name)
+      const newFilterItems = alreadyExists
+        ? prev.map((f) => f.name === newItem.name ? newItem : f)
+        : [ ...prev, newItem ]
+
+      return newFilterItems
+    })
+  }
+
   const querySearchField = Object.keys(query.filter).find(key => searchFields?.find((sf) => sf.value === key))
   const [searchValue, setSearchValue] = useState('')
   const [searchField, setSearchField] = useState(searchFields?.[0]?.value)
   
   useEffect(() => {
-    if (!queryParsed && querySearchField) {
-      setSearchField(querySearchField)
-      setSearchValue(query.filter[querySearchField])
-    }
+    if (!queryParsed) {
+      if (querySearchField) {
+        setSearchField(querySearchField)
+        setSearchValue(query.filter[querySearchField])
+      }
 
-    if (Object.keys(filter).length && !queryParsed && !useStateFilter) {
-      buildFilterItemsFromQuery(query.filter, renderFilter, setFilterItems, setFilter)
+      if (Object.keys(filter).length && !useStateFilter) {
+        buildFilterItemsFromQuery(query.filter, renderFilter, addFilterItem, setFilter)
+      }
+
       return setQueryParsed(true)
     }
 
@@ -82,7 +96,7 @@ export const FilterBar = ({
 
   const renderedButtons = renderFilter?.map(({ name, filter: f }) => ({
     name,
-    ...f(setFilterItems, setFilter),
+    ...f(addFilterItem, setFilter),
     disabled: filterItems.find((f) => f.name === name)
   }))
 
@@ -492,20 +506,16 @@ const FilterDateInput = ({ filterValue, setFilter, item }) => {
   )
 }
 
-const buildFilterItemsFromQuery = (query, renderFilter, setFilterItems, setFilter) => {
+const buildFilterItemsFromQuery = (query, renderFilter, addFilterItem, setFilter) => {
   // since the objects in renderFilter defines the properties of the buttons in the filter dropdown,
   // we can hijack that button's onClick and call it manually to set the filter items
   // the fact this works is a testament to the hubris of man
   Object.keys(query).map((key, index) => {
     const filterItem = renderFilter.find((f) => f.name === key)
     if (filterItem) {
-      filterItem.filter(setFilterItems, setFilter).onClick(index === 0)
+      filterItem.filter(addFilterItem, setFilter).onClick(index === 0)
     }
   })
-}
-
-export const buildFilterItems = (setItems, init, items) => {
-  return setItems((fi) => [ ...((typeof init == "boolean" && init) ? [] : fi), items ])
 }
 
 export default FilterBar

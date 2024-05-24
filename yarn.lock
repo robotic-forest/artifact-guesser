@@ -1134,7 +1134,7 @@ debounce@^1.2.1:
   resolved "https://registry.yarnpkg.com/debounce/-/debounce-1.2.1.tgz#38881d8f4166a5c5848020c11827b834bcb3e0a5"
   integrity sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==
 
-deepmerge@^4.3.1:
+deepmerge@^4.2.2:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.3.1.tgz#44b5f2147cd3b00d4b56137685966f26fd25dd4a"
   integrity sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==
@@ -1966,12 +1966,11 @@ react-composer@^5.0.3:
   dependencies:
     prop-types "^15.6.0"
 
-react-data-table-component@^7.6.2:
-  version "7.6.2"
-  resolved "https://registry.yarnpkg.com/react-data-table-component/-/react-data-table-component-7.6.2.tgz#298e3f9c27d42fb5ae06c2af6b13663c15577faf"
-  integrity sha512-nHe7040fmtrJyQr/ieGrTfV0jBflYGK4sLokC6/AFOv3ThjmA9WzKz8Z8/2wMxzRqLU+Rn0CVFg+8+frKLepWQ==
+"react-data-table-component@https://github.com/robotic-forest/react-data-table":
+  version "7.5.5"
+  resolved "https://github.com/robotic-forest/react-data-table#623f7797ed0d436054ba006b17fbd64685873aaf"
   dependencies:
-    deepmerge "^4.3.1"
+    deepmerge "^4.2.2"
 
 react-dom@18.2.0:
   version "18.2.0"

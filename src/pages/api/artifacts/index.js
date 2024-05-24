@@ -27,19 +27,19 @@ const artifacts = async (req, res) => {
 export const buildArtifactCriteria = filter => {
   filter.$and = []
 
-  if (filter.startDateAfter) {
+  if (![undefined, null].includes(filter.startDateAfter)) {
     filter.$and.push({ 'time.start': { $gte: Number(filter.startDateAfter) } })
     delete filter.startDateAfter
   }
-  if (filter.startDateBefore) {
+  if (![undefined, null].includes(filter.startDateBefore)) {
     filter.$and.push({ 'time.start': { $lte: Number(filter.startDateBefore) } })
     delete filter.startDateBefore
   }
-  if (filter.endDateAfter) {
+  if (![undefined, null].includes(filter.endDateAfter)) {
     filter.$and.push({ 'time.end': { $gte: Number(filter.endDateAfter) } })
     delete filter.endDateAfter
   }
-  if (filter.endDateBefore) {
+  if (![undefined, null].includes(filter.endDateBefore)) {
     filter.$and.push({ 'time.end': { $lte: Number(filter.endDateBefore) } })
     delete filter.endDateBefore
   }

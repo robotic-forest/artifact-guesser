@@ -13,7 +13,7 @@ export const useQuery = () => {
   })
 
   const setQuery = newQuery => {
-    router.push({ query: newQuery }, undefined, { shallow: true })
+    router.replace({ query: newQuery }, undefined, { shallow: true })
   }
 
   return { query, setQuery, ...processQuery(query) }

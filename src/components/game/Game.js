@@ -88,7 +88,7 @@ const GameUI = () => {
             Artifact Guesser
           </div>
           <Link href='/artifacts'>
-            <MenuButton size={20} className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
+            <MenuButton size={22} className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
               <GiAmphora />
             </MenuButton>
           </Link>

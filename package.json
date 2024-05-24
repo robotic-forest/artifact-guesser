@@ -24,7 +24,7 @@
     "node-mailjet": "^6.0.5",
     "polished": "^4.2.2",
     "react": "18.2.0",
-    "react-data-table-component": "^7.6.2",
+    "react-data-table-component": "https://github.com/robotic-forest/react-data-table",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.4",
     "react-hot-toast": "^2.4.1",

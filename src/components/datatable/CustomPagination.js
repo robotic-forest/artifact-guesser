@@ -22,10 +22,7 @@ export const CustomPagination = props => {
       alignItems: 'center',
       fontSize: '0.9em',
       marginTop: 8,
-      position: 'relative',
-      '@media (max-width: 870px)': {
-        top: -16
-      }
+      position: 'relative'
     }}>
       <div>
         {info}

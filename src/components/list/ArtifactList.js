@@ -1,9 +1,15 @@
 import { formatDateRange } from "@/lib/artifactUtils"
 import { DataTable } from "../datatable/DataTable"
-import FilterBar, { buildFilterItems, useFilter } from "../datatable/FilterBar"
+import FilterBar, { useFilter } from "../datatable/FilterBar"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { GiAmphora } from "react-icons/gi"
-import { MdCalendarMonth } from "react-icons/md"
+import { MdCalendarMonth, MdImage } from "react-icons/md"
+import Link from "next/link"
+import { useQuery } from "@/hooks/useQuery"
+import { IconButton } from "../buttons/IconButton"
+import { GoEye } from "react-icons/go"
+import { MasonryLayout } from "../layout/MasonryLayout"
+import { ImmersiveDialog } from "../dialogs/IMmersiveDialog"
 
 export const ArtifactsList = ({
   title,
@@ -17,6 +23,13 @@ export const ArtifactsList = ({
   minimal,
   isFavorites
 }) => {
+  const { query, setQuery } = useQuery()
+
+  const immersiveMode = query?.immersiveMode
+  const toggleImmersiveMode = () => setQuery({ ...query, immersiveMode: !immersiveMode })
+
+  const imageMode = query?.imageMode
+  const toggleImageMode = () => setQuery({ ...query, imageMode: !imageMode })
 
   return (
     <FilterBar
@@ -29,20 +42,43 @@ export const ArtifactsList = ({
       renderFilter={artifactFilter.filter(f => !excludeFilters?.includes(f.name))}
       toggleFields={toggleFields}
       minimal={minimal}
-      customFilter={customFilter}
       hiddenFields={hiddenFields}
       searchFields={searchFields}
+      customFilter={(
+        <div className='flex'>
+          <IconButton
+            tooltip={imageMode ? 'Disable Image Mode' : 'Enable Image Mode'}
+            onClick={() => toggleImageMode()}
+            css={{
+              marginRight: 4,
+              background: imageMode ? 'var(--primaryColor)' : 'var(--background)',
+            }}
+          >
+            <MdImage />
+          </IconButton>
+          <IconButton
+            tooltip={immersiveMode ? 'Disable Immersive Mode' : 'Enable Immersive Mode'}
+            onClick={() => toggleImmersiveMode()}
+          >
+            <GoEye />
+          </IconButton>
+          {customFilter}
+        </div>
+      )}
     >
       <ArtifactsDataTable
         baseFilter={baseFilter}
         excludeFields={excludeFields}
         isFavorites={isFavorites}
+        immersiveMode={immersiveMode}
+        imageMode={imageMode}
+        toggleImmersiveMode={toggleImmersiveMode}
       />
     </FilterBar>
   )
 }
 
-const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites }) => {
+const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveMode, toggleImmersiveMode, imageMode }) => {
   const { filter, hiddenFields } = useFilter()
   const { artifacts, pagination, sort } = useArtifacts({
     filter: { ...baseFilter, ...filter },
@@ -52,36 +88,61 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites }) => {
   })
 
   return (
-    <DataTable
-      columns={artifactColumns
-        .filter(r => !hiddenFields?.includes(r.name))
-        .filter(r => !excludeFields?.includes(r.name))
-      }
-      data={artifacts}
-      {...pagination}
-      {...sort}
-      noDataComponent='No artifacts found with this filter.'
-      highlightOnHover
-      onRowClicked={r => window.open(r.source.url, '_blank')}
-      scrollOverflow
-    />
+    <>
+      {immersiveMode && artifacts && (
+        <ImmersiveDialog visible closeDialog={() => toggleImmersiveMode()}>
+          <MasonryLayout gutter={0} breaks={{ default: 5 }}>
+            {artifacts?.map(row => (
+              <img src={row.images.external[0]} alt={row.name} />
+            ))}
+          </MasonryLayout>
+        </ImmersiveDialog>
+      )}
+      {imageMode && artifacts && (
+        <MasonryLayout gutter={0} breaks={{ default: 5 }}>
+          {artifacts?.map(row => (
+            <img src={row.images.thumbnail || row.images.external[0]} alt={row.name} />
+          ))}
+        </MasonryLayout>
+      )}
+      <DataTable
+        columns={artifactColumns
+          .filter(r => !hiddenFields?.includes(r.name))
+          .filter(r => !excludeFields?.includes(r.name))
+        }
+        data={artifacts}
+        {...pagination}
+        {...sort}
+        noDataComponent='No artifacts found with this filter.'
+        highlightOnHover
+        renderRow={(row, rowContent) => <Link key={row.id} href={row.source.url} css={{ textDecoration: 'none' }} target='_blank'>{rowContent}</Link>}
+        scrollOverflow
+        customStyles={(immersiveMode || imageMode) && {
+          table: {
+            style: {
+              display: 'none'
+            }
+          },
+        }}
+      />
+    </>
   )
 }
 
 const artifactFilter = [
   {
     name: 'startDateAfter',
-    filter: (setFilterItems) => {
+    filter: (addFilterItem) => {
       const contents = (
         <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
           <MdCalendarMonth css={{  marginRight: 8 }} color='var(--textLowOpacity)' />
-          Start Date After
+          Start After
         </span>
       )
 
       return {
         contents,
-        onClick: (init) => buildFilterItems(setFilterItems, init, {
+        onClick: () => addFilterItem({
           name: 'startDateAfter',
           type: 'year',
           contents
@@ -91,17 +152,17 @@ const artifactFilter = [
   },
   {
     name: 'startDateBefore',
-    filter: (setFilterItems) => {
+    filter: (addFilterItem) => {
       const contents = (
         <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
           <MdCalendarMonth css={{  marginRight: 8 }} color='var(--textLowOpacity)' />
-          Start Date Before
+          Start Before
         </span>
       )
 
       return {
         contents,
-        onClick: (init) => buildFilterItems(setFilterItems, init, {
+        onClick: () => addFilterItem({
           name: 'startDateBefore',
           type: 'year',
           contents
@@ -111,17 +172,17 @@ const artifactFilter = [
   },
   {
     name: 'endDateAfter',
-    filter: (setFilterItems) => {
+    filter: (addFilterItem) => {
       const contents = (
         <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
           <MdCalendarMonth css={{  marginRight: 8 }} color='var(--textLowOpacity)' />
-          End Date After
+          End After
         </span>
       )
 
       return {
         contents,
-        onClick: (init) => buildFilterItems(setFilterItems, init, {
+        onClick: () => addFilterItem({
           name: 'endDateAfter',
           type: 'year',
           contents
@@ -131,17 +192,17 @@ const artifactFilter = [
   },
   {
     name: 'endDateBefore',
-    filter: (setFilterItems) => {
+    filter: (addFilterItem) => {
       const contents = (
         <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
           <MdCalendarMonth css={{  marginRight: 8 }} color='var(--textLowOpacity)' />
-          End Date Before
+          End Before
         </span>
       )
 
       return {
         contents,
-        onClick: (init) => buildFilterItems(setFilterItems, init, {
+        onClick: () => addFilterItem({
           name: 'endDateBefore',
           type: 'year',
           contents

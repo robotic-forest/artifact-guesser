@@ -5,9 +5,15 @@ import { IconButton } from "@/components/buttons/IconButton"
 import { DetailsDoubleItem, DetailsItem } from "@/components/info/Details"
 import { GameButton } from "@/components/buttons/GameButton"
 import { useFavorites } from "@/hooks/artifacts/useFavorites"
+import { GiAmphora } from "react-icons/gi"
+import Link from "next/link"
 
 export const ArtifactInfo = ({ artifact, style }) => {
   const { isFavorite, toggleFavorite } = useFavorites({ artifactId: artifact?._id })
+
+  const relatedArtifactsHref = `/artifacts?location.country=${artifact?.location.country}` +
+    `&startDateAfter=${artifact.time.start - 10}&endDateBefore=${artifact.time.end + 10}` +
+    '&imageMode=true'
 
   return (
     <div className='bg-black rounded border border-white/30 w-full' css={{ padding: '5px 5px 5px 8px', ...style }}>
@@ -32,6 +38,26 @@ export const ArtifactInfo = ({ artifact, style }) => {
           </div>
         </div>
         <div className='flex justify-end mb-1.5'>
+          <Link href={relatedArtifactsHref}>
+            <IconButton
+              tooltip='View Related Artifacts'
+              size={22}
+              iconSize={10}
+              css={{
+                border: '1px solid #ffffff66',
+                color: 'black',
+                background: '#35ad8d',
+                marginRight: 6,
+                borderRadius: 3,
+                '&:hover': {
+                  background: '#35ad8dcc',
+                  color: 'black'
+                }
+              }}
+            >
+              <GiAmphora />
+            </IconButton>
+          </Link>
           <IconButton
             tooltip={isFavorite ? 'Unfavorite' : 'Favorite'}
             onClick={toggleFavorite}
