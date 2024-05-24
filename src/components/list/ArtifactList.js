@@ -11,8 +11,11 @@ import { GoEye } from "react-icons/go"
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { ImmersiveDialog } from "../dialogs/ImmersiveDialog"
 import { ArtifactImage } from "./components.js/ArtifactImage"
+import dynamic from "next/dynamic"
 
-export const ArtifactsList = ({
+export const ArtifactsList = dynamic(() => Promise.resolve(ArtifactsListUI), { ssr: false })
+
+const ArtifactsListUI = ({
   title,
   baseFilter,
   hiddenFields,
@@ -113,13 +116,21 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         </ImmersiveDialog>
       )}
       {imageMode && artifacts && (
-        <MasonryLayout style={{ borderRadius: 5, overflow: 'hidden' }} gutter={0} breaks={{
-          default: 6,
-          600: 2,
-          900: 3,
-          1200: 4,
-          1600: 5
-        }}>
+        <MasonryLayout
+          style={{
+            borderRadius: 5,
+            overflow: 'hidden',
+            background: 'var(--backgroundColorBarelyDark)',
+          }}
+          gutter={0}
+          breaks={{
+            default: 6,
+            600: 2,
+            900: 3,
+            1200: 4,
+            1600: 5
+          }}
+        >
           {artifacts?.map(row => (
             <ArtifactImage key={row.id} artifact={row} noTumbnail />
           ))}
@@ -160,6 +171,11 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         )}
         scrollOverflow
         customStyles={imageMode ? {
+          tableWrapper: {
+            style: {
+              display: 'none'
+            }
+          },
           table: {
             style: {
               display: 'none'

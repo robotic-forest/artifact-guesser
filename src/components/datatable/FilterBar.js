@@ -130,14 +130,32 @@ export const FilterBar = ({
           marginBottom: 3,
         }}>
           <div css={{
-            marginBottom: 8
+            marginBottom: 8,
+            display: 'flex',
+            '@media (max-width: 696px)': {
+              width: '100%',
+              justifyContent: 'space-between',
+            },
           }}>
-            {title}
+            <div>{title}</div>
+            {customFilter && (
+              <div css={{
+                '@media (min-width: 696px)': {
+                  display: 'none'
+                },
+              }}>
+                {customFilter}
+              </div>
+            )}
           </div>
           <div css={{
             display: 'flex',
             alignItems: 'center',
-            marginBottom: 8
+            marginBottom: 8,
+            width: 400,
+            '@media (max-width: 696px)': {
+              width: '100%',
+            },
           }}>
             <div css={{
               marginRight: 10,
@@ -188,7 +206,8 @@ export const FilterBar = ({
                 '&:hover': {
                   background: 'var(--backgroundColorLight)',
                   boxShadow: '0 2px 5px 0px var(--textSuperLowOpacity)'
-                }
+                },
+                width: '100%',
               }}>
                 <BiSearch css={{ margin: '0 4px 0 8px', minWidth: 18 }} />
                 <Input
@@ -245,19 +264,7 @@ export const FilterBar = ({
             <div css={{
               display: 'flex',
               flexFlow: 'row wrap',
-              // '@media (max-width: 696px)': {
-              //   width: '100%'
-              // },
             }}>
-              {(toggleFields?.length > 0 || customFilter) && (
-                <div css={{
-                  '@media (min-width: 696px)': {
-                    display: 'none'
-                  },
-                }}>
-                  {customFilter}
-                </div>
-              )}
               {renderedButtons?.length > 0 && (
                 <div css={{
                   marginLeft: 'auto',
