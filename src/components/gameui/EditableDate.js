@@ -9,7 +9,7 @@ export const EditableDate = ({ value, onChange, className, dropDownPlace = 'top'
 
   return (
     <div className={`min-w-[75px] max-w-[75px]
-      p-[2px_8px_4px] text-sm h-[24px] flex justify-between items-center ${className}`}>
+      p-[4px_8px_4px] text-sm h-[24px] flex justify-between items-center ${className}`}>
       <input
         type='number'
         className='bg-transparent border-none text-black text-center w-full h-full'

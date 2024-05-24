@@ -37,7 +37,7 @@ export default function AAAAAA({
   }, [container, text, initialText, angry, initialAngry, staticWidth])
 
   return (
-    <div style={{ ...style, transform: angle ? `rotate(${angle}deg)` : angry ? 'rotate(-4deg)' : 'rotate(4deg)' }}>
+    <div css={{ ...style, transform: angle ? `rotate(${angle}deg)` : angry ? 'rotate(-4deg)' : 'rotate(4deg)' }}>
       <Shake active={angry}>
         <svg
           width={width}

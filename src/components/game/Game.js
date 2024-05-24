@@ -42,7 +42,8 @@ const GameUI = () => {
     artifact,
     loading,
     setLoading,
-    isViewingSummary
+    isViewingSummary,
+    nextStepKey
   } = useGame()
   
   const { height, width } = useWindowDimensions()
@@ -72,7 +73,13 @@ const GameUI = () => {
         <title>Artifact Guesser</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div css={{ height: isViewingSummary ? undefined : '100vh', minHeight: '100vh', width: '100vw', background: isViewingSummary ? 'linear-gradient(0deg, #061c0d, #28663c)' : 'black' }}>
+      <div css={{
+        height: isViewingSummary ? undefined : '100vh',
+        minHeight: '100vh',
+        width: '100vw',
+        background: isViewingSummary ? 'linear-gradient(0deg, #061c0d, #28663c)' : 'black',
+        overflow: 'hidden',
+      }}>
         <div className='fixed flex items-center m-1 top-0 left-0 text-sm z-[10]'>
           <div className='flex items-center bg-black p-[2px_7px_2px_5px] rounded-[4px] overflow-hidden'>
             <GiGreekSphinx className='mr-2' />
@@ -130,6 +137,12 @@ const GameUI = () => {
                   defaultValue={0}
                   width='100%'
                   onChange={e => setSelectedDate(e.target.value)}
+                  onKeyDown={e => {
+                    if ([13, 32].includes(e.keyCode)) { // 13: enter, 32: space
+                      e.preventDefault()
+                      nextStepKey()
+                    }
+                  }}
                 />
               </div>
               <div className='flex'>

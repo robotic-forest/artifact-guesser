@@ -12,8 +12,6 @@ export const getProximity = (country1, country2) => {
   const distanceKm = getDistanceFromLatLonInKm(c1.latitude, c1.longitude, c2.latitude, c2.longitude)
   const distanceMiles = distanceKm * 0.621371
 
-  console.log(c1, c2)
-
   const isNeighbor = neighbors[c1.alpha2].neighbours.includes(c2.alpha2)
 
   return { distance: distanceMiles, isNeighbor }

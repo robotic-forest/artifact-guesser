@@ -34,7 +34,7 @@ const GameScore = () => {
   const { game, startNewGame } = useGame()
   const [signupOpen, setSignupOpen] = useState(false)
 
-  const newHighscore = gameId === game._id
+  const newHighscore = gameId !== game._id
 
   return (
     <>
@@ -50,8 +50,11 @@ const GameScore = () => {
           </div>
         </div>
         <FancyBorderButton disabled style={{ marginBottom: 16 }}>
-          <div className='text-2xl m-2'>
-            <span className='mr-2'>{game?.score === 1000 ? 'PERFECT SCORE!' : 'Final Score'}</span> <b css={{ color: calcScoreColors(game?.score) }}>{game.score}</b> / 1000
+          <div className='text-2xl m-2 flex flex-wrap itesm-center justify-center'>
+            <span className='mr-3'  css={{ whiteSpace: 'nowrap' }}>{game?.score === 1000 ? 'PERFECT SCORE!' : 'Final Score'}</span>
+            <span css={{ whiteSpace: 'nowrap' }}>
+              <b css={{ color: calcScoreColors(game?.score) }}>{game.score}</b> / 1000
+            </span>
           </div>
         </FancyBorderButton>
         {(highscore && !newHighscore) && (
@@ -63,36 +66,61 @@ const GameScore = () => {
 
         {newHighscore && (
           <div className='font-mono text-4xl mb-6 flex justify-evenly w-full'>
-            <AAAAAA
-              style={{
-                position: 'absolute',
-                left: 32,
-                top: 64
-              }}
-              initialAngry
-              initialText={"Amazing!"}
-              initialWidth={180}
-              excited
-              angle={10}
-            />
+            <div css={{
+              position: 'relative',
+              '@media (max-width: 1125px)': {
+                transform: 'scale(0.7)',
+              },
+              '@media (max-width: 600px)': {
+                transform: 'scale(0.5)',
+              }
+            }}>
+              <AAAAAA
+                style={{
+                  position: 'absolute',
+                  left: -236,
+                  top: -50,
+                  '@media (max-width: 1125px)': {
+                    top: -150,
+                    left: -118,
+                  },
+                }}
+                initialAngry
+                initialText={"Amazing!"}
+                initialWidth={180}
+                excited
+                angle={10}
+              />
+            </div>
             <Shake active>
               <div className='flex'>
                 <div className='mr-3'>NEW</div>
                   <RainbowText text='HIGHSCORE!' />
               </div>
             </Shake>
-            <AAAAAA
-              style={{
-                position: 'absolute',
-                right: 48,
-                top: 64,
-              }}
-              initialAngry
-              initialText={"You are POWERFUL!"}
-              initialWidth={200}
-              excited
-              angle={-10}
-            />
+            <div css={{
+              position: 'relative',
+              '@media (max-width: 1125px)': { transform: 'scale(0.7)' },
+              '@media (max-width: 600px)': {
+                transform: 'scale(0.5)',
+              }
+            }}>
+              <AAAAAA
+                style={{
+                  position: 'absolute',
+                  bottom: -60,
+                  '@media (max-width: 1125px)': {
+                    bottom: 60,
+                    right: -90
+                  },
+                }}
+                initialAngry
+                initialText={"You are POWERFUL!"}
+                initialWidth={200}
+                excited
+                angle={-10}
+              />
+            </div>
           </div>
         )}
 

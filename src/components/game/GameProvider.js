@@ -1,9 +1,12 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import useUser from "../../hooks/useUser"
 import axios from "axios"
 import { convertCountries } from "@/lib/artifactUtils"
 import { countries } from "@/lib/countries"
 import { getProximity } from "@/lib/getProximity"
+import useSWR from "swr"
+import { useHotkeys } from "react-hotkeys-hook"
+import toast from "react-hot-toast"
 
 const GameContext = createContext(null)
 
@@ -21,26 +24,26 @@ export const GameProvider = ({ children }) => {
   const [selectedDate, setSelectedDate] = useState(0)
   const [selectedCountry, setSelectedCountry] = useState()
   const [loading, setLoading] = useState(true)
-  const [isViewingSummary, setIsViewingSummary] = useState(false)
+  const { data, mutate } = useSWR(user?.isLoggedIn && '/api/games/current')
 
-  // if logged in, get game info from user, otherwise get from localStorage, otherwise initialize game
+  const initGame = g => {
+    setGame(g)
+    setSelectedDate(g.roundData[g.round - 1].selectedDate || 0)
+    setSelectedCountry(g.roundData[g.round - 1].selectedCountry || null)
+  }
+
+  // Sync with DB
+  useEffect(() => { if (data) initGame(data) }, [data])
+
+  // if not logged in, get from localStorage, otherwise initialize game
   useEffect(() => {
-    const initGame = async () => {
-      if (user?.isLoggedIn) {
-        const { data } = await axios.get('/api/games/current')
-        setGame(data)
+    const localGame = async () => {
+      if (user && !user?.isLoggedIn) {
+        // Attempt fetch from localstorage
+        const localG = JSON.parse(localStorage.getItem('game'))
 
-        if (data.roundData[data.round - 1].selectedDate) setSelectedDate(data.roundData[data.round - 1].selectedDate)
-        if (data.roundData[data.round - 1].selectedCountry) setSelectedCountry(data.roundData[data.round - 1].selectedCountry)
-        if (data.round === data.rounds && data.roundData.every(r => r.guessed)) setIsViewingSummary(true)
-      } else if (user && !user?.isLoggedIn) {
-        const game = JSON.parse(localStorage.getItem('game'))
-        if (game) {
-          setGame(game)
-          if (game.roundData[game.round - 1].selectedDate) setSelectedDate(game.roundData[game.round - 1].selectedDate)
-          if (game.roundData[game.round - 1].selectedCountry) setSelectedCountry(game.roundData[game.round - 1].selectedCountry)
-          if (game.round === game.rounds && game.roundData.every(r => r.guessed)) setIsViewingSummary(true)
-        } else {
+        if (localG) initGame(localG)
+        else {
           const { data: newArtifact } = await axios.get('/api/artifacts/random')
 
           const newGame = {
@@ -58,7 +61,7 @@ export const GameProvider = ({ children }) => {
               }
             ]
           }
-  
+
           setGame(newGame)
           // sync localstorage
           localStorage.setItem('game', JSON.stringify(newGame))
@@ -66,7 +69,7 @@ export const GameProvider = ({ children }) => {
       }
     }
 
-    !game && initGame()
+    !game && localGame()
   }, [user, game])
 
   const updateGame = async (newGame, startNew) => {
@@ -75,7 +78,9 @@ export const GameProvider = ({ children }) => {
     if (user?.isLoggedIn) {
       const dbGame = { ...newGame }
       await axios.post('/api/games/edit', dbGame)
-      if (startNew) setGame(null)
+      if (startNew) {
+        await mutate()
+      }
     } else {
       if (startNew) localStorage.removeItem('game')
       else localStorage.setItem('game', JSON.stringify(newGame))
@@ -88,6 +93,7 @@ export const GameProvider = ({ children }) => {
 
   const guessed = currentRound?.guessed
   const makeGuess = () => {
+    if (!selectedCountry) return toast.error('You have to select a country!')
     // Date stuff
     const dateIsCorrect = artifact?.time.start <= selectedDate && artifact?.time.end >= selectedDate
     const distanceToDate = Math.min(Math.abs(artifact?.time.start - selectedDate), Math.abs(artifact?.time.end - selectedDate))
@@ -96,7 +102,7 @@ export const GameProvider = ({ children }) => {
     // Country stuff
     const artifactCountry = convertCountries(countries.find(c => artifact?.location.country.includes(c)) || artifact?.location.country)
     const countryIsCorrect = artifactCountry === selectedCountry
-    
+
     // If country is not correct,
     // calculate distance between chosen country centroid and the correct centroid
     let countryPoints = countryIsCorrect ? 100 : 0
@@ -104,7 +110,6 @@ export const GameProvider = ({ children }) => {
       const { distance, isNeighbor, couldNotResolve } = getProximity(selectedCountry, artifactCountry)
       const distanceScore = couldNotResolve ? 0 : Math.round(distance > 1000 ? 0 : 100 - distance / 10)
       countryPoints = isNeighbor ? Math.max(50, distanceScore) : distanceScore
-      console.log({ distance, isNeighbor, distanceScore, countryPoints })
     }
 
     const points = datePoints + countryPoints
@@ -157,11 +162,42 @@ export const GameProvider = ({ children }) => {
     setSelectedCountry(null)
     setSelectedDate(0)
     setLoading(true)
-    setIsViewingSummary(false)
     updateGame({ ...game, ongoing: false }, true)
   }
 
-  const viewSummary = () => setIsViewingSummary(true)
+  const isViewingSummary = game?.isViewingSummary
+  const viewSummary = () => {
+    updateGame({ ...game, isViewingSummary: true })
+  }
+
+  const nextStepKey = useCallback(() => {
+    const isLastRound = game?.round === game?.rounds
+
+    if (guessed) {
+      if (isLastRound) {
+        if (isViewingSummary) startNewGame()
+        else viewSummary()
+      } else startNextRound()
+    } else makeGuess()
+  }, [
+    game,
+    makeGuess,
+    startNextRound,
+    guessed,
+    isViewingSummary,
+    viewSummary,
+    startNewGame
+  ])
+
+  useHotkeys(
+    ['enter', 'space'],
+    e => {
+      e.preventDefault()
+      nextStepKey()
+    },
+    { filter: () => true },
+    [nextStepKey]
+  )
 
   return (
     <GameContext.Provider value={{
@@ -179,7 +215,8 @@ export const GameProvider = ({ children }) => {
       loading,
       setLoading,
       viewSummary,
-      isViewingSummary
+      isViewingSummary,
+      nextStepKey
     }}>
       {children}
     </GameContext.Provider>
