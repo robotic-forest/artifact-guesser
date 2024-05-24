@@ -16,7 +16,10 @@ import { IconGenerator } from "../art/IconGenerator"
 export const GameSummary = () => {
 
   return (
-    <div css={{ padding: '56px 48px 48px 48px' }}>
+    <div css={{
+      padding: '56px 48px 48px 48px',
+      '@media (max-width: 800px)': { padding: '32px 6px 6px 6px' },
+    }}>
       <Simulator
         top={<GameScore />}
         bottom={<RoundReview />}
