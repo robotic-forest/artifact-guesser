@@ -10,6 +10,7 @@ import { IconButton } from "../buttons/IconButton"
 import { GoEye } from "react-icons/go"
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { ImmersiveDialog } from "../dialogs/IMmersiveDialog"
+import { ArtifactImage } from "./components.js/ArtifactImage"
 
 export const ArtifactsList = ({
   title,
@@ -93,7 +94,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         <ImmersiveDialog visible closeDialog={() => toggleImmersiveMode()}>
           <MasonryLayout gutter={0} breaks={{ default: 5 }}>
             {artifacts?.map(row => (
-              <img src={row.images.external[0]} alt={row.name} />
+              <ArtifactImage key={row.id} artifact={row} immersive />
             ))}
           </MasonryLayout>
         </ImmersiveDialog>
@@ -101,7 +102,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
       {imageMode && artifacts && (
         <MasonryLayout gutter={0} breaks={{ default: 5 }}>
           {artifacts?.map(row => (
-            <img src={row.images.thumbnail || row.images.external[0]} alt={row.name} />
+            <ArtifactImage key={row.id} artifact={row} noTumbnail />
           ))}
         </MasonryLayout>
       )}

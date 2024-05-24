@@ -127,7 +127,7 @@ export const FilterBar = ({
           flexFlow: 'row wrap',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: 12,
+          marginBottom: 3,
         }}>
           <div css={{
             marginBottom: 8
