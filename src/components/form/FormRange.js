@@ -63,7 +63,7 @@ const InputStyles = styled.div`
     width: ${p => p.width}; /* Specific width is required for Firefox. */
     background: transparent; /* Otherwise white in Chrome */
     position: absolute;
-    top: 0px;
+    top: -1px;
     z-index: 0;
     height: 10px;
     border-bottom: 1px solid white;

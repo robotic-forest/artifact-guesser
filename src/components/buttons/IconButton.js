@@ -58,7 +58,7 @@ const IconButtonComponent = forwardRef(({
   )
 })
 
-const IconButtonUI = styled.a`
+const IconButtonUI = styled.button`
   height: ${p => p.size || 22}px;
   min-width: ${p => p.size || 22}px;
   border-radius: 5px;

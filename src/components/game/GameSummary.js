@@ -2,36 +2,71 @@ import { IoIosArrowRoundForward } from "react-icons/io"
 import { GameButton } from "../buttons/GameButton"
 import { ArtifactInfo } from "../gameui/RoundSummary/components/ArtifactInfo"
 import { RoundScore } from "../gameui/RoundSummary/components/RoundScore"
-import { YourGuess } from "../gameui/RoundSummary/components/YourGuess"
+import { YourGuess, calcColors } from "../gameui/RoundSummary/components/YourGuess"
 import { useGame } from "./GameProvider"
 import { useState } from "react"
 import useUser from "@/hooks/useUser"
 import { SignupDialog } from "../dialogs/SignupDialog"
 import { Img } from "../html/Img"
+import { Simulator, SimulatorButton } from "../art/Simulator"
+import { FancyBorderButton } from "../art/FancyBorder"
+import { useHighscore } from "@/hooks/useHighscore"
+import { IconGenerator } from "../art/IconGenerator"
 
 export const GameSummary = () => {
-  const [signupOpen, setSignupOpen] = useState(false)
+
+  return (
+    <div css={{ padding: '56px 48px 48px 48px' }}>
+      <Simulator
+        top={<GameScore />}
+        bottom={<RoundReview />}
+      />
+    </div>
+  )
+}
+
+const GameScore = () => {
   const { user } = useUser()
-  const { startNewGame } = useGame()
+  const { highscore, gameId } = useHighscore()
+  const { game, startNewGame } = useGame()
+  const [signupOpen, setSignupOpen] = useState(false)
+
+  const newHighscore = gameId === game._id
+  console.log(gameId, game._id)
 
   return (
     <>
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
+      <div className='mb-4 flex flex-col items-center'>
+        <div className='flex text-2xl mt-4 font-mono font-bold'>
+          <div className='mr-4'>
+            <IconGenerator />
+          </div>
+          GAME SUMMARY
+          <div className='ml-4' css={{ transform: 'scaleX(-1)' }}>
+            <IconGenerator />
+          </div>
+        </div>
+        <FancyBorderButton disabled style={{ marginBottom: 16 }}>
+          <div className='text-2xl m-2'>
+            <span className='mr-2'>Final Score</span> <b css={{ color: calcColors(game.score / 10) }}>{game.score}</b> / 1000
+          </div>
+        </FancyBorderButton>
+        {highscore && (
+          <div className='text-lg mb-[24px]'>
+            <span className='mr-2'>Your highscore:</span>
+            <span className='text-xl'>{highscore} / 1000</span>
+          </div>
+        )}
 
-      <div css={{ marginTop: '8vh', padding: 4, width: '100vw' }}>
-        <GameSummaryUI />
-      </div>
-
-      <div className='fixed p-3 py-4 bottom-0 right-0 z-10 flex flex-wrap items-center select-none'
-        css={{ '@media (max-width: 800px)': { width: '100vw' }, borderRadius: '8px 0 0 0' }}>
         {!user?.isLoggedIn && (
-          <div className='mr-4 bg-black rounded-lg p-[3px_7px_4px_4px]' css={{
+          <div className='mb-4 bg-black rounded-lg p-[3px_7px_4px_4px]' css={{
             '@media (max-width: 800px)': { margin: '0 0 8px 0' }
           }}>
             <GameButton
               onClick={() => setSignupOpen(true)}
               css={{
-                marginRight: 6,
+                marginRight: 8,
                 background: '#E4C1F4',
                 color: '#000000',
                 ':hover': { background: '#CCA5DE' },
@@ -42,38 +77,27 @@ export const GameSummary = () => {
             for free to save your games and highscores!
           </div>
         )}
-        <GameButton
-          onClick={startNewGame}
-          css={{
-            background: '#7dddc3',
-            color: '#000000',
-            ':hover': { background: '#40f59a' },
-            padding: '3px 12px',
-            fontSize: '1.2em',
-            width: 300,
-            '@media (max-width: 800px)': { width: '100%' },
-            boxShadow: '0 0 0 4px black'
-          }}
-        >
-          <IoIosArrowRoundForward className='mr-2' />
+        <SimulatorButton onClick={startNewGame} >
           Start New Game
-        </GameButton>
+        </SimulatorButton>
       </div>
     </>
   )
 }
 
-const GameSummaryUI = () => {
+
+const RoundReview = () => {
   const { game } = useGame()
 
   return (
-    <div className='flex flex-col items-center w-full'>
-      <div className='mb-10 flex flex-col items-center'>
-        <div className='text-4xl mb-6'><b>Game Summary</b></div>
-        <div className='rounded-xl py-4 px-6 text-3xl overflow-hidden relative flex w-[fit-content] bg-blue-300 text-black'>
-          <div>
-            <span className='text-black/60 mr-2'>Final Score</span> <b>{game.score}</b> / 1000
-          </div>
+    <div className='flex flex-col items-center'>
+      <div className='flex text-2xl my-4 font-mono font-bold'>
+        <div className='mr-4'>
+          <IconGenerator />
+        </div>
+        ROUND REVIEW
+        <div className='ml-4' css={{ transform: 'scaleX(-1)' }}>
+          <IconGenerator />
         </div>
       </div>
       <div className='flex flex-wrap justify-center gap-6 m-2'>
@@ -84,8 +108,8 @@ const GameSummaryUI = () => {
             <div className='mb-8 w-full md:w-[calc(48%)] lg:w-[calc(30%)]' css={{
               '@media (min-width: 2400px)': { width: '18%' },
             }}>
-              <div className='mb-3 text-xl text-center'>
-                <b>Round {round.round}</b>
+              <div className='mb-3 text-xl text-center font-mono'>
+                Round <b>{round.round}</b>
               </div>
               <YourGuess {...round} />
               <RoundScore isSummary points={round.points} />
@@ -105,16 +129,6 @@ const GameSummaryUI = () => {
                   }} />
                 ))}
               </div>
-              {/* <div css={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                padding: 20,
-                size: '2em',
-                '@media (min-width: 800px)': { display: 'none' }
-              }}>
-                <IconGenerator />
-              </div> */}
             </div>
           )
         })}

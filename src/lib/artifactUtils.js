@@ -12,6 +12,7 @@ export const convertCountries = country => {
   if (['East Timor', 'Timor-Leste'].includes(country)) return 'Timor-Leste'
   if (['Cape Verde', 'Cabo Verde'].includes(country)) return 'Cape Verde'
   if (['São Tomé and Príncipe', 'Sao Tome and Principe'].includes(country)) return 'São Tomé and Príncipe'
+  if (['Israel', 'Palestine'].includes(country)) return 'Israel'
 
   return country
 }

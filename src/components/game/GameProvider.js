@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react"
 import useUser from "../../hooks/useUser"
 import axios from "axios"
 import { convertCountries } from "@/lib/artifactUtils"
+import { countries } from "@/lib/countries"
+import { getProximity } from "@/lib/getProximity"
 
 const GameContext = createContext(null)
 
@@ -86,11 +88,26 @@ export const GameProvider = ({ children }) => {
 
   const guessed = currentRound?.guessed
   const makeGuess = () => {
+    // Date stuff
     const dateIsCorrect = artifact?.time.start <= selectedDate && artifact?.time.end >= selectedDate
     const distanceToDate = Math.min(Math.abs(artifact?.time.start - selectedDate), Math.abs(artifact?.time.end - selectedDate))
     const datePoints = dateIsCorrect ? 100 : Math.round(distanceToDate > 300 ? 0 : 100 - (distanceToDate / 3))
-    const countryIsCorrect = convertCountries(artifact?.location.country).includes(selectedCountry)
-    const points = datePoints + (countryIsCorrect ? 100 : 0)
+
+    // Country stuff
+    const artifactCountry = convertCountries(countries.find(c => artifact?.location.country.includes(c)) || artifact?.location.country)
+    const countryIsCorrect = artifactCountry === selectedCountry
+    
+    // If country is not correct,
+    // calculate distance between chosen country centroid and the correct centroid
+    let countryPoints = countryIsCorrect ? 100 : 0
+    if (!countryIsCorrect) {
+      const { distance, isNeighbor, couldNotResolve } = getProximity(selectedCountry, artifactCountry)
+      const distanceScore = couldNotResolve ? 0 : Math.round(distance > 1000 ? 0 : 100 - distance / 10)
+      countryPoints = isNeighbor ? Math.max(50, distanceScore) : distanceScore
+      console.log({ distance, isNeighbor, distanceScore, countryPoints })
+    }
+
+    const points = datePoints + countryPoints
 
     const newGame = { ...game }
     newGame.roundData[game.round - 1] = {
@@ -101,7 +118,7 @@ export const GameProvider = ({ children }) => {
       dateIsCorrect,
       distanceToDate,
       datePoints,
-      countryIsCorrect,
+      countryPoints,
       points,
       loading
     }

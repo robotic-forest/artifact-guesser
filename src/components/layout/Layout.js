@@ -24,9 +24,9 @@ export const Layout = ({ title, theme, children }) => {
     font-size: var(--fs);
 
     body, html {
-      background-color: var(--backgroundColor);
-      color: var(--textColor);
-      font-size: var(--fs);
+      background-color: var(--backgroundColor) !important;
+      color: var(--textColor) !important;
+      font-size: var(--fs) !important;
     }
   `
 
@@ -36,7 +36,7 @@ export const Layout = ({ title, theme, children }) => {
         <title>{title || 'Artifact Guesser'}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className='flex w-[100%]' css={styles}>
+      <div className='flex w-[100%] min-h-[100vh]' css={styles}>
         {user?.isLoggedIn && (
           <div className='sticky top-0 h-[100vh] min-h-[100vh] flex flex-col justify-between items-center' css={{
             background: 'var(--backgroundColorSlightlyLight)',

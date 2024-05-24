@@ -6,7 +6,7 @@ import { RoundScore } from "./components/RoundScore"
 
 export const RoundSummary = () => {
   const { game, artifact, startNextRound, currentRound, selectedDate, selectedCountry, viewSummary } = useGame()
-  const { countryIsCorrect, datePoints, points } = currentRound
+  const { countryPoints, datePoints, points } = currentRound
   const isLastRound = game.round === game.rounds
 
   return (
@@ -23,7 +23,7 @@ export const RoundSummary = () => {
         }
       }}>
         <GameInfo />
-        <YourGuess {...{ artifact, selectedDate, selectedCountry, datePoints, countryIsCorrect }} />
+        <YourGuess {...{ artifact, selectedDate, selectedCountry, datePoints, countryPoints }} />
         <RoundScore {...{ points, isLastRound, startNextRound, viewSummary }} />
         <div className='pt-1' css={{
           '@media (min-width: 800px)': { display: 'none' },

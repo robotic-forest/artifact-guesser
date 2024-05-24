@@ -1,4 +1,4 @@
-import { formatDateRange, formatLocation, formatTime } from "@/lib/artifactUtils"
+import { formatDateRange } from "@/lib/artifactUtils"
 import { DataTable } from "../datatable/DataTable"
 import FilterBar, { buildFilterItems, useFilter } from "../datatable/FilterBar"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"

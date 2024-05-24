@@ -1,31 +1,49 @@
 import { formatDateRange } from "@/lib/artifactUtils"
 
-export const YourGuess = ({ artifact, selectedDate, selectedCountry, datePoints, countryIsCorrect }) => {
+export const YourGuess = ({ artifact, selectedDate, selectedCountry, datePoints, countryPoints }) => {
 
   return (
-    <div className='bg-black rounded border border-white/30 mb-1 w-full' css={{ padding: '6px 8px' }}>
-      <div className='text-white/70 flex justify-between text-sm mb-1'>
-        <div>Origin</div>
-        <div>Your Guess</div>
-      </div>
-      <div className='flex justify-between items-start mb-1'>
+    <div className='bg-black rounded border border-white/30 mb-1 w-full flex justify-between' css={{ padding: '6px 8px' }}>
+      <div>
+        <div className='text-white/70 text-sm mb-1'>
+          Origin
+        </div>
         {formatDateRange(artifact?.time.start, artifact?.time.end)}
+        <div className='mt-1'>{artifact?.location.country}</div>
+      </div>
+
+      <div>
+        <div className='text-white/70 text-sm mb-1'>
+          Your Guess
+        </div>
         <div
           className='p-[0px_4px] rounded text-black flex'
-          css={{ background: datePoints === 100 ? '#7ae990' : datePoints > 50 ? '#ffc045' : datePoints > 0 ? '#ff7145' :'#ff9999' }}
+          css={{ background: calcColors(datePoints) }}
         >
           {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
         </div>
-      </div>
-      <div className='flex justify-between items-start mb-1 border-white/30'>
-        <div>{artifact?.location.country}</div>
         <div
-          className='p-[0px_4px] rounded text-black'
-          css={{ background: countryIsCorrect ? '#7ae990' : '#ff9999' }}
+          className='p-[0px_4px] rounded text-black mt-1'
+          css={{ background: calcColors(countryPoints) }}
         >
           {selectedCountry}
         </div>
       </div>
+
+      <div>
+        <div className='text-white/70 text-sm mb-1'>
+          Points
+        </div>
+        <div>{datePoints} / 100</div>
+        <div className='mt-1'>{countryPoints} / 100</div>
+      </div>
     </div>
   )
+}
+
+export const calcColors = (points) => {
+  if (points === 100) return '#7ae990'
+  if (points >= 50) return '#ffc045'
+  if (points > 0) return '#ff8a45'
+  return '#ff9999'
 }
