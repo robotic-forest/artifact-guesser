@@ -32,17 +32,39 @@ export const AuthHeader = () => {
             </div>
             {isAdmin && (
               <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <IconButton size={22} css={{ marginRight: 4 }}>
+                <IconButton
+                  size={22}
+                  css={{
+                    marginRight: 4,
+                    '&:hover': { background: 'var(--backgroundColorLight2)' }
+                  }}
+                >
                   <MdDashboard />
                 </IconButton>
               </Link>
             )}
             <Link href='/favorites'>
-              <IconButton size={22} iconSize={10} css={{ marginRight: 4 }} tooltip='Favorites' tooltipPlace='bottom'>
+              <IconButton
+                size={22}
+                iconSize={10}
+                css={{
+                  marginRight: 4,
+                  '&:hover': { background: 'var(--backgroundColorLight2)' }
+                }}
+                tooltip='Favorites'
+                tooltipPlace='bottom'
+              >
                 <FaHeart color='#ff7c7c' />
               </IconButton>
             </Link>
-            <IconButton size={22} iconSize={10} onClick={() => logout()}>
+            <IconButton
+              size={22}
+              iconSize={10}
+              onClick={() => logout()}
+              css={{
+                '&:hover': { background: 'var(--backgroundColorLight2)' }
+              }}
+            >
               <GrLogout />
             </IconButton>
           </>

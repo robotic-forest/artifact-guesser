@@ -40,7 +40,8 @@ export const ArtifactInfo = ({ artifact, style }) => {
             css={{
               border: '1px solid #ffffff66',
               marginRight: 6,
-              borderRadius: 3
+              borderRadius: 3,
+              '&:hover': { background: 'var(--backgroundColorLight2)' }
             }}
           >
             <FaHeart color={isFavorite ? 'green' :  '#ff4f4f'} />

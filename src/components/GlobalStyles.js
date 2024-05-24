@@ -47,7 +47,7 @@ export const themeCSS = theme => css`
   --fs: ${theme.fontSize}px;
 `
 
-export default function GlobalStyles({ theme }) {
+export const GlobalStyles = ({ theme }) => {
 
   return <Global styles={css`
     * {
