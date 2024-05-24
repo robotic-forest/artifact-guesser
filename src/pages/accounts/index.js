@@ -30,10 +30,9 @@ export default () => {
         title={(
           <b className='flex items-center'>
             <BsFillPersonFill className='mr-3' />
-            Accounts Overview
+            Accounts
           </b>
         )}
-        noLayoutShift
         searchFields={[
           { label: 'Username', value: 'username' },
           { label: 'Email', value: 'email' }
