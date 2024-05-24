@@ -19,6 +19,8 @@ import { MenuButton } from "../layout/Layout"
 import { artifactsTheme } from "@/pages/artifacts"
 import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
 import { GameSummary } from "./GameSummary"
+import { IconButton } from "../buttons/IconButton"
+import { BiMinus, BiPlus } from "react-icons/bi"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -116,6 +118,19 @@ const GameUI = () => {
           <div className='fixed p-2 pb-2 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
             '@media (max-width: 500px)': { width: '100vw' }
           }}>
+            <div
+              className='mb-1'
+              css={{ 
+                '@media (min-width: 600px)': { display: 'none' }
+              }}
+            >
+              <IconButton className='mb-1' onClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
+                <BiPlus />
+              </IconButton>
+              <IconButton onClick={() => setValue(v => ({ ...v, scale: v.scale / 1.2 }))}>
+                <BiMinus />
+              </IconButton>
+            </div>
             <GameInfo />
             <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full' css={{
               height: 200,
