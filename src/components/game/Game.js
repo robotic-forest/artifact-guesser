@@ -71,7 +71,7 @@ const GameUI = () => {
     <>
       <Head>
         <title>Artifact Guesser</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
       </Head>
       <div css={{
         height: isViewingSummary ? undefined : '100vh',

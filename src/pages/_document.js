@@ -7,7 +7,7 @@ export default function Document() {
         <script data-goatcounter="https://artifactguesser.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
         <meta key="name" name="name" content='Artifact Guesser' />
         <link rel="icon" href="/icon.svg" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
       </Head>
       <body>
         <Main />

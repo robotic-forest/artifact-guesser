@@ -34,7 +34,7 @@ export const Layout = ({ title, theme, children }) => {
     <>
       <Head>
         <title>{title || 'Artifact Guesser'}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
       </Head>
       <div className='flex w-[100%] min-h-[100vh]' css={styles}>
         {user?.isLoggedIn && (
