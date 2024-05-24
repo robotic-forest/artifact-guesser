@@ -6,10 +6,15 @@ const highscore = async (req, res) => {
   if (!user) return res.send(false)
   const db = await initDB()
 
-  const games = await db.collection('games').find({ userId: user._id.toString() }).sort({ score: -1 }).limit(1).toArray()
-  const game = games[0]
+  const games = await db.collection('games').find({ userId: user._id.toString() }).sort({ score: -1 }).limit(2).toArray()
+  const highScore = games[0]
+  const prevHighscore = games[1]
 
-  res.send({ highscore: game?.score || 0, gameId: game?._id })
+  res.send({
+    highscore: highScore?.score || 0,
+    prevHighscore: prevHighscore?.score || 0,
+    gameId: highScore?._id
+  })
 }
 
 export default withSessionRoute(highscore)

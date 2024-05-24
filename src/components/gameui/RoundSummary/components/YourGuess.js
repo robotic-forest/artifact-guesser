@@ -17,13 +17,13 @@ export const YourGuess = ({ artifact, selectedDate, selectedCountry, datePoints,
           Your Guess
         </div>
         <div
-          className='p-[0px_4px] rounded text-black flex'
+          className='p-[0px_4px] rounded text-black flex w-[fit-content]'
           css={{ background: calcColors(datePoints) }}
         >
           {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
         </div>
         <div
-          className='p-[0px_4px] rounded text-black mt-1'
+          className='p-[0px_4px] rounded text-black mt-1 w-[fit-content]'
           css={{ background: calcColors(countryPoints) }}
         >
           {selectedCountry}

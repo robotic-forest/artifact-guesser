@@ -73,7 +73,7 @@ export const SimulatorButton = p => {
 
   return (
     <button
-      className=" bg-[#ac9a8c] text-black text-lg py-1 px-4 border-white ml-6"
+      className="bg-[#ac9a8c] text-black text-lg py-1 px-4 border-white ml-6"
       css={{
         // boxShadow: '1px 1px 1px 0px #ffffff55 inset, -1px -1px 1px 0 #00000055 inset',
         border: '3px outset',

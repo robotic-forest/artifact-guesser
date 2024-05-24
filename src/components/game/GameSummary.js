@@ -1,8 +1,7 @@
-import { IoIosArrowRoundForward } from "react-icons/io"
 import { GameButton } from "../buttons/GameButton"
 import { ArtifactInfo } from "../gameui/RoundSummary/components/ArtifactInfo"
 import { RoundScore } from "../gameui/RoundSummary/components/RoundScore"
-import { YourGuess, calcColors } from "../gameui/RoundSummary/components/YourGuess"
+import { YourGuess } from "../gameui/RoundSummary/components/YourGuess"
 import { useGame } from "./GameProvider"
 import { useState } from "react"
 import useUser from "@/hooks/useUser"
@@ -12,6 +11,7 @@ import { Simulator, SimulatorButton } from "../art/Simulator"
 import { FancyBorderButton } from "../art/FancyBorder"
 import { useHighscore } from "@/hooks/useHighscore"
 import { IconGenerator } from "../art/IconGenerator"
+import AAAAAA, { Shake } from "../art/AAAAAA"
 
 export const GameSummary = () => {
 
@@ -30,17 +30,16 @@ export const GameSummary = () => {
 
 const GameScore = () => {
   const { user } = useUser()
-  const { highscore, gameId } = useHighscore()
+  const { highscore, prevHighscore, gameId } = useHighscore()
   const { game, startNewGame } = useGame()
   const [signupOpen, setSignupOpen] = useState(false)
 
   const newHighscore = gameId === game._id
-  console.log(gameId, game._id)
 
   return (
     <>
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
-      <div className='mb-4 flex flex-col items-center'>
+      <div className='mb-4 flex flex-col items-center relative'>
         <div className='flex text-2xl mt-4 font-mono font-bold'>
           <div className='mr-4'>
             <IconGenerator />
@@ -52,13 +51,55 @@ const GameScore = () => {
         </div>
         <FancyBorderButton disabled style={{ marginBottom: 16 }}>
           <div className='text-2xl m-2'>
-            <span className='mr-2'>Final Score</span> <b css={{ color: calcColors(game.score / 10) }}>{game.score}</b> / 1000
+            <span className='mr-2'>{game?.score === 1000 ? 'PERFECT SCORE!' : 'Final Score'}</span> <b css={{ color: calcScoreColors(game?.score) }}>{game.score}</b> / 1000
           </div>
         </FancyBorderButton>
-        {highscore && (
+        {(highscore && !newHighscore) && (
           <div className='text-lg mb-[24px]'>
             <span className='mr-2'>Your highscore:</span>
-            <span className='text-xl'>{highscore} / 1000</span>
+            <span className='text-xl'><b>{highscore}</b> / 1000</span>
+          </div>
+        )}
+
+        {newHighscore && (
+          <div className='font-mono text-4xl mb-6 flex justify-evenly w-full'>
+            <AAAAAA
+              style={{
+                position: 'absolute',
+                left: 32,
+                top: 64
+              }}
+              initialAngry
+              initialText={"Amazing!"}
+              initialWidth={180}
+              excited
+              angle={10}
+            />
+            <Shake active>
+              <div className='flex'>
+                <div className='mr-3'>NEW</div>
+                  <RainbowText text='HIGHSCORE!' />
+              </div>
+            </Shake>
+            <AAAAAA
+              style={{
+                position: 'absolute',
+                right: 48,
+                top: 64,
+              }}
+              initialAngry
+              initialText={"You are POWERFUL!"}
+              initialWidth={200}
+              excited
+              angle={-10}
+            />
+          </div>
+        )}
+
+        {newHighscore && prevHighscore && (
+          <div className='text-lg mb-[24px]'>
+            <span className='mr-2'>Previous highscore:</span>
+            <span className='text-xl'><b>{prevHighscore}</b> / 1000</span>
           </div>
         )}
 
@@ -138,4 +179,27 @@ const RoundReview = () => {
       </div>
     </div>
   )
+}
+
+const RainbowText = ({ text }) => {
+  return (
+    <div className='flex flex-wrap justify-center'>
+      {text.split('').map((letter, i) => (
+        <div key={i} css={{
+          color: `hsl(${i * 30}, 100%, 50%)`,
+          '@media (max-width: 800px)': { fontSize: '2.5rem' }
+        }}>
+          {letter}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+
+export const calcScoreColors = (points) => {
+  if (points === 1000) return '#00ff00'
+  if (points >= 700) return '#7ae990'
+  if (points >= 500) return '#ffc045'
+  return '#ff8a45'
 }

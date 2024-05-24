@@ -9,7 +9,7 @@ const fetcher = url => axios.get(url).then(res => res.data)
 let CyberInvocation; export default CyberInvocation = ({ Component, pageProps }) => {
   const theme =  {
     backgroundColor: '#000000',
-    primaryColor: '#4F4F4F',
+    primaryColor: '#ac9a8c',
     textColor: '#ffffff',
     borderRadius: 3,
     borderRadiusRound: 6,
