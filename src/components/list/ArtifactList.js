@@ -117,7 +117,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         highlightOnHover
         renderRow={(row, rowContent) => <Link key={row.id} href={row.source.url} css={{ textDecoration: 'none' }} target='_blank'>{rowContent}</Link>}
         scrollOverflow
-        customStyles={(immersiveMode || imageMode) && {
+        customStyles={imageMode && {
           table: {
             style: {
               display: 'none'
