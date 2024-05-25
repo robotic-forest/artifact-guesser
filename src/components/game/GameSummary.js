@@ -35,7 +35,7 @@ const GameScore = () => {
   const { game, startNewGame } = useGame()
   const [signupOpen, setSignupOpen] = useState(false)
 
-  const newHighscore = gameId === game._id
+  const newHighscore = (gameId && game._id) && gameId === game._id
 
   return (
     <>
@@ -58,7 +58,7 @@ const GameScore = () => {
             </span>
           </div>
         </FancyBorderButton>
-        {(highscore && !newHighscore) && (
+        {!!highscore && !newHighscore && (
           <div className='text-lg mb-[24px]'>
             <span className='mr-2'>Your highscore:</span>
             <span className='text-xl'><b>{highscore}</b> / 1000</span>
