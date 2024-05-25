@@ -22,7 +22,9 @@ export const RoundSummary = () => {
           width: '100vw',
         }
       }}>
-        <GameInfo />
+        <div className='mb-1'>
+          <GameInfo />
+        </div>
         <YourGuess {...{ artifact, selectedDate, selectedCountry, datePoints, countryPoints }} />
         <RoundScore {...{ points, isLastRound, startNextRound, viewSummary }} />
         <div className='pt-1' css={{
