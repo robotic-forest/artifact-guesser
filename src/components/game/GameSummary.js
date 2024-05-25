@@ -12,6 +12,7 @@ import { FancyBorderButton } from "../art/FancyBorder"
 import { useHighscore } from "@/hooks/useHighscore"
 import { IconGenerator } from "../art/IconGenerator"
 import AAAAAA, { Shake } from "../art/AAAAAA"
+import { MasonryLayout } from "../layout/MasonryLayout"
 
 export const GameSummary = () => {
 
@@ -189,11 +190,11 @@ const RoundReview = () => {
               <div className='mb-2 mt-3'>
                 Images (Click to zoom):
               </div>
-              <div className='flex flex-wrap'>
+              <MasonryLayout>
                 {imgs.map((img, i) => (
                   <Img key={i} src={img} css={{
-                    width: imgs?.length === 1 ? '100%' : imgs?.length === 2 ? 'calc(50% - 4px)' : '17.5%',
-                    height: 'fit-content',
+                    width: '100%',
+                    height: 'auto',
                     margin: '0 4px 4px 0',
                     '&:last-of-type': { marginRight: 0 },
                     borderRadius: 4,
@@ -201,7 +202,7 @@ const RoundReview = () => {
                     ':hover': { opacity: 0.7, transition: 'all 0.2s' }
                   }} />
                 ))}
-              </div>
+              </MasonryLayout>
             </div>
           )
         })}
