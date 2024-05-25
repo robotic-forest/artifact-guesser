@@ -116,12 +116,12 @@ const GameUI = () => {
         )}
 
         {(!dimensions || loading || isViewingSummary) ? null : !guessed ? (
-          <div className='fixed p-2 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
+          <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
             '@media (max-width: 500px)': { width: '100vw' }
           }}>
             <div className='flex items-end mb-1'>
               <div
-                className='flex items-end mb-1'
+                className='flex items-end'
                 css={{ 
                   '@media (min-width: 600px)': { display: 'none' }
                 }}
