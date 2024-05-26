@@ -74,6 +74,7 @@ export const GlobalStyles = ({ theme }) => {
       transition: background 0.1s ease-in-out;
 
       position: ${isGame ? 'fixed' : 'static'};
+      overscroll-behavior: none;
 
       font-family: -apple-system, 'Roboto', BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
