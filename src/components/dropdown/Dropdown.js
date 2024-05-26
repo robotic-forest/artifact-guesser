@@ -58,7 +58,8 @@ export const Dropdown = ({
                   key={b.contents}
                   css={b.style}
                   disabled={b.disabled}
-                  onClick={() => {
+                  onClick={e => {
+                    e.stopPropagation()
                     b.onClick && b.onClick()
                     closeAfterClick && setShowDropdown(false)
                   }}>
