@@ -70,6 +70,8 @@ const GameUI = () => {
   const primaryImage = artifact?.images.external[0]
   const additionalImages = artifact?.images.external.slice(1)
 
+  console.log(`scale: ${value?.scale}, translation: ${JSON.stringify(value?.translation)}`)
+
   return (
     <>
       <Head>
@@ -102,7 +104,7 @@ const GameUI = () => {
         {isViewingSummary && <GameSummary />}
 
         {!isViewingSummary && (
-          <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
+          <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100} >
             <div onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
               <img src={primaryImage} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }} onLoad={({ target: img }) => {
                 setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
@@ -129,10 +131,30 @@ const GameUI = () => {
                 <IconButton className='mr-1' onClick={() => setMobileMapHeight(h => h === 150 ? 100 : 150)}>
                   {mobileMapHeight === 150 ? <BiChevronDown /> : <BiChevronUp />}
                 </IconButton>
-                <IconButton className='mr-1' onClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
+                <IconButton
+                  className='mr-1'
+                  onClick={() => setValue(v => ({
+                    ...v,
+                    scale: v.scale * 1.2,
+                    translation: {
+                      x: v.translation.x - 50,
+                      y: v.translation.y - 50
+                    }
+                  }))}
+                >
                   <BiPlus />
                 </IconButton>
-                <IconButton className='mr-1' onClick={() => setValue(v => ({ ...v, scale: v.scale / 1.2 }))}>
+                <IconButton
+                  className='mr-1'
+                  onClick={() => setValue(v => ({
+                    ...v,
+                    scale: v.scale / 1.2,
+                    translation: {
+                      x: v.translation.x + 50,
+                      y: v.translation.y + 50
+                    }
+                  }))}
+                >
                   <BiMinus />
                 </IconButton>
               </div>
