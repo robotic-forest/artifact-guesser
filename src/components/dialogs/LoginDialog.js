@@ -7,6 +7,7 @@ import { Form, FormInput } from '@/components/form/Form'
 import { Button } from '@/components/buttons/Button'
 import { Dialog } from './Dialog'
 import useUser from '@/hooks/useUser'
+import { SimulatorButton } from '../art/Simulator'
 
 export const LoginDialog = ({ open, onClose }) => {
   const { refetch } = useUser()
@@ -76,17 +77,17 @@ export const LoginDialog = ({ open, onClose }) => {
             >
               Cancel
             </Button>}
-            <Button id='login' type='submit' variant='relief' disabled={processing} disable={processing} css={{ minWidth: 70 }}>
+            <SimulatorButton type='submit' disabled={processing} style={{ padding: '1px 10px' }}>
               {resettingPassword
                 ? 'Send Reset Email'
                 : processing ? (
                     <span>
-                      <Spinner />
+                      <Spinner color='#00000077' />
                       Logging In...
                     </span>
                   ) : 'Log In'
               }
-            </Button>
+            </SimulatorButton>
           </span>
         </Form>
         {!resettingPassword && (

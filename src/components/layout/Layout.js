@@ -13,9 +13,14 @@ import { artifactsTheme } from "@/pages/artifacts"
 import { gamesTheme } from "@/pages/games"
 import { accountTheme } from "@/pages/accounts"
 import { ResumeGameButton } from "./components/ResumeGameButton"
+import { useRouter } from "next/router"
 
-export const Layout = ({ title, theme, children }) => {
+export const Layout = ({ title, theme, children, contentCSS }) => {
   const { logout, user } = useUser()
+  const router = useRouter()
+
+  const noauthroutes = ['/', '/artifacts']
+  if (user && !user.isLoggedIn && !noauthroutes.includes(router.pathname)) router.push('/')
 
   const styles = theme && css`
     ${themeCSS(theme)}
@@ -79,6 +84,7 @@ export const Layout = ({ title, theme, children }) => {
         <div className='relative p-3' css={{
           flexGrow: 1,
           overflowY: 'auto',
+          ...contentCSS
         }}>
           {children}
         </div>

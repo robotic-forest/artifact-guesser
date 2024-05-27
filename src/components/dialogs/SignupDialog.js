@@ -4,21 +4,26 @@ import { FormProvider, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/loading/Spinner'
 import { Form, FormInput } from '@/components/form/Form'
-import { Button } from '@/components/buttons/Button'
 import { Dialog } from './Dialog'
 import useUser from '@/hooks/useUser'
+import { SimulatorButton } from '../art/Simulator'
+import { useGame } from '../game/GameProvider'
 
 export const SignupDialog = ({ open, onClose }) => {
   const { refetch } = useUser()
   const formProps = useForm()
   const { handleSubmit } = formProps
   const [processing, setProcessing] = useState(false)
+  const { game } = useGame()
 
   const newPassword = formProps.watch('password')
 
   const onSubmit = async data => {
     if (processing) return
     setProcessing(true)
+
+    // send current game to save it
+    data.game = game
 
     try {
       const { data: res } = await axios.post('/api/signup', data)
@@ -89,9 +94,9 @@ export const SignupDialog = ({ open, onClose }) => {
             required={{ validate: value => value === newPassword || 'The passwords do not match' }}
           />
           <span css={{ marginLeft: 'auto', marginTop: 5 }}>
-            <Button id='login' type='submit' variant='relief' disabled={processing} css={{ minWidth: 70 }}>
+            <SimulatorButton type='submit' disabled={processing} style={{ padding: '1px 10px' }}>
               {processing ? <span><Spinner />Signing up...</span> : 'Sign up'}
-            </Button>
+            </SimulatorButton>
           </span>
         </Form>
       </FormProvider>

@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import Router from "next/router"
+import Router, { useRouter } from "next/router"
 import useSWR, { useSWRConfig } from "swr"
 import axios from "axios"
 import { delabelize } from "@/lib/utils"
@@ -13,6 +13,7 @@ export default function useUser({
   redirectIfFound = false,
   roles
 } = {}) {
+  const router = useRouter()
   const { mutate } = useSWRConfig()
   const { data: user } = useSWR("/api/user")
 
@@ -39,7 +40,9 @@ export default function useUser({
   const logout = () => {
     axios.post('/api/logout').then(res => {
       if (res.data.success) {
-        toast.success('Logged out successfully.')
+        let msg = 'Successfully logged out.'
+        if (router.pathname === '/') msg+= ' Once you log back in, your previous game will resume.'
+        toast.success(msg)
         refetch()
       }
     })

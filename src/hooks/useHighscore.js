@@ -1,7 +1,7 @@
 import useSWR from "swr"
 
-export const useHighscore = () => {
-  const { data } = useSWR('/api/highscore')
+export const useHighscore = args => {
+  const { data } = useSWR(!args?.skip && '/api/highscore')
   return {
     highscore: data?.highscore,
     prevHighscore: data?.prevHighscore,

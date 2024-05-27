@@ -15,13 +15,15 @@ export const ConfirmDialog = ({
   closeDialog,
   confirmText,
   onConfirm,
-  confirmColor
+  confirmColor,
+  title
 }) => {
 
   return (
     <Dialog
       visible={visible}
       closeDialog={closeDialog}
+      title={title}
     >
       <div css={{ marginBottom: 32 }}>
         {msg || 'Are you sure?'}
@@ -83,14 +85,8 @@ export const PromiseDialog = ({ children }) => {
         visible={!!confirmationState}
         closeDialog={() => handleClose()}
         contentStyle={{ width: 600 }}
+        title={confirmationState?.title}
       >
-        {confirmationState?.title && (
-          <div css={{
-            marginBottom: 10 
-          }}>
-            <b>{confirmationState?.title}</b>
-          </div>
-        )}
         {confirmationState?.description && (
           <div css={{
             marginBottom: 16
@@ -240,13 +236,13 @@ const DialogComponent = ({
             ? <TitleContainer { ...{ fullScreen } }>
                 <span className='title'>{title}</span>
                 {!noClose && <Close { ...{ fullScreen } }>
-                  <IconButton onClick={closeDialog}>
+                  <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--textVeryLowOpacity)' } }}>
                     <IoMdClose />
                   </IconButton>
                 </Close>}
               </TitleContainer>
             : noClose ? null : <Close { ...{ fullScreen } }>
-                <IconButton onClick={closeDialog}>
+                <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--textVeryLowOpacity)' } }}>
                   <IoMdClose />
                 </IconButton>
               </Close>
@@ -332,7 +328,7 @@ const DialogBox = styled.div`
   max-width: 93vw;
   background-color: ${p => p.noBoxBg ? 'transparent' : 'var(--backgroundColor)'};
   border: 1px solid ${p => p.noBoxBg ? 'transparent' : 'var(--textVeryLowOpacity)'};
-  border-radius: 6px;
+  border-radius: 0px;
   /* box-shadow: 0 10px 35px -5px var(--textKindaLowOpacity); */
   padding: 10px;
   min-height: min-content;

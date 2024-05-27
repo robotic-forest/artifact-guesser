@@ -35,6 +35,13 @@ export const GameProvider = ({ children }) => {
   // Sync with DB
   useEffect(() => { if (data) initGame(data) }, [data])
 
+  // REset game if logged out mid-game
+  useEffect(() => {
+    if (game?._id && user && !user?.isLoggedIn) {
+      setGame(null)
+    }
+  }, [user])
+
   // if not logged in, get from localStorage, otherwise initialize game
   useEffect(() => {
     const localGame = async () => {

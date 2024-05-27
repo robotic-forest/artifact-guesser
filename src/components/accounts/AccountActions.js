@@ -44,9 +44,10 @@ export const AccountActions = () => {
         disabled={disabled}
         onClick={async () => {
           const ok = await confirm({
-            title: 'Are you sure?',
-            description: 'Are you sure you want to delete this account?',
-            confirmText: 'Delete',
+            title: 'Are you sure you want to delete this account?',
+            confirmText: 'Destroy! Terminate! Banish to the shadow realm!',
+            confirmColor: 'red',
+            noCancel: true
           })
 
           if (ok) {

@@ -1,13 +1,10 @@
 import { delabelize } from '@/lib/utils'
 import axios from 'axios'
-import { useRouter } from 'next/router'
 import useSWR, { mutate } from 'swr'
+import { useUrl } from '../useUrl'
 
 export const useAccount = args => {
-  const router = useRouter()
-
-  const entityId = router.query.id
-  const entity = router.pathname.split('/')[1]
+  const { entity, entityId } = useUrl()
 
   const url = `/api/accounts/${args?._id || entityId}` + (args?.include ? `?include=${args?.include?.join(',')}` : '')
 

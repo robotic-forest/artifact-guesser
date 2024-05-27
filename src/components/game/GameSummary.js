@@ -14,7 +14,10 @@ import { IconGenerator } from "../art/IconGenerator"
 import AAAAAA, { Shake } from "../art/AAAAAA"
 import { MasonryLayout } from "../layout/MasonryLayout"
 
-export const GameSummary = () => {
+export const GameSummary = ({ game: playedGame }) => {
+  const { game: currentGame, startNewGame } = useGame()
+
+  const game = playedGame || currentGame
 
   return (
     <div css={{
@@ -22,20 +25,19 @@ export const GameSummary = () => {
       '@media (max-width: 800px)': { padding: '32px 6px 6px 6px' },
     }}>
       <Simulator
-        top={<GameScore />}
-        bottom={<RoundReview />}
+        top={<GameScore {...{ game, startNewGame, isPlayed: !startNewGame }} />}
+        bottom={<RoundReview game={game} />}
       />
     </div>
   )
 }
 
-const GameScore = () => {
+const GameScore = ({ game, startNewGame, isPlayed }) => {
   const { user } = useUser()
-  const { highscore, prevHighscore, gameId } = useHighscore()
-  const { game, startNewGame } = useGame()
+  const { highscore, prevHighscore, gameId } = useHighscore({ skip: isPlayed })
   const [signupOpen, setSignupOpen] = useState(false)
 
-  const newHighscore = (gameId && game._id) && gameId === game._id
+  const newHighscore = !isPlayed && (gameId && game._id) && gameId === game._id
 
   return (
     <>
@@ -125,14 +127,14 @@ const GameScore = () => {
           </div>
         )}
 
-        {newHighscore && prevHighscore && (
+        {newHighscore && !!prevHighscore && (
           <div className='text-lg mb-[24px]'>
             <span className='mr-2'>Previous highscore:</span>
             <span className='text-xl'><b>{prevHighscore}</b> / 1000</span>
           </div>
         )}
 
-        {!user?.isLoggedIn && (
+        {!isPlayed && !user?.isLoggedIn && (
           <div className='mb-4 bg-black rounded-lg p-[3px_7px_4px_4px]' css={{
             '@media (max-width: 800px)': { margin: '0 0 8px 0' }
           }}>
@@ -150,17 +152,18 @@ const GameScore = () => {
             for free to save your games and highscores!
           </div>
         )}
-        <SimulatorButton onClick={startNewGame} >
-          Start New Game
-        </SimulatorButton>
+        {startNewGame && (
+          <SimulatorButton onClick={startNewGame} >
+            Start New Game
+          </SimulatorButton>
+        )}
       </div>
     </>
   )
 }
 
 
-const RoundReview = () => {
-  const { game } = useGame()
+const RoundReview = ({ game }) => {
 
   return (
     <div className='flex flex-col items-center'>

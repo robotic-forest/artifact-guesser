@@ -1,8 +1,18 @@
+import { theme } from "@/pages/_app"
+import { themeCSS } from "../GlobalStyles"
+import { css } from "@emotion/react"
 
-export const Simulator = ({ className, top, bottom }) => {
+export const Simulator = ({ className, top, bottom, }) => {
+
+  const styles = css`
+    ${themeCSS(theme)}
+    background-color: var(--backgroundColor);
+    color: var(--textColor);
+    font-size: var(--fs);
+  `
 
   return (
-    <div className={className}>
+    <div className={className} css={styles}>
       <div className="bg-[url('/mayan-glyphs.png')] bg-[length:88.3px_84px]
        p-4 px-5 rounded" css={{
         boxShadow: '3px 2px 4px 0 #ffffff99 inset, -2px -1px 3px 0 #000000bb inset',
@@ -73,15 +83,24 @@ export const SimulatorButton = p => {
 
   return (
     <button
-      className="bg-[#ac9a8c] text-black text-lg py-1 px-4 border-white"
+      className="text-lg"
       css={{
+        background: p.disabled ? '#7e6f63' : '#ac9a8c',
+        padding: '4px 16px',
+        color: 'black',
         // boxShadow: '1px 1px 1px 0px #ffffff55 inset, -1px -1px 1px 0 #00000055 inset',
-        border: '3px outset',
-        borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+        border: p.disabled ? '3px solid #7e6f63' : '3px outset',
+        borderColor: p.disabled ? '#00000077 #ffffff77 #ffffff77 #00000077' : '#ffffff77 #00000077 #00000077 #ffffff77',
         '&:hover': {
-          filter: 'brightness(1.2)',
-          borderColor: '#ffffffaa #000000aa #000000aa #ffffffaa',
+          filter: !p.disabled && 'brightness(1.2)',
+          borderColor: !p.disabled && '#ffffffaa #000000aa #000000aa #ffffffaa',
         },
+        '&:active': {
+          border: '3px inset',
+          borderColor: '#00000077 #ffffff77 #ffffff77 #00000077',
+          background: '#7e6f63',
+        },
+        ...p.style
       }}
       {...p}
     />

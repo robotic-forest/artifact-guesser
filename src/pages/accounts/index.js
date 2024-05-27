@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import Link from 'next/link'
 import { AiFillDelete } from 'react-icons/ai'
 import toast from 'react-hot-toast'
@@ -12,7 +11,7 @@ import { useRouter } from 'next/router'
 import { IconButton } from '@/components/buttons/IconButton'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { DataTable } from '@/components/datatable/DataTable'
-import { ConfirmDialog } from '@/components/dialogs/Dialog'
+import { useConfirmation } from '@/components/dialogs/Dialog'
 import { FiLogIn } from 'react-icons/fi'
 
 export const accountTheme = {
@@ -109,15 +108,7 @@ export const loginAsUser = async ({ account, router }) => {
 const AccountActions = ({ row, mutate }) => {
   const { user } = useUser()
   const router = useRouter()
-  const [showDelete, setShowDelete] = useState(false)
-
-  const onDelete = async () => {
-    const { data: res } = await axios.post('/api/accounts/delete', { _id: row._id })
-    if (res?.success) {
-      mutate()
-      toast.success('Account deleted successfully.')
-    } else toast.error(res.message)
-  }
+  const confirm = useConfirmation()
 
   /* Rules:
     Cannot delete yourself
@@ -132,17 +123,6 @@ const AccountActions = ({ row, mutate }) => {
 
   return (
     <>
-      <ConfirmDialog
-        visible={showDelete}
-        closeDialog={() => setShowDelete(false)}
-        msg='Are you sure you want to delete this account?'
-        confirmText='Delete Account'
-        onConfirm={() => {
-          onDelete()
-          setShowDelete(false)
-        }}
-        confirmColor='#ef7e7e'
-      />
       <div css={{ display: 'flex', width: '100%', justifyContent: 'flex-end', marginRight: 8 }}>
         <Link href={`/accounts/${row._id}`} passHref>
           <Button small as='a' variant='outlined'>View</Button>
@@ -153,7 +133,22 @@ const AccountActions = ({ row, mutate }) => {
           </Link>
         )}
         {!deleteDisabled && (
-          <IconButton size={22} tooltip='Delete' css={{ marginLeft: 6 }} onClick={() => setShowDelete(true)}>
+          <IconButton size={22} tooltip='Delete' css={{ marginLeft: 6 }} onClick={async () => {
+            const ok = await confirm({
+              title: 'Are you sure you want to delete this account?',
+              confirmText: 'Destroy! Terminate! Banish to the shadow realm!',
+              confirmColor: 'red',
+              noCancel: true
+            })
+
+            if (ok) {
+              const { data: res } = await axios.post('/api/accounts/delete', { _id: row._id })
+              if (res?.success) {
+                mutate()
+                toast.success('Account deleted successfully.')
+              } else toast.error(res.message)
+            }
+          }}>
             <AiFillDelete color='#ff7d7d' />
           </IconButton>
         )}

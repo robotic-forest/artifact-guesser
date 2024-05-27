@@ -15,9 +15,9 @@ export const gamesTheme =  {
 }
 
 export default () => {
-  const { user, loading } = useUser()
+  const { user } = useUser()
   
-  return !loading && (
+  return (
     <Layout title='Games' theme={gamesTheme}>
       <FilterBar
         title={(
@@ -28,7 +28,7 @@ export default () => {
         )}
         renderFilter={[]}
       >
-        <GameList user={user} />
+        {user?.isLoggedIn && <GameList user={user} />}
       </FilterBar>
     </Layout>
   )
@@ -39,7 +39,7 @@ const GameList = ({ user }) => {
 
   const filter = mdbFilter || {}
   if (user.role !== 'Admin') {
-    FileReader.userId = user._id
+    mdbFilter.userId = user._id
   }
 
   const { games, pagination, sort } = useGames({
@@ -57,6 +57,44 @@ const GameList = ({ user }) => {
         noDataComponent='No Games found.'
         {...sort}
         {...pagination}
+        highlightOnHover
+        renderRow={(row, rowContent) => (
+          <Link
+            key={row.id}
+            href={`/games/${row._id}`}
+            css={{
+              textDecoration: 'none',
+              '&:first-of-type': {
+                borderTopLeftRadius: '6px',
+                borderTopRightRadius: '6px',
+              },
+              '&:last-of-type': {
+                borderBottomLeftRadius: '6px',
+                borderBottomRightRadius: '6px',
+                borderBottom: 'none'
+              },
+              overflow: 'hidden',
+              borderBottom: '1px solid var(--backgroundColorSlightlyDark)'
+            }}
+          >
+            {rowContent}
+          </Link>
+        )}
+        customStyles={{
+          rows: {
+            style: {
+              background: 'var(--backgroundColorBarelyDark)',
+            },
+            highlightOnHoverStyle: {
+              color: 'var(--textColor)',
+              backgroundColor: 'var(--backgroundColorSliightlyDark)',
+              borderBottomColor: 'var(--backgroundColorSlightlyDark)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+              outline: 'none',
+            }
+          },
+        }}
       />
     </div>
   )

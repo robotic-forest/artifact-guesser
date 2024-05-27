@@ -8,13 +8,8 @@ async function account(req, res) {
   if (!user) return
   const db = await initDB()
 
-  if (req.query.id === 'undefined') {
-    res.send()
-    return
-  }
-
+  if (req.query.id === 'undefined') return res.send()
   const account = await db.collection('accounts').findOne({ _id: new ObjectId(req.query.id) })
-
   res.send(cleanMDB(account))
 }
 
