@@ -80,6 +80,7 @@ const GameUI = () => {
         height: isViewingSummary ? undefined : '100vh',
         minHeight: '100vh',
         width: '100vw',
+        display: isViewingSummary ? 'static' : 'fixed',
         background: isViewingSummary ? 'linear-gradient(0deg, #061c0d, #28663c)' : 'black',
         overflow: 'hidden',
       }}>
