@@ -70,8 +70,6 @@ const GameUI = () => {
   const primaryImage = artifact?.images.external[0]
   const additionalImages = artifact?.images.external.slice(1)
 
-  console.log(`scale: ${value?.scale}, translation: ${JSON.stringify(value?.translation)}`)
-
   return (
     <>
       <Head>
