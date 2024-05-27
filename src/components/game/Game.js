@@ -70,6 +70,9 @@ const GameUI = () => {
   const primaryImage = artifact?.images.external[0]
   const additionalImages = artifact?.images.external.slice(1)
 
+  if (!isViewingSummary) document.body.style.position = "fixed"
+  else document.body.style.position = "static"
+
   return (
     <>
       <Head>
