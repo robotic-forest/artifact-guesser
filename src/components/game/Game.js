@@ -21,6 +21,7 @@ import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
 import { GameSummary } from "./GameSummary"
 import { IconButton } from "../buttons/IconButton"
 import { BiChevronDown, BiChevronUp, BiMinus, BiPlus } from "react-icons/bi"
+import { BsDiscord } from "react-icons/bs"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -96,6 +97,15 @@ const GameUI = () => {
             <GiGreekSphinx className='mr-2' />
             Artifact Guesser
           </div>
+          <Link href='https://discord.gg/zGJhf97Y'>
+            <MenuButton size={22} className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
+              textColor: '#ffffff',
+              primaryColor: '#5562ea',
+              backgroundColor: '#5562ea'
+            }}>
+              <BsDiscord />
+            </MenuButton>
+          </Link>
           <Link href='/artifacts'>
             <MenuButton size={22} className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
               <GiAmphora />
