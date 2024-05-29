@@ -14,10 +14,10 @@ export default () => {
       padding: 0,
       background: 'linear-gradient(0deg, #061c0d, #28663c)'
     }}>
-      <div className='p-1 px-3' onClick={() => router.back()}>
+      <a className='p-1 px-3 flex items-center' onClick={() => router.back()}>
         <GrReturn className='inline-block mr-2' />
         Go Back
-      </div>
+      </a>
       <GameSummary game={game} />
     </Layout>
   )
