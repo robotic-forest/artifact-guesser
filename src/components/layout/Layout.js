@@ -39,7 +39,7 @@ export const Layout = ({ title, theme, children, contentCSS }) => {
     <>
       <Head>
         <title>{title || 'Artifact Guesser'}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <meta name="viewport" content="initial-scale=1.0, maximum-scale=1, width=device-width" />
       </Head>
       <div className='flex w-[100%] min-h-[100vh]' css={styles}>
         {user?.isLoggedIn && (
