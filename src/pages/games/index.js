@@ -133,7 +133,7 @@ const gameColumns = [
   {
     id: 'startedAt',
     name: 'Started',
-    selector: row => row.startedAt ? moment(row.startedAt).format('MMM D, YYYY HH:mm') : 'n/a',
+    selector: row => row.startedAt ? moment(row.startedAt).format('MMM D, YYYY hh:mma') : 'N/A',
     sortable: true,
     sortField: 'startedAt'
   }

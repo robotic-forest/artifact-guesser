@@ -114,7 +114,7 @@ const GameUI = () => {
           >
             <FaTrophy />
           </MenuButton>
-          <Link href='https://discord.gg/zGJhf97Y'>
+          <Link href='https://discord.gg/r7bZ5QYv'>
             <MenuButton size={22} className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
               textColor: '#ffffff',
               primaryColor: '#5562ea',
