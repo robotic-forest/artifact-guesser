@@ -1,5 +1,6 @@
 import { initDB } from "@/lib/apiUtils/mongodb"
 import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
+import moment from "moment";
 import { ObjectId } from "mongodb"
 
 async function editGame(req, res) {
@@ -17,6 +18,8 @@ async function editGame(req, res) {
     const { artifact, ...rest } = round
     return rest
   })
+
+  if (typeof data.startedAt === 'string') data.startedAt = moment(data.startedAt).toDate()
 
   await db.collection('games').updateOne({ _id: new ObjectId(_id) }, { $set: { ...data, roundData: processedRounds } })
   res.send({ success: true })
