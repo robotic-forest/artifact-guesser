@@ -34,11 +34,26 @@ export default () => {
         <GiGoat style={{ marginRight: 6 }} />
         Goatcounter Views
       </div>
-      <div className='flex flex-wrap'>
+      <div className='flex flex-wrap w-full'>
         <GoatStats /> 
-        <DashInfo title={<><GiAmphora className='mr-2'/>Artifacts</>} count={artifacts} url='/artifacts' theme={artifactsTheme} />
-        <DashInfo title={<><GiAbstract042 className='text-sm mr-2'/>Games played</>} count={games} url='/games?__sortfield=startedAt&__sortdirection=-1' theme={gamesTheme} />
-        <DashInfo title={<><FaUser className='text-sm mr-2'/>Accounts</>} count={accounts} url='/accounts' theme={accountTheme} />
+        <DashInfo
+          title={<><GiAmphora className='mr-2'/>Artifacts</>}
+          count={artifacts}
+          url='/artifacts'
+          theme={artifactsTheme}
+        />
+        <DashInfo
+          title={<><GiAbstract042 className='text-sm mr-2'/>Games played</>}
+          count={games}
+          url='/games?__sortfield=startedAt&__sortdirection=-1'
+          theme={gamesTheme}
+        />
+        <DashInfo
+          title={<><FaUser className='text-sm mr-2'/>Accounts</>}
+          count={accounts}
+          url='/accounts'
+          theme={accountTheme}
+        />
       </div>
     </Layout>
   )

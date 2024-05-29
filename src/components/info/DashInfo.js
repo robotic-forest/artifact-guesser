@@ -7,7 +7,7 @@ export const DashInfo = ({ title, count, url, theme }) => {
     <div css={themeCSS(theme)}>
       <Link href={url} css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
         <div className='p-3 px-4 rounded mr-2 mb-2
-            w-[260px] max-w-[calc(100vw_-_72px)] flex items-center justify-between cusrsor-pointer cursor-pointer'
+            w-[260px] max-w-[calc(100vw_-_72px)] flex items-center justify-between cusrsor-pointer'
             css={{
               background: 'var(--backgroundColorBarelyLight)',
               '&:hover': { background: 'var(--backgroundColorSlightlyLight)' }
