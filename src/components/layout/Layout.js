@@ -1,7 +1,7 @@
 import Head from "next/head"
 import { IconButton } from "../buttons/IconButton"
 import { MdDashboard } from "react-icons/md"
-import { GiAbstract042, GiAmphora, GiGreekSphinx } from "react-icons/gi"
+import { GiAbstract034, GiAmphora, GiGreekSphinx } from "react-icons/gi"
 import Link from "next/link"
 import useUser from "@/hooks/useUser"
 import { GrLogout } from "react-icons/gr"
@@ -60,7 +60,7 @@ export const Layout = ({ title, theme, children, contentCSS }) => {
               </Link>
               <Link href='/games?__sortfield=startedAt&__sortdirection=-1' css={{ '&:hover': { color: 'var(--textColor)'} }}>
                 <MenuButton tooltip='Games' className='mb-3' theme={gamesTheme}>
-                  <GiAbstract042 />
+                  <GiAbstract034 />
                 </MenuButton>
               </Link>
               <Link href='/accounts' css={{ '&:hover': { color: 'var(--textColor)'} }}>

@@ -12,8 +12,13 @@ export const useQuery = () => {
     if (query[key] === 'false') query[key] = false
   })
 
-  const setQuery = newQuery => {
-    router.replace({ query: newQuery }, undefined, { shallow: true })
+  const setQuery = (nq) => {
+    const id = nq?.id || router?.query?.id
+
+    // make sure new query has id for this to work
+    if (!router.pathname.includes('[id]') || id) {
+      router.replace({ query: { ...nq, ...(id ? { id } : {}) } }, undefined, { shallow: true })
+    }
   }
 
   return { query, setQuery, ...processQuery(query) }

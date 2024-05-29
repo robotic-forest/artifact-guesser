@@ -5,7 +5,7 @@ import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { useGames } from "@/hooks/games/useGames"
 import { FaUser } from "react-icons/fa"
-import { GiAbstract042, GiAmphora, GiGoat } from "react-icons/gi"
+import { GiAbstract034, GiAmphora, GiGoat } from "react-icons/gi"
 import { MdDashboard } from "react-icons/md"
 import { artifactsTheme } from "./artifacts"
 import { accountTheme } from "./accounts"
@@ -43,7 +43,7 @@ export default () => {
           theme={artifactsTheme}
         />
         <DashInfo
-          title={<><GiAbstract042 className='text-sm mr-2'/>Games played</>}
+          title={<><GiAbstract034 className='text-sm mr-2'/>Games played</>}
           count={games}
           url='/games?__sortfield=startedAt&__sortdirection=-1'
           theme={gamesTheme}

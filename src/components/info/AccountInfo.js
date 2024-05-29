@@ -8,6 +8,7 @@ import { useAccount } from '@/hooks/accounts/useAccount'
 import useUser from '@/hooks/useUser'
 import { IconButton } from '../buttons/IconButton'
 import { Button } from '../buttons/Button'
+import { IconGenerator } from '../art/IconGenerator'
 
 export const AccountInfo = () => {
   const { account } = useAccount()
@@ -23,7 +24,7 @@ export const AccountInfo = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 24,
-        width: '100%'
+        width: '100%',
       }}>
         <div css={{
           display: 'flex',
@@ -41,7 +42,7 @@ export const AccountInfo = () => {
             </IconButton>
           )}
           <h4 css={{ margin: 0, fontWeight: 600 }}>
-            Account Information
+            Account
           </h4>
         </div>
         {!editDisabled && (
@@ -52,30 +53,46 @@ export const AccountInfo = () => {
       </div>
 
       <div css={{
-        fontWeight: 600,
-        margin: '24px 0',
-        fontSize: 20
+        background: 'var(--backgroundColorBarelyLight)',
+        padding: 10,
+        borderRadius: 10,
+        paddingRight: 24
       }}>
-        {account?.username}
-      </div>
+        <div css={{
+          fontWeight: 600,
+          margin: '0px 0 16px',
+          fontSize: '1.2em',
+          display: 'flex',
+          alignItems: 'center',
+          background: 'var(--backgroundColorSlightlyLight)',
+          border: '3px solid var(--ghostText)',
+          borderRadius: 6,
+          padding: '6px 16px 6px 10px',
+          width: 'fit-content'
+        }}>
+          <IconGenerator className='mr-2.5' />
+          {account?.username}
+        </div>
 
-      <InfoItem icon={<MdEmail />} value={(
-        <a href={`mailto:${account?.email}`}>
-          {account?.email || (
-            <span css={{ color: 'var(--textLowOpacity)' }}>
-              No email
-            </span>
-          )}
-        </a>
-      )} />
-      <InfoItem
-        icon={<b>Type</b>}
-        value={account?.role}
-      />
-      <InfoItem
-        icon={<b>Status</b>}
-        value={account?.status}
-      />
+        <InfoItem icon={<MdEmail />} value={(
+          <a href={`mailto:${account?.email}`}>
+            {account?.email || (
+              <span css={{ color: 'var(--textLowOpacity)' }}>
+                No email
+              </span>
+            )}
+          </a>
+        )} />
+        <InfoItem
+          icon={<b>Type</b>}
+          value={account?.role}
+        />
+        <InfoItem
+          icon={<b>Status</b>}
+          value={account?.status}
+          style={{ marginBottom: 0 }}
+        />
+      </div>
     </InfoUI>
   )
 }

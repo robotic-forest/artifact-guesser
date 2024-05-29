@@ -3,9 +3,8 @@ import useUser from '@/hooks/useUser'
 import { Layout } from '@/components/layout/Layout'
 import FilterBar, { useFilter } from '@/components/datatable/FilterBar'
 import { DataTable } from '@/components/datatable/DataTable'
-import { GiAbstract042 } from 'react-icons/gi'
+import { GiAbstract034 } from 'react-icons/gi'
 import { useGames } from '@/hooks/games/useGames'
-import { useAccount } from '@/hooks/accounts/useAccount'
 import moment from 'moment'
 
 export const gamesTheme =  {
@@ -22,7 +21,7 @@ export default () => {
       <FilterBar
         title={(
           <b className='flex items-center'>
-            <GiAbstract042 className='mr-3 text-lg relative top-[-1px]' />
+            <GiAbstract034 className='mr-3 text-lg relative top-[-1px]' />
             Games
           </b>
         )}
@@ -34,69 +33,75 @@ export default () => {
   )
 }
 
-const GameList = ({ user }) => {
+export const GameList = ({ user, baseFilter = {}, excludeColumns, skip }) => {
   const { mdbFilter } = useFilter()
 
-  const filter = mdbFilter || {}
+  const filter = { ...(mdbFilter || {}), ...baseFilter }
   if (user.role !== 'Admin') {
-    mdbFilter.userId = user._id
+    filter.userId = user._id
   }
 
   const { games, pagination, sort } = useGames({
     filter,
     sort: true,
-    paginate: true
+    paginate: true,
+    skip
   })
 
   return (
-    <div>
-      <DataTable
-        columns={gameColumns}
-        data={games}
-        pagination
-        noDataComponent='No Games found.'
-        {...sort}
-        {...pagination}
-        highlightOnHover
-        renderRow={(row, rowContent) => (
-          <Link
-            key={row.id}
-            href={`/games/${row._id}`}
-            css={{
-              textDecoration: 'none',
-              '&:first-of-type': {
-                borderTopLeftRadius: '6px',
-                borderTopRightRadius: '6px',
-              },
-              '&:last-of-type': {
-                borderBottomLeftRadius: '6px',
-                borderBottomRightRadius: '6px',
-                borderBottom: 'none'
-              },
-              overflow: 'hidden',
-              borderBottom: '1px solid var(--backgroundColorSlightlyDark)'
-            }}
-          >
-            {rowContent}
-          </Link>
-        )}
-        customStyles={{
-          rows: {
-            style: {
-              background: 'var(--backgroundColorBarelyDark)',
+    <GamesDataTable {...{ games, sort, pagination, excludeColumns }} />
+  )
+}
+
+export const GamesDataTable = ({ games, sort, pagination, excludeColumns = [] }) => {
+
+  return (
+    <DataTable
+      columns={gameColumns.filter(r => !excludeColumns.includes(r.name))}
+      data={games}
+      pagination
+      noDataComponent='No Games found.'
+      {...sort}
+      {...pagination}
+      highlightOnHover
+      renderRow={(row, rowContent) => (
+        <Link
+          key={row.id}
+          href={`/games/${row._id}`}
+          css={{
+            textDecoration: 'none',
+            '&:first-of-type': {
+              borderTopLeftRadius: '6px',
+              borderTopRightRadius: '6px',
             },
-            highlightOnHoverStyle: {
-              color: 'var(--textColor)',
-              backgroundColor: 'var(--backgroundColorSliightlyDark)',
-              borderBottomColor: 'var(--backgroundColorSlightlyDark)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer',
-              outline: 'none',
-            }
+            '&:last-of-type': {
+              borderBottomLeftRadius: '6px',
+              borderBottomRightRadius: '6px',
+              borderBottom: 'none'
+            },
+            overflow: 'hidden',
+            borderBottom: '1px solid var(--backgroundColorSlightlyDark)'
+          }}
+        >
+          {rowContent}
+        </Link>
+      )}
+      customStyles={{
+        rows: {
+          style: {
+            background: 'var(--backgroundColorBarelyDark)',
           },
-        }}
-      />
-    </div>
+          highlightOnHoverStyle: {
+            color: 'var(--textColor)',
+            backgroundColor: 'var(--backgroundColorSliightlyDark)',
+            borderBottomColor: 'var(--backgroundColorSlightlyDark)',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+            outline: 'none',
+          }
+        },
+      }}
+    />
   )
 }
 

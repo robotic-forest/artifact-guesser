@@ -124,7 +124,7 @@ const AccountActions = ({ row, mutate }) => {
   return (
     <>
       <div css={{ display: 'flex', width: '100%', justifyContent: 'flex-end', marginRight: 8 }}>
-        <Link href={`/accounts/${row._id}`} passHref>
+        <Link href={`/accounts/${row._id}?__sortfield=startedAt&__sortdirection=-1`} passHref>
           <Button small as='a' variant='outlined'>View</Button>
         </Link>
         {!editDisabled && (

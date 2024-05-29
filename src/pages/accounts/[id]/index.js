@@ -5,10 +5,13 @@ import { InfoBox } from '@/components/info/InfoBox'
 import useUser from '@/hooks/useUser'
 import { Layout } from '@/components/layout/Layout'
 import { accountTheme } from '..'
+import { GameList } from '@/pages/games'
+import { GiAbstract034 } from 'react-icons/gi'
+import FilterBar from '@/components/datatable/FilterBar'
 
 export default function Account() {
   const { account } = useAccount()
-  const { loading } = useUser({ redirectTo: '/' })
+  const { user, loading } = useUser({ redirectTo: '/' })
 
   return loading ? null : (
     <Layout theme={accountTheme}>
@@ -27,6 +30,19 @@ export default function Account() {
             </InfoBox>
           )}
           <AccountActions />
+          <div className='mt-8'>
+            <FilterBar
+              title={(
+                <b className='flex items-center'>
+                  <GiAbstract034 className='mr-3' />
+                  Games
+                </b>
+              )}
+              renderFilter={[]}
+            >
+              {user?.isLoggedIn && <GameList user={user} skip={!account?._id} baseFilter={{ userId: account?._id }} />}
+            </FilterBar>
+          </div>
         </div>
       </div>
     </Layout>

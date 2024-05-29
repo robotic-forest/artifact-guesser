@@ -4,7 +4,7 @@ import { useMediaQuery } from "react-responsive"
 import { v4 as uuidv4 } from 'uuid'
 import Tooltip from 'react-tooltip'
 
-export const InfoItem = ({ icon, value, list, tooltip, tooltipPlace = 'top', noIcon, tooltipId }) => {
+export const InfoItem = ({ icon, value, list, tooltip, tooltipPlace = 'top', noIcon, tooltipId, style }) => {
   const isMobile = useMediaQuery({ maxWidth: 600 })
   const [toolTipId] = useState(tooltipId || (tooltip?.toLowerCase().replaceAll(' ', '-') + '-' + uuidv4()))
   const iconStyle = {
@@ -17,7 +17,9 @@ export const InfoItem = ({ icon, value, list, tooltip, tooltipPlace = 'top', noI
       <div
         css={{
           display: 'flex',
-          marginBottom: 16
+          alignItems: 'center',
+          marginBottom: 8,
+          ...style
         }}
       >
         <div css={{ minWidth: 24, marginRight: 10 }}>
@@ -25,7 +27,7 @@ export const InfoItem = ({ icon, value, list, tooltip, tooltipPlace = 'top', noI
             {React.cloneElement(icon, { style: !noIcon && iconStyle })}
           </div>
         </div>
-        <div css={{ overflow: 'hidden', textOverflow: 'ellipsis', minHeight: '1.3em' }}>
+        <div css={{ overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 1 }}>
           {value || list && Object.keys(list).map(key => (
             <div key={key}>
               <div css={{ color: 'var(--textLowOpacity)', fontSize: '0.9em', marginBottom: 2 }}>
@@ -54,27 +56,20 @@ export const InfoItem = ({ icon, value, list, tooltip, tooltipPlace = 'top', noI
 
 export const InfoUI = styled.div`
   width: 100%;
-  min-width: 260px;
   margin-bottom: 24px;
-  padding: 0 10px;
 
   .item-container {
     display: flex;
     flex-flow: row wrap;
     
-
     & > div {
       width: 50%
     }
   }
 
   @media (min-width: 1050px) {
-    padding: 0;
-    position: sticky;
-    top: 105px;
-    align-self: flex-start;
-    width: 340px;
-    margin-right: 60px;
+    width: fit-content;
+    margin-right: 40px;
 
     height: fit-content;
 

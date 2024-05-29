@@ -76,12 +76,19 @@ export const Actions = ({
       ...style
     }}>
       <div css={{
+        padding: '4px 12px',
+        fontSize: '0.8em',
+        color: 'var(--textLowOpacity)',
+      }}>
+        Actions
+      </div>
+      <div css={{
         display: 'flex',
         flexFlow: 'row wrap',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        background: 'var(--textSuperLowOpacity)',
-        borderRadius: 10,
+        background: 'var(--backgroundColorBarelyDark)',
+        borderRadius: 6,
         padding: 10,
         width: '100%'
       }}>
