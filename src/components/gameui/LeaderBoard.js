@@ -11,7 +11,7 @@ export const LeaderBoard = ({ onClose }) => {
   const { ref } = useClickedOutside(onClose)
 
   return (
-    <div ref={ref} className='fixed p-1 top-[30px] left-1 z-10 w-[400px] bg-black rounded-lg border border-white/30' css={{ 
+    <div ref={ref} className='fixed p-1 top-[30px] left-1 z-[100] w-[400px] bg-black rounded-lg border border-white/30' css={{ 
       '@media (max-width: 500px)': { width: 'calc(100vw - 8px)' }
     }}>
       <div className='p-1 px-1.5 mb-1 flex items-center justify-between'>
