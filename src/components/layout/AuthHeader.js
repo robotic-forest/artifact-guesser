@@ -21,12 +21,11 @@ export const AuthHeader = () => {
       <div className='fixed flex items-center m-1 top-0 right-0 z-10 text-sm'>
         {user?.isLoggedIn && (
           <>
-            <div className='bg-black p-[1px_6px] rounded-[4px] mr-1 flex items-center min-h-[22px]'>
+            <div className='bg-black p-[1px_6px] rounded-[4px] mr-1 flex items-center min-h-[22px]'
+              css={{ '@media (max-width: 800px)': { display: 'none' } }}
+            >
               <FaUser className='text-xs' />
-              <span css={{
-                '@media (max-width: 800px)': { display: 'none' },
-                marginLeft: 6
-              }}>
+              <span css={{ marginLeft: 6 }}>
                 {user.username}
               </span>
             </div>
