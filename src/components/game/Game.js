@@ -22,6 +22,8 @@ import { GameSummary } from "./GameSummary"
 import { IconButton } from "../buttons/IconButton"
 import { BiChevronDown, BiChevronUp, BiMinus, BiPlus } from "react-icons/bi"
 import { BsDiscord } from "react-icons/bs"
+import { FaTrophy } from "react-icons/fa"
+import { LeaderBoard } from "../gameui/LeaderBoard"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -54,6 +56,7 @@ const GameUI = () => {
   const [value, setValue] = useState()
   const [hoverCountry, setHoverCountry] = useState()
   const [mobileMapHeight, setMobileMapHeight] = useState(150)
+  const [leaderBoardOpen, setLeaderBoardOpen] = useState(false)
 
   const stringifiedDimensions = JSON.stringify(dimensions)
 
@@ -93,10 +96,24 @@ const GameUI = () => {
         overflow: 'hidden',
       }}>
         <div className='fixed flex items-center m-1 top-0 left-0 text-sm z-[10]'>
-          <div className='flex items-center bg-black p-[2px_7px_2px_5px] rounded-[4px] overflow-hidden'>
+          <div className='flex items-center bg-black p-[2px_7px_2px_5px] rounded-[4px] h-[22px] overflow-hidden'>
             <GiGreekSphinx className='mr-2' />
             Artifact Guesser
           </div>
+          <MenuButton
+            size={22}
+            className='ml-1.5'
+            css={{ border: '1px solid #00000033' }}
+            tooltip='Highscores'
+            theme={{
+              textColor: '#000000',
+              primaryColor: '#c9ae5f',
+              backgroundColor: '#c9ae5f'
+            }}
+            onClick={() => setLeaderBoardOpen(lbo => !lbo)}
+          >
+            <FaTrophy />
+          </MenuButton>
           <Link href='https://discord.gg/zGJhf97Y'>
             <MenuButton size={22} className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
               textColor: '#ffffff',
@@ -114,6 +131,8 @@ const GameUI = () => {
         </div>
 
         <AuthHeader />
+
+        {leaderBoardOpen && <LeaderBoard onClose={() => setLeaderBoardOpen(false)} />}
 
         {loading && !isViewingSummary && <LoadingArtifact />}
 

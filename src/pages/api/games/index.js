@@ -1,6 +1,7 @@
 import { cleanMDB, processCriteria } from "@/lib/apiUtils/misc"
 import { initDB } from "@/lib/apiUtils/mongodb"
 import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
+import { ObjectId } from "mongodb";
 
 /* schema: {
   _id: ObjectId
@@ -30,8 +31,16 @@ const games = async (req, res) => {
     .limit(perPage)
     .toArray()
 
+  
+  const users = await db.collection('accounts').find({ _id: { $in: dbGames.map(g => new ObjectId(g.userId)) } }).toArray()
+
+  const games = dbGames.map(g => {
+    const user = users.find(u => u._id.toString() === g.userId)
+    return { ...g, username: user.username }
+  })
+
   res.send({
-    data: cleanMDB(dbGames),
+    data: cleanMDB(games),
     total: await db.collection('games').countDocuments(criteria)
   })
 }

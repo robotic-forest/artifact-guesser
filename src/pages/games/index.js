@@ -104,11 +104,9 @@ const gameColumns = [
   {
     name: 'Player',
     selector: row => {
-      const { account } = useAccount({ _id: row.userId })
-
       return (
         <Link href={`/accounts/${row.userId}`}>
-          {account?.username}
+          {row?.username}
         </Link>
       )
     }
