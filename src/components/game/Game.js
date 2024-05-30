@@ -19,7 +19,7 @@ import { artifactsTheme } from "@/pages/artifacts"
 import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
 import { GameSummary } from "./GameSummary"
 import { IconButton } from "../buttons/IconButton"
-import { BiChevronDown, BiChevronUp, BiMinus, BiPlus } from "react-icons/bi"
+import { BiChevronDown, BiChevronUp, BiMinus, BiPlus, BiQuestionMark } from "react-icons/bi"
 import { BsDiscord } from "react-icons/bs"
 import { FaTrophy } from "react-icons/fa"
 import { LeaderBoard } from "../gameui/LeaderBoard"
@@ -120,6 +120,11 @@ const GameUI = () => {
         <Link href='/artifacts'>
           <MenuButton size={22} className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
             <GiAmphora />
+          </MenuButton>
+        </Link>
+        <Link href='/about'>
+          <MenuButton size={22} className='ml-1.5' tooltip='About'>
+            <BiQuestionMark />
           </MenuButton>
         </Link>
       </div>
