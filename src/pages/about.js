@@ -7,7 +7,7 @@ import { IconGenerator } from "@/components/art/IconGenerator"
 export default () => {
 
   return (
-    <Layout title='Artifacts List' theme={artifactsTheme} contentCSS={{ width: '100vw' }}>
+    <Layout title='Artifacts List' theme={artifactsTheme} contentCSS={{ width: '100vw' }} noNav>
       <div className='fixed top-1 left-1'>
         <ResumeGameButton />
       </div>
