@@ -15,11 +15,11 @@ import { accountTheme } from "@/pages/accounts"
 import { ResumeGameButton } from "./components/ResumeGameButton"
 import { useRouter } from "next/router"
 
-export const Layout = ({ title, theme, children, contentCSS }) => {
-  const { logout, user } = useUser()
+export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
+  const { logout, user, isAdmin } = useUser()
   const router = useRouter()
 
-  const noauthroutes = ['/', '/artifacts']
+  const noauthroutes = ['/', '/artifacts', '/about']
   if (user && !user.isLoggedIn && !noauthroutes.includes(router.pathname)) router.push('/')
 
   const styles = theme && css`
@@ -42,7 +42,7 @@ export const Layout = ({ title, theme, children, contentCSS }) => {
         <meta name="viewport" content="initial-scale=1.0, maximum-scale=1, width=device-width" />
       </Head>
       <div className='flex w-[100%] min-h-[100vh]' css={styles}>
-        {user?.isLoggedIn && (
+        {user?.isLoggedIn && isAdmin && !noNav && (
           <div className='sticky top-0 h-[100vh] min-h-[100vh] flex flex-col justify-between items-center' css={{
             background: 'var(--backgroundColorSlightlyLight)',
           }}>
@@ -84,6 +84,7 @@ export const Layout = ({ title, theme, children, contentCSS }) => {
         <div className='relative p-3' css={{
           flexGrow: 1,
           overflowY: 'auto',
+          overflowX: 'hidden',
           ...contentCSS
         }}>
           {children}
