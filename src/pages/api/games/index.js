@@ -36,7 +36,7 @@ const games = async (req, res) => {
 
   const games = dbGames.map(g => {
     const user = users.find(u => u._id.toString() === g.userId)
-    return { ...g, username: user?.username }
+    return { ...g, username: user?.username || 'N/A' }
   })
 
   res.send({
