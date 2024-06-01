@@ -13,6 +13,7 @@ import { BsFillPersonFill } from 'react-icons/bs'
 import { DataTable } from '@/components/datatable/DataTable'
 import { useConfirmation } from '@/components/dialogs/Dialog'
 import { FiLogIn } from 'react-icons/fi'
+import useSWR from 'swr'
 
 export const accountTheme = {
   backgroundColor: '#91c3cb',
@@ -79,6 +80,14 @@ const accountColumns = ({ mutate }) => [
   {
     name: 'Role',
     selector: row => row.role,
+  },
+  {
+    name: 'Games Played',
+    selector: row => {
+      const { data } = useSWR(`/api/accounts/${row._id}/games/count`)
+      return data
+    },
+    grow: 0.2,
   },
   {
     name: 'Actions',
