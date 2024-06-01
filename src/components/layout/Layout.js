@@ -14,10 +14,12 @@ import { gamesTheme } from "@/pages/games"
 import { accountTheme } from "@/pages/accounts"
 import { ResumeGameButton } from "./components/ResumeGameButton"
 import { useRouter } from "next/router"
+import { useTheme } from "@/pages/_app"
 
 export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
   const { logout, user, isAdmin } = useUser()
   const router = useRouter()
+  useTheme(theme)
 
   const noauthroutes = ['/', '/artifacts', '/about']
   if (user && !user.isLoggedIn && !noauthroutes.includes(router.pathname)) router.push('/')

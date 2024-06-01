@@ -10,6 +10,7 @@ import { MdDashboard } from "react-icons/md"
 import { artifactsTheme } from "./artifacts"
 import { accountTheme } from "./accounts"
 import { gamesTheme } from "./games"
+import { AllAccountActions } from "@/components/dashbaord/AllAcountActions"
 
 export const dashbaordTheme = {
   backgroundColor: '#78c9ab',
@@ -53,6 +54,7 @@ export default () => {
           count={accounts}
           url='/accounts'
           theme={accountTheme}
+          actions={<AllAccountActions />}
         />
       </div>
     </Layout>

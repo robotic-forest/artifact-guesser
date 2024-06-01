@@ -8,6 +8,7 @@ import useWindowDimensions from '@/hooks/useWindowDimensions'
 import { IoMdClose } from 'react-icons/io'
 import { IconButton } from '../buttons/IconButton'
 import { Button } from '../buttons/Button'
+import { FormProvider, useForm } from 'react-hook-form'
 
 export const ConfirmDialog = ({
   msg,
@@ -337,11 +338,11 @@ const DialogBox = styled.div`
   z-index: 100;
 
   @media (min-width: 500px) {
-    animation: ${p => !p.fullScreen && !p.isMobile && 'slideDialogUp 0.2s, fadeIn 0.2s'};
+    /* animation: ${p => !p.fullScreen && !p.isMobile && 'slideDialogUp 0.2s, fadeIn 0.2s'};
     @keyframes slideDialogUp {
       0%   { margin-top: 72px; }
       100% { margin-top: 36px; }
-    }
+    } */
   }
 `
 

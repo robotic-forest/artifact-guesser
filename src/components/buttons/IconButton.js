@@ -18,6 +18,7 @@ const IconButtonComponent = forwardRef(({
   onClick,
   size = 24,
   iconSize,
+  bg,
   hc, // hover color
   ri, // rotate icon
   ...props
@@ -37,7 +38,7 @@ const IconButtonComponent = forwardRef(({
         data-tooltip-id={toolTipId}
         data-tooltip-content={tooltip}
         data-tooltip-place={tooltipPlace}
-        {...{ ref, disabled, size, innerSize, hc, ri }}
+        {...{ ref, disabled, size, innerSize, hc, ri, bg }}
         {...props}
       >
         {React.cloneElement(children, { hover: hover ? String(hover) : 'undefined' })}
@@ -63,7 +64,7 @@ const IconButtonUI = styled.button`
   min-width: ${p => p.size || 22}px;
   border-radius: 5px;
   cursor: ${p => p.disabled ? 'initial' : 'pointer'};
-  background: var(--backgroundColor);
+  background: ${p => p.bg ? 'var(--backgroundColorSlightlyDark)' : 'var(--backgroundColor)'};
   border: none;
   font-size: ${p => (p.innerSize) + 2}px;
   display: grid;

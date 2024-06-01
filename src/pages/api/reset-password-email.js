@@ -25,12 +25,11 @@ export default async function resetPasswordEmailRoute(req, res) {
     subject: 'Set new password',
     html: `Click the link to set a new password, or copy and paste it into your browser:
 
-    <a href='${url}'>${url}</a>
-    
-    If you did not click 'Forgot password?', then ignore this message.
+<a href='${url}'>${url}</a>
 
-    The Ur Context System
-  `
+If you did not click 'Forgot password?', then ignore this message.
+
+The Artifact Guesser System`
   })
 
   res.send({ success: true })

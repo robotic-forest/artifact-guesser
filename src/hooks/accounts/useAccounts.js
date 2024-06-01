@@ -1,5 +1,7 @@
 import { usePagination } from '@/hooks/usePagination'
 import { useSort } from '@/hooks/useSort'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 import useSWR from 'swr'
 
 export const useAccounts = args => {
@@ -19,5 +21,10 @@ export const useAccounts = args => {
   const { data, isValidating, ...swr } = useSWR(!args?.skip && apiUrl)
   const loading = isValidating && !data?.data
 
-  return { accounts: data, loading, ...swr }
+  const sendEmail = async ({ message, subject, test }) => {
+    const res = await axios.post('/api/accounts/email', { message, subject, test })
+    if (res.success) toast.success('Email sent!')
+  }
+
+  return { accounts: data, sendEmail, loading, ...swr }
 }

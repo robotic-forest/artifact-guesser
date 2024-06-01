@@ -4,8 +4,6 @@ import axios from "axios"
 
 export const isBrowser = () => typeof window !== 'undefined'
 
-export const email = async args => axios.post('/api/sendEmail', args)
-
 export const getUser = async req => {
   const user = req.session.user ? {
     ...req.session.user,

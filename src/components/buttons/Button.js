@@ -5,7 +5,7 @@ import { darken } from 'polished'
 const OutlinedButton = styled.button`
   cursor: ${p => p.disable ? 'default' : 'pointer'};
   appearance: none;
-  padding: ${p => p.small ? '4px 10px 3px 10px' : '6px 16px 5px'};
+  padding: 4px 10px 3px 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

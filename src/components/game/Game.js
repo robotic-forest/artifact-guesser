@@ -23,10 +23,12 @@ import { BiChevronDown, BiChevronUp, BiMinus, BiPlus, BiQuestionMark } from "rea
 import { BsDiscord } from "react-icons/bs"
 import { FaTrophy } from "react-icons/fa"
 import { LeaderBoard } from "../gameui/LeaderBoard"
+import { useTheme } from "@/pages/_app"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
 const GameComponent = () => {
+  useTheme()
 
   return (
     <GameProvider>

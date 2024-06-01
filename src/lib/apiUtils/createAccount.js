@@ -35,11 +35,10 @@ export const createAccount = async (newAccount, options) => {
       email,
       subject: 'Please verify your email',
       html: `Click the link to verify your email, or copy and paste it into your browser:
-  
-      <a href='${url}'>${url}</a>
-  
-      The Ur Context System
-    `
+
+<a href='${url}'>${url}</a>
+
+The Artifact Guesser System`
     })
   }
 

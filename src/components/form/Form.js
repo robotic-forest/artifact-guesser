@@ -662,7 +662,6 @@ export const AutoTextArea = styled(TextareaAutosize)`
   height: ${p => p.height || '50px'};
   border: 1px solid ${p => p.error ? '#f58585' : 'var(--textLowOpacity)'};
   padding: 5px;
-  margin-bottom: 11px;
   border-radius: 3px;
   color: var(--textColor);
   background: transparent;
@@ -703,7 +702,6 @@ export const TextArea = styled.textarea`
   height: ${p => p.height || '50px'};
   border: 1px solid ${p => p.error ? '#f58585' : 'var(--textLowOpacity)'};
   padding: 5px;
-  margin-bottom: 11px;
   border-radius: 3px;
   color: var(--textColor);
   background: transparent;

@@ -14,13 +14,13 @@ Attachments format:
 }
 */
 
-export const sendEmail = async ({ email, name, subject, html, bcc = [] }) => {
+export const sendEmail = async ({ email, name, subject, html, bcc = [], noBcc, from }) => {
   const body = {
     Messages: [
       {
-        From: {
+        From: from || {
           Email: 'system@protocodex.com',
-          Name: "Ur Context System"
+          Name: "Artifact Guesser"
         },
         To: [
           {
@@ -28,10 +28,10 @@ export const sendEmail = async ({ email, name, subject, html, bcc = [] }) => {
             Name: name
           }
         ],
-        Bcc: [
+        Bcc: noBcc ? [] : [
           {
             Email: 'sam@protocodex.com',
-            Name: "Ur Context System"
+            Name: "Artifact Guesser"
           },
           ...bcc
         ],
@@ -57,7 +57,7 @@ export const sendTemplateMail = async ({ to, templateId, subject, variables, bcc
       {
         From: {
           Email: 'system@protocodex.com',
-          Name: "Ur Context System"
+          Name: "Artifact Guesser"
         },
         To: [
           {
@@ -68,9 +68,9 @@ export const sendTemplateMail = async ({ to, templateId, subject, variables, bcc
         Bcc: [
           {
             Email: 'sam@protocodex.com',
-            Name: "Ur Context System"
+            Name: "Artifact Guesser"
           },
-          ...(bcc.map(b => ({ Email: b, Name: "Ur Context System" })))
+          ...(bcc.map(b => ({ Email: b, Name: "Artifact Guesser" })))
         ],
         TemplateID: templateId,
         TemplateLanguage: true,

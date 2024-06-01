@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { SWRConfig } from 'swr'
 import { GlobalStyles } from "@/components/GlobalStyles"
 import { PromiseDialog } from '@/components/dialogs/Dialog';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const fetcher = url => axios.get(url).then(res => res.data)
 
@@ -16,13 +17,33 @@ export const theme =  {
   fontSize: 14
 }
 
+// create theme context
+const ThemeContext = createContext(null)
+
+export const useTheme = (localTheme) => {
+  const context = useContext(ThemeContext)
+  if (!context) return { theme: null, setTheme: null }
+
+  const stringTheme = JSON.stringify(context.theme)
+  const stringLocalTheme = JSON.stringify(localTheme || theme)
+
+  useEffect(() => {
+    if (stringTheme !== stringLocalTheme) context.setTheme(localTheme || theme)
+  }, [stringTheme, stringLocalTheme])
+  
+  return context
+}
+
 let CyberInvocation; export default CyberInvocation = ({ Component, pageProps }) => {
+  const [t, setTheme] = useState(theme)
   
   return (
     <SWRConfig value={{ fetcher, onError: err => console.error(err) }}>
-      <GlobalStyles theme={theme} />
+      <GlobalStyles theme={t} />
       <PromiseDialog>
-        <Component {...pageProps} />
+        <ThemeContext.Provider value={{ theme: t, setTheme }}>
+          <Component {...pageProps} />
+        </ThemeContext.Provider>
       </PromiseDialog>
       <Toaster position='bottom-center' />
     </SWRConfig>
