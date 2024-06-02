@@ -98,7 +98,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                 <div className='my-2 p-2 rounded-lg' css={{
                   background: 'var(--backgroundColorBarelyDark)'
                 }}>
-                  <div className='grid grid-cols-2 gap-2 mt-2'>
+                  <div className='grid grid-cols-2 gap-2'>
                     <MenuButton theme={theme} url='/'>
                       <GiGreekSphinx className='mr-2' />
                       {game ? 'Resume' : 'Play'} Game
@@ -109,11 +109,11 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                         Dashboard
                       </MenuButton>
                       )}
-                    <MenuButton theme={artifactsTheme} url='/artifacts'>
+                    <MenuButton theme={artifactsTheme} url='/favorites'>
                       <FaHeart color='#ff4f4f' className='mr-2' />
                       Favorites
                     </MenuButton>
-                    <MenuButton theme={gamesTheme} url='/games'>
+                    <MenuButton theme={gamesTheme} url='/games?__sortfield=startedAt&__sortdirection=-1'>
                       <GiAbstract034 className='mr-2' />
                       {isAdmin ? 'Games' : 'Played Games'}
                     </MenuButton>
