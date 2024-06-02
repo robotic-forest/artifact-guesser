@@ -3,21 +3,28 @@ import moment from "moment"
 import { Tag } from "../tag/Tag"
 import { Spinner } from "../loading/Spinner"
 import Link from "next/link"
+import { GiGoat } from "react-icons/gi"
 
 export const GoatStats = () => {
   
   return (
     <Link href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
-      <div className='p-3 pb-1 mb-2 flex items-center cursor-pointer' css={{
+      <div className='p-3 pb-1 mb-2 cursor-pointer' css={{
         borderRadius: '0.5rem',
-        display: 'flex',
-        flexFlow: 'row wrap',
         background: 'var(--backgroundColorBarelyLight)',
         '&:hover': { background: 'var(--backgroundColorSlightlyLight)' }
       }}>
-        <Views {...{ amount: 10, unit: 'years', title: 'All' }} />
-        <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
-        <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />
+        <div className='flex items-center text-sm' css={{
+          marginBottom: 8
+        }}>
+          <GiGoat style={{ marginRight: 6 }} />
+          Goatcounter Views
+        </div>
+        <div className='flex items-center' css={{ flexFlow: 'row wrap' }}>
+          <Views {...{ amount: 10, unit: 'years', title: 'All' }} />
+          <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
+          <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />
+        </div>
       </div>
     </Link>
   )

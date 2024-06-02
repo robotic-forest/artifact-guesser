@@ -9,7 +9,7 @@ export const Dropdown = ({
   containerStyle,
   dropdownStyle,
   children,
-  menuButtons,
+  MenuIconButtons,
   closeAfterClick,
   onClose,
   onOpen,
@@ -36,24 +36,24 @@ export const Dropdown = ({
 
   const { ref } = useClickedOutside(!disableCloseOutside && closeDropdown)
   
-  if (hideButtonIfDisabled && (button.props.disabled || menuButtons?.every(item => item.disabled))) return null
+  if (hideButtonIfDisabled && (button.props.disabled || MenuIconButtons?.every(item => item.disabled))) return null
 
   return (
     <div ref={ref} css={{ ...containerStyle, position: 'relative' }}>
       {React.cloneElement(button, {
         ref: boundsRef,
         onClick: openDropdown,
-        disable: button.props.disable || menuButtons?.every(item => item.disabled),
-        disabled: button.props.disabled || menuButtons?.every(item => item.disabled),
+        disable: button.props.disable || MenuIconButtons?.every(item => item.disabled),
+        disabled: button.props.disabled || MenuIconButtons?.every(item => item.disabled),
         onMouseEnter: () => onHover && openDropdown(),
         onMouseLeave: () => onHover && closeDropdown()
       })}
       {showDropDown && (
         <DropDownUI dense={dense} css={{ ...dropdownStyle, top: bounds.height + top }}>
           {!childrenBelowButtons && children && React.cloneElement(children, { closeDropdown })}
-          {menuButtons && (
+          {MenuIconButtons && (
             <div className='menu'>
-              {menuButtons.map(b => (
+              {MenuIconButtons.map(b => (
                 <SimpleButton
                   key={b.contents}
                   css={b.style}

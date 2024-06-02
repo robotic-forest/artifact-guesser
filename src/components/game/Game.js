@@ -14,7 +14,7 @@ import { GameProvider, useGame } from "./GameProvider"
 import { LoadingArtifact } from "../loading/LoadingArtifact"
 import { GameButton } from "../buttons/GameButton"
 import Link from "next/link"
-import { MenuButton } from "../layout/Layout"
+import { MenuIconButton } from "../layout/Layout"
 import { artifactsTheme } from "@/pages/artifacts"
 import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
 import { GameSummary } from "./GameSummary"
@@ -96,7 +96,7 @@ const GameUI = () => {
           <GiGreekSphinx className='mr-2' />
           Artifact Guesser
         </div>
-        <MenuButton
+        <MenuIconButton
           size={22}
           className='ml-1.5'
           css={{ border: '1px solid #00000033' }}
@@ -109,25 +109,25 @@ const GameUI = () => {
           onClick={() => setLeaderBoardOpen(lbo => !lbo)}
         >
           <FaTrophy />
-        </MenuButton>
+        </MenuIconButton>
         <Link href='https://discord.gg/r7bZ5QYv'>
-          <MenuButton size={22} className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
+          <MenuIconButton size={22} className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
             textColor: '#ffffff',
             primaryColor: '#5562ea',
             backgroundColor: '#5562ea'
           }}>
             <BsDiscord />
-          </MenuButton>
+          </MenuIconButton>
         </Link>
         <Link href='/artifacts'>
-          <MenuButton size={22} className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
+          <MenuIconButton size={22} className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
             <GiAmphora />
-          </MenuButton>
+          </MenuIconButton>
         </Link>
         <Link href='/about'>
-          <MenuButton size={22} className='ml-1.5' tooltip='About'>
+          <MenuIconButton size={22} className='ml-1.5' tooltip='About'>
             <BiQuestionMark />
-          </MenuButton>
+          </MenuIconButton>
         </Link>
       </div>
 

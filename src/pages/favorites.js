@@ -1,25 +1,19 @@
 import { Layout } from "@/components/layout/Layout"
-import { ResumeGameButton } from "@/components/layout/components/ResumeGameButton"
 import { ArtifactsList } from "@/components/list/ArtifactList"
-import useUser from "@/hooks/useUser"
 import { FaHeart } from "react-icons/fa"
-
-export const artifactsTheme =  {
-  backgroundColor: '#dfbf9e',
-  primaryColor: '#91c3cb',
-  textColor: '#000000',
-}
+import { artifactsTheme } from "./artifacts"
 
 export default () => {
-  const { isAdmin } = useUser()
 
   return (
     <Layout title='Artifacts List' theme={artifactsTheme}>
       <ArtifactsList
         title={(
           <div className='flex items-center font-bold'>
-            {!isAdmin && <ResumeGameButton />}
-            <FaHeart color='#ff4f4f' css={{ marginRight: 8, marginLeft: !isAdmin ? 8 : 0 }} />
+            <FaHeart color='#ff4f4f' css={{
+              marginRight: 8,
+              '@media (max-width: 600px)': { marginLeft: 32 },
+            }} />
             Favorite Artifacts
           </div>
         )}

@@ -16,7 +16,7 @@ import { FiLogIn } from 'react-icons/fi'
 import useSWR from 'swr'
 
 export const accountTheme = {
-  backgroundColor: '#91c3cb',
+  backgroundColor: '#71c1d9',
   primaryColor: '#f3a8a8',
   textColor: '#000000',
 }
@@ -29,7 +29,9 @@ export default () => {
       <FilterBar
         title={(
           <b className='flex items-center'>
-            <BsFillPersonFill className='mr-3' />
+            <BsFillPersonFill className='mr-3' css={{
+              '@media (max-width: 600px)': { marginLeft: 32 }
+            }} />
             Accounts
           </b>
         )}
@@ -57,6 +59,7 @@ const AccountList = () => {
         data={accounts}
         pagination
         noDataComponent='No Accounts found.'
+        scrollOverflow
         {...sort}
         {...pagination}
       />

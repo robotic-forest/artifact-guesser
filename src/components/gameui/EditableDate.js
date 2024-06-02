@@ -33,7 +33,7 @@ export const EditableDate = ({ value, onChange, className, dropDownPlace = 'top'
       <Dropdown
         top={dropDownPlace === 'top' ? -100 : 12}
         button={<span css={{ cursor: 'pointer', '&:hover': { opacity: 0.7 } }}>{notation}</span>}
-        menuButtons={[
+        MenuIconButtons={[
           {
             contents: 'AD',
             onClick: () => {

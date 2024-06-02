@@ -15,9 +15,11 @@ import { accountTheme } from "@/pages/accounts"
 import { ResumeGameButton } from "./components/ResumeGameButton"
 import { useRouter } from "next/router"
 import { useTheme } from "@/pages/_app"
+import { MobileNav } from "./components/MobileNav"
 
 export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
-  const { logout, user, isAdmin } = useUser()
+  const u = useUser()
+  const { logout, user, isAdmin } = u
   const router = useRouter()
   useTheme(theme)
 
@@ -43,39 +45,46 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
         <title>{title || 'Artifact Guesser'}</title>
         <meta name="viewport" content="initial-scale=1.0, maximum-scale=1, width=device-width" />
       </Head>
-      <div className='flex w-[100%] min-h-[100vh]' css={styles}>
+      <div className='relative flex w-[100%] min-h-[100vh]' css={styles}>
+        {/* Mobile Menu */}
+        <MobileNav {...u} />
+
+        {/* Desktop Menu */}
         {user?.isLoggedIn && isAdmin && !noNav && (
           <div className='sticky top-0 h-[100vh] min-h-[100vh] flex flex-col justify-between items-center' css={{
             background: 'var(--backgroundColorSlightlyLight)',
+            '@media (max-width: 600px)': {
+              display: 'none'
+            }
           }}>
             <div className=' flex flex-col items-center p-2 z-50'>
               <ResumeGameButton className='mt-1.5 mb-6' />
               <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuButton tooltip='Dashboard' className='mb-3' theme={dashbaordTheme}>
+                <MenuIconButton tooltip='Dashboard' className='mb-3' theme={dashbaordTheme}>
                   <MdDashboard />
-                </MenuButton>
+                </MenuIconButton>
               </Link>
               <Link href='/artifacts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuButton tooltip='Artifact Database' className='mb-3' theme={artifactsTheme}>
+                <MenuIconButton tooltip='Artifact Database' className='mb-3' theme={artifactsTheme}>
                   <GiAmphora />
-                </MenuButton>
+                </MenuIconButton>
               </Link>
               <Link href='/games?__sortfield=startedAt&__sortdirection=-1' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuButton tooltip='Games' className='mb-3' theme={gamesTheme}>
+                <MenuIconButton tooltip='Games' className='mb-3' theme={gamesTheme}>
                   <GiAbstract034 />
-                </MenuButton>
+                </MenuIconButton>
               </Link>
               <Link href='/accounts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuButton tooltip='Accounts' className='mb-3' theme={accountTheme}>
+                <MenuIconButton tooltip='Accounts' className='mb-3' theme={accountTheme}>
                   <FaUser className='text-xs' />
-                </MenuButton>
+                </MenuIconButton>
               </Link>
             </div>
             <div className='p-2 flex flex-col justify-between items-center'>
               <Link href='/favorites' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuButton tooltip='Favorites' className='mb-3' theme={artifactsTheme}>
+                <MenuIconButton tooltip='Favorites' className='mb-3' theme={artifactsTheme}>
                   <FaHeart color='#ff4f4f' />
-                </MenuButton>
+                </MenuIconButton>
               </Link>
               <IconButton onClick={logout} tooltip='Logout'>
                 <GrLogout />
@@ -96,7 +105,7 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
   )
 }
 
-export const MenuButton = ({ theme, children, ...props }) => {
+export const MenuIconButton = ({ theme, children, ...props }) => {
   const styles = theme && css`
     ${themeCSS(theme)}
     background-color: var(--backgroundColor);

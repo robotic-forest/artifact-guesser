@@ -181,7 +181,7 @@ export const FilterBar = ({
                       <RxEyeOpen />
                     </IconButton>
                   }
-                  menuButtons={toggleButtons}
+                  MenuIconButtons={toggleButtons}
                 />
               )}
             </div>
@@ -196,7 +196,7 @@ export const FilterBar = ({
                 height: 28,
                 background: 'var(--backgroundColorSlightlyLight)',
                 borderRadius: 5,
-                marginRight: 8,
+                marginRight: renderFilter?.length ? 8 : 0,
                 paddingTop: 2,
                 transition: 'all 0.2s ease-in-out',
                 '&:focus': {
@@ -248,7 +248,7 @@ export const FilterBar = ({
                       <HiOutlineChevronDown css={{ marginLeft: 8 }} />
                     </button>
                   }
-                  menuButtons={searchFields
+                  MenuIconButtons={searchFields
                     .map((field) => ({
                       contents: field.label,
                       onClick: () => setSearchField(field.value)
@@ -266,32 +266,25 @@ export const FilterBar = ({
               flexFlow: 'row wrap',
             }}>
               {renderedButtons?.length > 0 && (
-                <div css={{
-                  marginLeft: 'auto',
-                  '@media (max-width: 696px)': {
-                    marginRight: 4
-                  },
-                }}>
-                  <Dropdown
-                    top={8}
-                    button={
-                      minimal ? (
-                        <div>
-                          <IconButton iconSize={16} tooltip='Filter' tooltipPlace='top'>
-                            <BiFilter />
-                          </IconButton>
-                        </div>
-                      ) : (
-                        <Button css={{ padding: '1px 9px' }}>
-                          <BiFilter style={{ fontSize: '1.3em', marginRight: 6 }} />
-                          Filter
-                        </Button>
-                      )
-                    }
-                    menuButtons={renderedButtons}
-                    closeAfterClick
-                  />
-                </div>
+                <Dropdown
+                  top={8}
+                  button={
+                    minimal ? (
+                      <div>
+                        <IconButton iconSize={16} tooltip='Filter' tooltipPlace='top'>
+                          <BiFilter />
+                        </IconButton>
+                      </div>
+                    ) : (
+                      <Button css={{ padding: '1px 9px' }}>
+                        <BiFilter style={{ fontSize: '1.3em', marginRight: 6 }} />
+                        Filter
+                      </Button>
+                    )
+                  }
+                  MenuIconButtons={renderedButtons}
+                  closeAfterClick
+                />
               )}
             </div>
           </div>

@@ -14,7 +14,7 @@ export default () => {
       padding: 0,
       background: 'linear-gradient(0deg, #061c0d, #28663c)'
     }}>
-      <a className='p-1 px-3 flex items-center' onClick={() => router.back()}>
+      <a className='ml-8 mt-2 p-1 px-3 flex items-center' onClick={() => router.back()}>
         <GrReturn className='inline-block mr-2' />
         Go Back
       </a>

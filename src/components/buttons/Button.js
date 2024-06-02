@@ -5,7 +5,7 @@ import { darken } from 'polished'
 const OutlinedButton = styled.button`
   cursor: ${p => p.disable ? 'default' : 'pointer'};
   appearance: none;
-  padding: 4px 10px 3px 10px;
+  padding: 2px 10px 1px 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -54,7 +54,7 @@ const OutlinedButton = styled.button`
 
 export const TextButton = styled.button`
   cursor: ${p => p.disable ? 'default' : 'pointer'};
-  padding: 3px 10px;
+  padding: 2px 10px 1px 10px;
   font-family: inherit;
   font-size: 0.9em;
   border-radius: 6px;
@@ -75,7 +75,7 @@ export const TextButton = styled.button`
 `
 
 export const ReliefButton = styled.button`
-  padding: 3px 10px;
+  padding: 2px 10px 1px 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

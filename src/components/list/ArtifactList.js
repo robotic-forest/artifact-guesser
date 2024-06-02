@@ -12,6 +12,7 @@ import { MasonryLayout } from "../layout/MasonryLayout"
 import { ImmersiveDialog } from "../dialogs/ImmersiveDialog"
 import { ArtifactImage } from "./components.js/ArtifactImage"
 import dynamic from "next/dynamic"
+import { useMediaQuery } from "react-responsive"
 
 export const ArtifactsList = dynamic(() => Promise.resolve(ArtifactsListUI), { ssr: false })
 
@@ -49,7 +50,10 @@ const ArtifactsListUI = ({
       hiddenFields={hiddenFields}
       searchFields={searchFields}
       customFilter={(
-        <div className='flex'>
+        <div className='flex' css={{
+          '@media (max-width: 600px)': { marginRight: 32 },
+          marginLeft: 0
+        }}>
           <IconButton
             tooltip={imageMode ? 'Disable Image Mode' : 'Enable Image Mode'}
             onClick={() => toggleImageMode()}
@@ -83,6 +87,7 @@ const ArtifactsListUI = ({
 }
 
 const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveMode, toggleImmersiveMode, imageMode }) => {
+  const isMobile = useMediaQuery({ maxWidth: 800 })
   const { filter, hiddenFields } = useFilter()
   const { artifacts, pagination, sort } = useArtifacts({
     filter: { ...baseFilter, ...filter },
@@ -136,6 +141,28 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
           ))}
         </MasonryLayout>
       )}
+      {isMobile && !imageMode && artifacts && (
+        <div css={{ background: 'var(--backgroundColorBarelyDark)', borderRadius: 5 }}>
+          {artifacts.map((a, i) => {
+
+            return (
+              <div key={a.id} css={{ borderBottom: i === artifacts?.length - 1 ? 'none' : '1px solid var(--backgroundColorSlightlyDark)' }}>
+                <div css={{ display: 'flex', alignItems: 'center', padding: 8 }}>
+                  <img
+                    src={a.images.thumbnail || a.images.external[0]}
+                    alt={a.name}
+                    css={{ width: 40.8, height: 40.8, borderRadius: 4, marginRight: 8 }}
+                  />
+                  <div css={{ flexGrow: 1 }}>
+                    <div css={{ fontSize: '0.9em', fontWeight: 'bold' }}>{a.name}</div>
+                    <div css={{ fontSize: '0.8em' }}>{a.location.country}, {formatDateRange(a.time.start, a.time.end)}</div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
       <DataTable
         columns={artifactColumns
           .filter(r => !hiddenFields?.includes(r.name))
@@ -170,7 +197,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
           </Link>
         )}
         scrollOverflow
-        customStyles={imageMode ? {
+        customStyles={(isMobile || imageMode) ? {
           tableWrapper: {
             style: {
               display: 'none'

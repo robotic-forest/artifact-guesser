@@ -28,30 +28,21 @@ export default () => {
 
   return (
     <Layout title='Dashboard' theme={dashbaordTheme}>
-      <div className='mb-3 flex items-center'>
+      <div className='mb-3 flex items-center' css={{
+         '@media (max-width: 600px)': { marginLeft: 32 },
+      }}>
         <MdDashboard className='mr-2'/>
         Dashbaord
-      </div>
-      <div className='flex items-center text-sm' css={{
-        marginBottom: 8
-      }}>
-        <GiGoat style={{ marginRight: 6 }} />
-        Goatcounter Views
       </div>
       <MasonryLayout breaks={{ 600: 1, default: 2 }}>
         <GoatStats /> 
         <DashInfo
-          title={<><GiAmphora className='mr-2'/>Artifacts</>}
-          count={artifacts}
-          url='/artifacts'
-          theme={artifactsTheme}
-        />
-        <DashInfo
           title={<><GiAbstract034 className='text-sm mr-2'/>Games played</>}
-          count={games}
+          count={(stats?.noauthGames && games) && (games + stats?.noauthGames)}
           extraInfo={(
             <div className='mt-2 text-sm'>
-              Unauthenticated games: {stats?.noauthGames}
+              <span className='mr-2'><span className='opacity-60 mr-1'>Auth</span> {games}</span>
+              <span className='opacity-60 mr-1'>Anon</span> {stats?.noauthGames}
             </div>
           )}
           url='/games?__sortfield=startedAt&__sortdirection=-1'
@@ -63,6 +54,12 @@ export default () => {
           url='/accounts'
           theme={accountTheme}
           actions={<AllAccountActions />}
+        />
+        <DashInfo
+          title={<><GiAmphora className='mr-2'/>Artifacts</>}
+          count={artifacts}
+          url='/artifacts'
+          theme={artifactsTheme}
         />
       </MasonryLayout>
     </Layout>
