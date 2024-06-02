@@ -11,6 +11,8 @@ import { artifactsTheme } from "./artifacts"
 import { accountTheme } from "./accounts"
 import { gamesTheme } from "./games"
 import { AllAccountActions } from "@/components/dashbaord/AllAcountActions"
+import { MasonryLayout } from "@/components/layout/MasonryLayout"
+import useSWR from "swr"
 
 export const dashbaordTheme = {
   backgroundColor: '#78c9ab',
@@ -22,6 +24,7 @@ export default () => {
   const { artifacts } = useArtifacts({ total: true })
   const { accounts } = useAccounts({ total: true })
   const { games } = useGames({ total: true })
+  const { data: stats } = useSWR('/api/platform/stats')
 
   return (
     <Layout title='Dashboard' theme={dashbaordTheme}>
@@ -35,7 +38,7 @@ export default () => {
         <GiGoat style={{ marginRight: 6 }} />
         Goatcounter Views
       </div>
-      <div className='flex flex-wrap w-full'>
+      <MasonryLayout breaks={{ 600: 1, default: 2 }}>
         <GoatStats /> 
         <DashInfo
           title={<><GiAmphora className='mr-2'/>Artifacts</>}
@@ -46,6 +49,11 @@ export default () => {
         <DashInfo
           title={<><GiAbstract034 className='text-sm mr-2'/>Games played</>}
           count={games}
+          extraInfo={(
+            <div className='mt-2 text-sm'>
+              Unauthenticated games: {stats?.noauthGames}
+            </div>
+          )}
           url='/games?__sortfield=startedAt&__sortdirection=-1'
           theme={gamesTheme}
         />
@@ -56,7 +64,7 @@ export default () => {
           theme={accountTheme}
           actions={<AllAccountActions />}
         />
-      </div>
+      </MasonryLayout>
     </Layout>
   )
 }

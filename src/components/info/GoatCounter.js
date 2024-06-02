@@ -8,11 +8,10 @@ export const GoatStats = () => {
   
   return (
     <Link href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
-      <div className='p-3 pb-1 mr-2 mb-2 flex items-center cursor-pointer' css={{
-        borderRadius: 4,
+      <div className='p-3 pb-1 mb-2 flex items-center cursor-pointer' css={{
+        borderRadius: '0.5rem',
         display: 'flex',
         flexFlow: 'row wrap',
-        width: 'fit-content',
         background: 'var(--backgroundColorBarelyLight)',
         '&:hover': { background: 'var(--backgroundColorSlightlyLight)' }
       }}>

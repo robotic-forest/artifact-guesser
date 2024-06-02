@@ -35,7 +35,7 @@ export const GameProvider = ({ children }) => {
   // Sync with DB
   useEffect(() => { if (data) initGame(data) }, [data])
 
-  // REset game if logged out mid-game
+  // Reset game if logged out mid-game
   useEffect(() => {
     if (game?._id && user && !user?.isLoggedIn) {
       setGame(null)
@@ -89,9 +89,10 @@ export const GameProvider = ({ children }) => {
         await mutate()
       }
     } else {
-      if (startNew) localStorage.removeItem('game')
-      else localStorage.setItem('game', JSON.stringify(newGame))
-      if (startNew) setGame(null)
+      if (startNew) {
+        localStorage.removeItem('game')
+        setGame(null)
+      } else localStorage.setItem('game', JSON.stringify(newGame))
     }
   }
 
@@ -174,6 +175,7 @@ export const GameProvider = ({ children }) => {
 
   const isViewingSummary = game?.isViewingSummary
   const viewSummary = () => {
+    if (!user.isLoggedIn) axios.post('/api/games/noauth/log')
     updateGame({ ...game, isViewingSummary: true })
   }
 
