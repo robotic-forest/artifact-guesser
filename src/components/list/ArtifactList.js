@@ -102,7 +102,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         <ImmersiveDialog visible closeDialog={() => toggleImmersiveMode()}>
           <MasonryLayout gutter={0} breaks={{ default: 5 }}>
             {artifacts?.map(row => (
-              <div key={row.id}>
+              <div key={row._id}>
                 <img
                   src={row.images.external[0]}
                   alt={row.name}
@@ -137,7 +137,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
           }}
         >
           {artifacts?.map(row => (
-            <ArtifactImage key={row.id} artifact={row} noTumbnail />
+            <ArtifactImage key={row._id} artifact={row} noTumbnail />
           ))}
         </MasonryLayout>
       )}
@@ -146,7 +146,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
           {artifacts.map((a, i) => {
 
             return (
-              <Link key={a.id} href={a.source.url} target='_blank' css={{ textDecoration: 'none' }}>
+              <Link key={a._id} href={a.source.url} target='_blank' css={{ textDecoration: 'none' }}>
                 <div css={{ borderBottom: i === artifacts?.length - 1 ? 'none' : '1px solid var(--backgroundColorSlightlyDark)' }}>
                   <div css={{ display: 'flex', alignItems: 'center', padding: 8 }}>
                     <img

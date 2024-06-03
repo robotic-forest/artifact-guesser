@@ -106,7 +106,7 @@ export const ArtifactInfo = ({ artifact, style }) => {
           item1={{ label: 'Medium', value: artifact?.medium }}
           item2={{ label: 'Source', value: artifact?.source.name }}
         />
-        <DetailsItem label='Dimensions' value={artifact?.dimensions} />
+        {/* <DetailsItem label='Dimensions' value={artifact?.dimensions} /> */}
       </div>
     </div>
   )
