@@ -163,11 +163,11 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
           </div>
         )}
         {startNewGame && (
-          <SimulatorButton css={{ margin: '8px 0 16px' }} onClick={startNewGame} >
-            Start New Game
+          <SimulatorButton css={{ margin: '8px 0 16px' }} onClick={startNewGame}>
+            <b className='text-lg'>Start New Game</b>
           </SimulatorButton>
         )}
-        <div className='w-full flex justify-between'>
+        <div className='w-full flex justify-between lg:mt-0 mt-4'>
           <div>
             created by Sam (protocodex) 
           </div>
