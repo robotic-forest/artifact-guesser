@@ -13,6 +13,8 @@ import { useHighscore } from "@/hooks/games/useHighscore"
 import { IconGenerator } from "../art/IconGenerator"
 import AAAAAA, { Shake } from "../art/AAAAAA"
 import { MasonryLayout } from "../layout/MasonryLayout"
+import { BiLinkExternal } from "react-icons/bi"
+import Link from "next/link"
 
 export const GameSummary = ({ game: playedGame }) => {
   const { game: currentGame, startNewGame } = useGame()
@@ -42,7 +44,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
   return (
     <>
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
-      <div className='mb-4 flex flex-col items-center relative'>
+      <div className='flex flex-col items-center relative'>
         <div className='flex text-2xl mt-4 font-mono font-bold'>
           <div className='mr-4'>
             <IconGenerator />
@@ -135,7 +137,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
         )}
 
         {!isPlayed && !user?.isLoggedIn && (
-          <div className='mb-4 bg-black rounded-lg p-[3px_7px_4px_4px]' css={{
+          <div className='mb-4 bg-black rounded-lg p-[3px_7px_4px_4px] text-center text-lg' css={{
             '@media (max-width: 800px)': { margin: '0 0 8px 0' }
           }}>
             <GameButton
@@ -144,19 +146,38 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
                 marginRight: 8,
                 background: '#E4C1F4',
                 color: '#000000',
+                padding: '2px 16px 1px',
                 ':hover': { background: '#CCA5DE' },
               }}
             >
               <b>Sign Up</b>
             </GameButton>
-            for free to save your games and highscores!
+            to save your games, highscores, and favorite artifacts!
+            <div className='mt-2'>
+              Join our community on{' '}
+              <a href='https://discord.gg/TaS779hh' className='text-blue-300 hover:text-blue-500 hover:underline mx-1'>
+                Discord
+                <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
+              </a>{' '} for updates, feature requests, and to chat about the neat artifacts you find!
+            </div>
           </div>
         )}
         {startNewGame && (
-          <SimulatorButton onClick={startNewGame} >
+          <SimulatorButton css={{ margin: '8px 0 16px' }} onClick={startNewGame} >
             Start New Game
           </SimulatorButton>
         )}
+        <div className='w-full flex justify-between'>
+          <div>
+            created by Sam (protocodex) 
+          </div>
+          <div>
+            Learn more about the project{' '}
+            <Link href='/about' className='text-blue-300 hover:text-blue-500 hover:underline'>
+              here
+            </Link>
+          </div>
+        </div>
       </div>
     </>
   )

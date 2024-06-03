@@ -92,9 +92,9 @@ const GameUI = () => {
       overflow: 'hidden',
     }}>
       <div className='fixed flex items-center m-1 top-0 left-0 text-sm z-[10]'>
-        <div className='flex items-center bg-black p-[2px_7px_2px_5px] rounded-[4px] h-[22px] overflow-hidden'>
+        <div className='flex items-center bg-black p-[0px_7px_0px_5px] rounded-[4px] h-[24px] overflow-hidden'>
           <GiGreekSphinx className='mr-2' />
-          Artifact Guesser
+          <span className='mt-[1px]'>Artifact Guesser</span>
         </div>
         <MenuIconButton
           className='ml-1.5'
