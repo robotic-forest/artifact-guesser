@@ -11,7 +11,8 @@ import FilterBar from '@/components/datatable/FilterBar'
 
 export default function Account() {
   const { account } = useAccount()
-  const { user, loading } = useUser({ redirectTo: '/' })
+  const u = useUser({ redirectTo: '/' })
+  const { user, loading } = u
 
   return loading ? null : (
     <Layout theme={accountTheme}>
@@ -40,7 +41,7 @@ export default function Account() {
               )}
               renderFilter={[]}
             >
-              {user?.isLoggedIn && <GameList user={user} skip={!account?._id} baseFilter={{ userId: account?._id }} />}
+              {user?.isLoggedIn && <GameList {...u} skip={!account?._id} baseFilter={{ userId: account?._id }} />}
             </FilterBar>
           </div>
         </div>

@@ -53,7 +53,7 @@ export const AccountInfo = () => {
       </div>
 
       <div css={{
-        background: 'var(--backgroundColorBarelyLight)',
+        // background: 'var(--backgroundColorBarelyLight)',
         padding: 10,
         borderRadius: 10,
         paddingRight: 24

@@ -152,11 +152,12 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
                     <img
                       src={a.images.thumbnail || a.images.external[0]}
                       alt={a.name}
-                      css={{ width: 40.8, height: 40.8, borderRadius: 4, marginRight: 8 }}
+                      css={{ width: 40.8, minWidth: 40.8, height: 40.8, objectFit: 'cover', borderRadius: 4, marginRight: 8 }}
                     />
                     <div css={{ flexGrow: 1 }}>
                       <div css={{ fontSize: '0.9em', fontWeight: 'bold' }}>{a.name}</div>
-                      <div css={{ fontSize: '0.8em' }}>{a.location.country}, {formatDateRange(a.time.start, a.time.end)}</div>
+                      <span css={{ fontSize: '0.8em' }}>{a.location.country}, {formatDateRange(a.time.start, a.time.end)}</span>
+                      <div css={{ fontSize: '0.8em' }}>{a.medium}</div>
                     </div>
                   </div>
                 </div>
