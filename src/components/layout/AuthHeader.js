@@ -87,7 +87,7 @@ export const AuthHeader = () => {
         )}
         {!user?.isLoggedIn && (
           <>
-            <GameButton onClick={() => setLoginOpen(true)}>
+            <GameButton css={{ fontSize: '1.1em', padding: '2.45px 10px' }} onClick={() => setLoginOpen(true)}>
               Log in
             </GameButton>
             <GameButton
@@ -96,7 +96,8 @@ export const AuthHeader = () => {
                 marginLeft: 4,
                 background: '#E4C1F4',
                 color: '#000000',
-                ':hover': { background: '#CCA5DE' }
+                ':hover': { background: '#CCA5DE' },
+                fontSize: '1.1em', padding: '2.45px 10px'
               }}
             >
               <b>Sign Up</b>
