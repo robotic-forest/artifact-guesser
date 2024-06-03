@@ -108,7 +108,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                         <MdDashboard className='mr-2' />
                         Dashboard
                       </MenuButton>
-                      )}
+                    )}
                     <MenuButton theme={artifactsTheme} url='/favorites'>
                       <FaHeart color='#ff4f4f' className='mr-2' />
                       Favorites

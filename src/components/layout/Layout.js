@@ -16,6 +16,8 @@ import { ResumeGameButton } from "./components/ResumeGameButton"
 import { useRouter } from "next/router"
 import { useTheme } from "@/pages/_app"
 import { MobileNav } from "./components/MobileNav"
+import { BsDiscord } from "react-icons/bs"
+import { BiQuestionMark } from "react-icons/bi"
 
 export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
   const u = useUser()
@@ -50,7 +52,7 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
         <MobileNav {...u} />
 
         {/* Desktop Menu */}
-        {user?.isLoggedIn && isAdmin && !noNav && (
+        {user?.isLoggedIn && !noNav && (
           <div className='sticky top-0 h-[100vh] min-h-[100vh] flex flex-col justify-between items-center' css={{
             background: 'var(--backgroundColorSlightlyLight)',
             '@media (max-width: 600px)': {
@@ -59,26 +61,51 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
           }}>
             <div className=' flex flex-col items-center p-2 z-50'>
               <ResumeGameButton className='mt-1.5 mb-6' />
-              <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuIconButton tooltip='Dashboard' className='mb-3' theme={dashbaordTheme}>
-                  <MdDashboard />
-                </MenuIconButton>
-              </Link>
+              {isAdmin && (
+                <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                  <MenuIconButton tooltip='Dashboard' className='mb-3' theme={dashbaordTheme}>
+                    <MdDashboard />
+                  </MenuIconButton>
+                </Link>
+              )}
               <Link href='/artifacts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
                 <MenuIconButton tooltip='Artifact Database' className='mb-3' theme={artifactsTheme}>
                   <GiAmphora />
                 </MenuIconButton>
               </Link>
               <Link href='/games?__sortfield=startedAt&__sortdirection=-1' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuIconButton tooltip='Games' className='mb-3' theme={gamesTheme}>
+                <MenuIconButton tooltip={isAdmin ? 'Games' : 'Played Games'} className='mb-3' theme={gamesTheme}>
                   <GiAbstract034 />
                 </MenuIconButton>
               </Link>
-              <Link href='/accounts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                <MenuIconButton tooltip='Accounts' className='mb-3' theme={accountTheme}>
-                  <FaUser className='text-xs' />
+              {isAdmin && (
+                <Link href='/accounts' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                  <MenuIconButton tooltip='Accounts' className='mb-3' theme={accountTheme}>
+                    <FaUser className='text-xs' />
+                  </MenuIconButton>
+                </Link>
+              )}
+              <Link href='/about' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                <MenuIconButton tooltip='About' className='mb-3' css={{
+                  background: 'var(--primaryColor)',
+                  '&:hover': {
+                    background: 'var(--primaryColorDark)',
+                  }
+                }}>
+                  <BiQuestionMark />
                 </MenuIconButton>
               </Link>
+              {!isAdmin && (
+                <Link href='https://discord.gg/UMrz4Aat' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                  <MenuIconButton tooltip='Join Discord' className='mb-3' theme={{
+                    backgroundColor: '#5562ea',
+                    primaryColor: '#5562ea',
+                    textColor: '#ffffff',
+                  }}>
+                    <BsDiscord className='text-xs' />
+                  </MenuIconButton>
+                </Link>
+              )}
             </div>
             <div className='p-2 flex flex-col justify-between items-center'>
               <Link href='/favorites' css={{ '&:hover': { color: 'var(--textColor)'} }}>
