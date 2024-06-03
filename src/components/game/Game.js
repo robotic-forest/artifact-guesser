@@ -97,7 +97,6 @@ const GameUI = () => {
           Artifact Guesser
         </div>
         <MenuIconButton
-          size={22}
           className='ml-1.5'
           css={{ border: '1px solid #00000033' }}
           tooltip='Highscores'
@@ -111,7 +110,7 @@ const GameUI = () => {
           <FaTrophy />
         </MenuIconButton>
         <Link href='https://discord.gg/r7bZ5QYv'>
-          <MenuIconButton size={22} className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
+          <MenuIconButton className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
             textColor: '#ffffff',
             primaryColor: '#5562ea',
             backgroundColor: '#5562ea'
@@ -120,12 +119,14 @@ const GameUI = () => {
           </MenuIconButton>
         </Link>
         <Link href='/artifacts'>
-          <MenuIconButton size={22} className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
+          <MenuIconButton className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
             <GiAmphora />
           </MenuIconButton>
         </Link>
         <Link href='/about'>
-          <MenuIconButton size={22} className='ml-1.5' tooltip='About'>
+          <MenuIconButton className='ml-1.5' tooltip='About' css={{
+            border: '1px solid #ffffff66'
+          }}>
             <BiQuestionMark />
           </MenuIconButton>
         </Link>

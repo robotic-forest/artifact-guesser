@@ -9,6 +9,9 @@ import Link from "next/link"
 import { MdDashboard } from "react-icons/md"
 import { GameButton } from "../buttons/GameButton"
 import { IconGenerator } from "../art/IconGenerator"
+import { MenuIconButton } from "./Layout"
+import { GiAbstract034 } from "react-icons/gi"
+import { gamesTheme } from "@/pages/games"
 
 export const AuthHeader = () => {
   const { user, isAdmin, logout } = useUser()
@@ -33,10 +36,10 @@ export const AuthHeader = () => {
             {isAdmin && (
               <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
                 <IconButton
-                  size={22}
                   css={{
                     marginRight: 4,
-                    '&:hover': { background: 'var(--backgroundColorLight2)' }
+                    '&:hover': { background: 'var(--backgroundColorLight2)' },
+                    border: '1px solid #ffffff99'
                   }}
                 >
                   <MdDashboard />
@@ -45,11 +48,11 @@ export const AuthHeader = () => {
             )}
             <Link href='/favorites'>
               <IconButton
-                size={22}
                 iconSize={10}
                 css={{
                   marginRight: 4,
-                  '&:hover': { background: 'var(--backgroundColorLight2)' }
+                  '&:hover': { background: 'var(--backgroundColorLight2)' },
+                  border: '1px solid #ff7c7c99'
                 }}
                 tooltip='Favorites'
                 tooltipPlace='bottom'
@@ -57,12 +60,25 @@ export const AuthHeader = () => {
                 <FaHeart color='#ff7c7c' />
               </IconButton>
             </Link>
+            <Link href='/games?__sortfield=startedAt&__sortdirection=-1' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+              <MenuIconButton
+                tooltip={isAdmin ? 'Games' : 'Played Games'}
+                tooltipPlace='bottom'
+                css={{
+                  marginRight: 4,
+                  border: '1px solid #ffffff66'
+                }}
+                theme={gamesTheme}
+              >
+                <GiAbstract034 />
+              </MenuIconButton>
+            </Link>
             <IconButton
-              size={22}
               iconSize={10}
               onClick={() => logout()}
               css={{
-                '&:hover': { background: 'var(--backgroundColorLight2)' }
+                '&:hover': { background: 'var(--backgroundColorLight2)' },
+                border: '1px solid #ffffff66'
               }}
             >
               <GrLogout />
