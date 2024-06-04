@@ -9,6 +9,7 @@ import useUser from '@/hooks/useUser'
 import { IconButton } from '../buttons/IconButton'
 import { Button } from '../buttons/Button'
 import { IconGenerator } from '../art/IconGenerator'
+import moment from 'moment'
 
 export const AccountInfo = () => {
   const { account } = useAccount()
@@ -53,8 +54,6 @@ export const AccountInfo = () => {
       </div>
 
       <div css={{
-        // background: 'var(--backgroundColorBarelyLight)',
-        padding: 10,
         borderRadius: 10,
         paddingRight: 24
       }}>
@@ -90,6 +89,10 @@ export const AccountInfo = () => {
         <InfoItem
           icon={<b>Status</b>}
           value={account?.status}
+        />
+        <InfoItem
+          icon={<b>Created</b>}
+          value={moment(account?.createdAt).format('MMM D, YYYY')}
           style={{ marginBottom: 0 }}
         />
       </div>
