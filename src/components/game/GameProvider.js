@@ -51,8 +51,7 @@ export const GameProvider = ({ children }) => {
 
         if (localG) initGame(localG)
         else {
-          const { data: newArtifact } = await axios.get('/api/artifacts/random')
-
+          const newArtifact = await getRandomArtifact()
           const newGame = {
             startedAt: new Date(),
             round: 1,
@@ -148,7 +147,7 @@ export const GameProvider = ({ children }) => {
     setSelectedDate(0)
     setLoading(true)
 
-    const { data: newArtifact } = await axios.get('/api/artifacts/random')
+    const newArtifact = await getRandomArtifact(game)
     const newGame = {
       ...game,
       round: game.round + 1,
@@ -230,4 +229,20 @@ export const GameProvider = ({ children }) => {
       {children}
     </GameContext.Provider>
   )
+}
+
+// utils
+
+const getRandomArtifact = async (game) => {
+  const pickNew = Math.random() > 0.5
+  const { data: newArtifact } = await axios.get('/api/artifacts/random')
+
+  if (game) {
+    const existingCountries = game.roundData.map(r => r.artifact.location.country)
+    if (existingCountries.includes(newArtifact.location.country) && pickNew) {
+      return getRandomArtifact()
+    }
+  }
+
+  return newArtifact
 }
