@@ -15,6 +15,9 @@ import AAAAAA, { Shake } from "../art/AAAAAA"
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { BiLinkExternal } from "react-icons/bi"
 import Link from "next/link"
+import { IconButton } from "../buttons/IconButton"
+import { BsInstagram, BsYoutube } from "react-icons/bs"
+import { RiInstagramFill } from "react-icons/ri"
 
 export const GameSummary = ({ game: playedGame }) => {
   const { game: currentGame, startNewGame } = useGame()
@@ -167,9 +170,22 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
             <b className='text-lg'>Start New Game</b>
           </SimulatorButton>
         )}
-        <div className='w-full flex justify-between lg:mt-0 mt-4'>
-          <div>
-            created by Sam (protocodex) 
+        <div className='w-full flex items-center justify-between lg:mt-0 mt-4 px-1'>
+          <div className='flex items-center'>
+            Created by Sam (protocodex)
+            <IconButton className='ml-1' tooltip='Visit Youtube Channel' css={{
+              color: '#ff0000',
+            }}>
+              <BsYoutube />
+            </IconButton>
+            <IconButton className='ml-1' tooltip='Follow on instagram' css={{
+              color: '#ff0000',
+              '&:hover': {
+                filter: 'brightness(0.8)'
+              }
+            }}>
+              <img src='/instagram.svg' css={{ width: 16, height: 16 }} />
+            </IconButton>
           </div>
           <div>
             Learn more about the project{' '}

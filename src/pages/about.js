@@ -48,7 +48,6 @@ export default () => {
           <li>Make the map expandable/contractable</li>
           <li>Improve timeline on desktop</li>
           <li>Timed round function</li>
-          <li>Balanced artifact picking (avoiding cultural duplicates)</li>
           <li>Game Modes (Eras, Continents, types of Artifact, etc)</li>
         </ul>
         <div className='my-2'>

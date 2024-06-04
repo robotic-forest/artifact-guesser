@@ -110,7 +110,7 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
             <div className='p-2 flex flex-col justify-between items-center'>
               <Link href='/favorites' css={{ '&:hover': { color: 'var(--textColor)'} }}>
                 <MenuIconButton tooltip='Favorites' className='mb-3' theme={artifactsTheme}>
-                  <FaHeart color='#ff4f4f' />
+                  <FaHeart color='#ff4f4f' className='text-sm' />
                 </MenuIconButton>
               </Link>
               <IconButton onClick={logout} tooltip='Logout'>
