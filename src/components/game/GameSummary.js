@@ -171,7 +171,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
           </SimulatorButton>
         )}
         <div className='w-full flex items-center justify-between lg:mt-0 mt-4 px-1'>
-          <div className='flex items-center'>
+          <div className='flex flex-wrap items-center justify-start'>
             Created by Sam (protocodex)
             <IconButton className='ml-1' tooltip='Visit Youtube Channel' css={{
               color: '#ff0000',
@@ -187,7 +187,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
               <img src='/instagram.svg' css={{ width: 16, height: 16 }} />
             </IconButton>
           </div>
-          <div>
+          <div className='text-right'>
             Learn more about the project{' '}
             <Link href='/about' className='text-blue-300 hover:text-blue-500 hover:underline'>
               here
