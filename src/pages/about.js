@@ -48,7 +48,10 @@ export default () => {
           <li>Make the map expandable/contractable</li>
           <li>Improve timeline on desktop</li>
           <li>Timed round function</li>
-          <li>Game Modes (Eras, Continents, types of Artifact, etc)</li>
+          <li>
+            <b>New Game Modes</b>: Continent Modes, Country Modes (timeline only), Era Modes (timeline constrained between set dates, ie. BC only, AD only, etc),{' '}
+            medium modes (ie. only bronze artifacts), artifact types (swords, coins, etc)
+          </li>
         </ul>
         <div className='my-2'>
           <b>BIG Future Features</b>:
