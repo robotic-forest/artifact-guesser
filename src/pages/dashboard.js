@@ -57,9 +57,14 @@ export default () => {
         />
         <DashInfo
           title={<><GiAmphora className='mr-2'/>Artifacts</>}
-          count={artifacts}
+          count={artifacts?.total}
           url='/artifacts'
           theme={artifactsTheme}
+          extraInfo={(
+            <div className='mt-2 text-sm'>
+              <span className='opacity-60 mr-1'>Problem</span> {artifacts?.problematic}
+            </div>
+          )}
         />
       </MasonryLayout>
     </Layout>

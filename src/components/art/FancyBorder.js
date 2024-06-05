@@ -19,7 +19,7 @@ export const FancyBorderButton = ({ style, onClick, children, disabled }) => {
         font: 'inherit',
         cursor: !disabled ? 'pointer' : 'default',
         outline: 'inherit',
-        width: '60%'
+        width: '80%'
       }} type='submit' onClick={onClick}>
         <FancyBorder
           style={{ marginTop: 15 }}

@@ -8,9 +8,23 @@ import { initDB } from "./mongodb"
 //   { $sample: { size: 1 } }
 // ]).toArray()
 
-export const getRandomArtifact = async () => {
+export const getRandomArtifact = async mode => {
   const db = await initDB()
-  const artifact = (await db.collection('artifacts').aggregate([{ $sample: { size: 1 } }]).toArray())[0]
+
+  const criteria = {
+    problematic: { $ne: true }
+  }
+  if (mode === 'Highlights') criteria.isHighlight = true
+  if (mode === 'Balanced') {
+    // 50% chance to pick highlight
+    const pickHighlight = Math.random() > 0.5
+    if (pickHighlight) criteria.isHighlight = true
+  }
+
+  const artifact = (await db.collection('artifacts').aggregate([
+    { $match: criteria },
+    { $sample: { size: 1 } }
+  ]).toArray())[0]
 
   return artifact
 }

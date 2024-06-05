@@ -126,3 +126,9 @@ export const delabelize = obj => {
 }
 
 export const isNumeric = s => /^\d+$/.test(s)
+
+export const createParams = obj => {
+  const params = []
+  Object.keys(obj).forEach(key => params.push(`${key}=${obj[key]}`))
+  return '?' + params.join('&')
+}

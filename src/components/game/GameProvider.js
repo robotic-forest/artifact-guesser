@@ -51,13 +51,15 @@ export const GameProvider = ({ children }) => {
 
         if (localG) initGame(localG)
         else {
-          const newArtifact = await getRandomArtifact()
+          const mode = localStorage.getItem('mode')
+
+          const newArtifact = await getRandomArtifact(null, mode)
           const newGame = {
             startedAt: new Date(),
             round: 1,
             rounds: 5,
             score: 0,
-            mode: 'Classic',
+            mode: mode || 'Balanced',
             roundData: [
               {
                 round: 1,
@@ -78,11 +80,11 @@ export const GameProvider = ({ children }) => {
     !game && localGame()
   }, [user, game])
 
-  const updateGame = async (newGame, startNew) => {
-    !startNew && setGame(newGame)
+  const updateGame = async (updatedGame, startNew, newMode) => {
+    !startNew && setGame(updatedGame)
 
     if (user?.isLoggedIn) {
-      const dbGame = { ...newGame }
+      const dbGame = { ...updatedGame, newMode }
       await axios.post('/api/games/edit', dbGame)
       if (startNew) {
         await mutate()
@@ -90,8 +92,9 @@ export const GameProvider = ({ children }) => {
     } else {
       if (startNew) {
         localStorage.removeItem('game')
+        if (newMode) localStorage.setItem('mode', newMode)
         setGame(null)
-      } else localStorage.setItem('game', JSON.stringify(newGame))
+      } else localStorage.setItem('game', JSON.stringify(updatedGame))
     }
   }
 
@@ -99,6 +102,7 @@ export const GameProvider = ({ children }) => {
   const artifact = currentRound?.artifact
 
   const guessed = currentRound?.guessed
+
   const makeGuess = () => {
     if (!selectedCountry) return toast.error('You have to select a country!')
     // Date stuff
@@ -147,7 +151,7 @@ export const GameProvider = ({ children }) => {
     setSelectedDate(0)
     setLoading(true)
 
-    const newArtifact = await getRandomArtifact(game)
+    const newArtifact = await getRandomArtifact(game, game.mode)
     const newGame = {
       ...game,
       round: game.round + 1,
@@ -165,17 +169,40 @@ export const GameProvider = ({ children }) => {
     updateGame(newGame)
   }
 
-  const startNewGame = () => {
+  const startNewGame = ({ mode }) => {
     setSelectedCountry(null)
     setSelectedDate(0)
     setLoading(true)
-    updateGame({ ...game, ongoing: false }, true)
+    updateGame({ ...game, ongoing: false }, true, mode)
   }
 
   const isViewingSummary = game?.isViewingSummary
   const viewSummary = () => {
     if (!user.isLoggedIn) axios.post('/api/games/noauth/log')
     updateGame({ ...game, isViewingSummary: true })
+  }
+
+  const handleArtifactLoadError = async () => {
+    setLoading(true)
+    const newArtifact = await getRandomArtifact(game, game.mode)
+    const newGame = {
+      ...game,
+      roundData: game.roundData.map((round, i) => {
+        if (i === game.round - 1) {
+          return {
+            ...round,
+            artifactId: newArtifact._id,
+            artifact: newArtifact
+          }
+        }
+        return round
+      })
+    }
+
+    // Mark artifact as problematic, so it won't be shown again
+    await axios.post(`/api/artifacts/${artifact._id}/edit`, { problematic: true, problem: 'no image' })
+
+    updateGame(newGame)
   }
 
   const nextStepKey = useCallback(() => {
@@ -224,7 +251,8 @@ export const GameProvider = ({ children }) => {
       setLoading,
       viewSummary,
       isViewingSummary,
-      nextStepKey
+      nextStepKey,
+      handleArtifactLoadError
     }}>
       {children}
     </GameContext.Provider>
@@ -233,14 +261,14 @@ export const GameProvider = ({ children }) => {
 
 // utils
 
-const getRandomArtifact = async (game) => {
+const getRandomArtifact = async (game, mode) => {
   const pickNew = Math.random() > 0.5
-  const { data: newArtifact } = await axios.get('/api/artifacts/random')
+  const { data: newArtifact } = await axios.get(`/api/artifacts/random?mode=${mode || 'Balanced'}`)
 
   if (game) {
     const existingCountries = game.roundData.map(r => r.artifact.location.country)
     if (existingCountries.includes(newArtifact.location.country) && pickNew) {
-      return getRandomArtifact()
+      return getRandomArtifact(null, mode)
     }
   }
 

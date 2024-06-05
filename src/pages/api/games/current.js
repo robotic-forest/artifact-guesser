@@ -4,9 +4,10 @@ import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
 import { ObjectId } from "mongodb";
 
 const current = async (req, res) => {
-  const user = verifyAuth(req); if (!user) return
+  const v = verifyAuth(req); if (!v) return
   const db = await initDB()
 
+  const user = await db.collection('accounts').findOne({ _id: new ObjectId(v._id) })
   const game = await db.collection('games').findOne({ userId: user._id.toString(), ongoing: true })
 
   // If an ongoing game does not exist, create a new one
@@ -20,7 +21,7 @@ const current = async (req, res) => {
       round: 1,
       rounds: 5,
       score: 0,
-      mode: 'Classic',
+      mode: user.currentMode || 'Balanced',
       roundData: [
         {
           round: 1,

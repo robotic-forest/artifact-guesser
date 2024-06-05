@@ -16,8 +16,9 @@ import { MasonryLayout } from "../layout/MasonryLayout"
 import { BiLinkExternal } from "react-icons/bi"
 import Link from "next/link"
 import { IconButton } from "../buttons/IconButton"
-import { BsInstagram, BsYoutube } from "react-icons/bs"
-import { RiInstagramFill } from "react-icons/ri"
+import { BsYoutube } from "react-icons/bs"
+import { Tag } from "../tag/Tag"
+import { ModeButton, modes } from "../gameui/ModeButton"
 
 export const GameSummary = ({ game: playedGame }) => {
   const { game: currentGame, startNewGame } = useGame()
@@ -27,7 +28,7 @@ export const GameSummary = ({ game: playedGame }) => {
   return (
     <div css={{
       padding: '56px 48px 48px 48px',
-      '@media (max-width: 800px)': { padding: '32px 6px 6px 6px' },
+      '@media (max-width: 800px)': { padding: '64px 6px 6px 6px' },
     }}>
       <Simulator
         top={<GameScore {...{ game, startNewGame, isPlayed: !startNewGame }} />}
@@ -57,8 +58,19 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
             <IconGenerator />
           </div>
         </div>
+        <div className='mt-4 text-lg'>
+          <Tag big noBorder color={`${modes[game.mode].color}cc`} style={{ textTransform: 'none', whiteSpace: 'wrap' }}>
+            <b css={{ textTransform: 'uppercase', marginRight: 4, paddingLeft: 4 }}>{game.mode} Mode</b>{' '}
+            <span css={{
+              paddingRight: 4,
+              '@media (max-width: 500px)': { display: 'none' }
+            }}>
+              {modes[game.mode].description}
+            </span>
+          </Tag>
+        </div>
         <FancyBorderButton disabled style={{ marginBottom: 16 }}>
-          <div className='text-2xl m-2 flex flex-wrap itesm-center justify-center'>
+          <div className='text-2xl m-2 flex flex-wrap items-center justify-center'>
             <span className='mr-3'  css={{ whiteSpace: 'nowrap' }}>{game?.score === 1000 ? 'PERFECT SCORE!' : 'Final Score'}</span>
             <span css={{ whiteSpace: 'nowrap' }}>
               <b css={{ color: calcScoreColors(game?.score) }}>{game.score}</b> / 1000
@@ -140,7 +152,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
         )}
 
         {!isPlayed && !user?.isLoggedIn && (
-          <div className='mb-4 bg-black rounded-lg p-[3px_7px_4px_4px] text-center text-lg' css={{
+          <div className='mb-8 mt-3 text-center text-lg' css={{
             '@media (max-width: 800px)': { margin: '0 0 8px 0' }
           }}>
             <GameButton
@@ -165,27 +177,53 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
             </div>
           </div>
         )}
+        
         {startNewGame && (
-          <SimulatorButton css={{ margin: '8px 0 16px' }} onClick={startNewGame}>
-            <b className='text-lg'>Start New Game</b>
-          </SimulatorButton>
+          <div className='flex flex-col items-center mb-8'>
+            <SimulatorButton
+              css={{
+                margin: '8px 0 32px',
+                boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
+                ':hover': {
+                  boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
+                  filter: 'brightness(1.1)',
+                  transition: 'box-shadow 0.2s'
+                }
+              }}
+              onClick={startNewGame}
+            >
+              <b className='text-lg'>Start New Game</b>
+            </SimulatorButton>
+            or try a different mode!
+            <div className='flex flex-wrap justify-center mt-3'>
+              {Object.keys(modes).filter(m => m !== game.mode).map(mode => (
+                <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => {
+                  startNewGame({ mode })
+                }} />
+              ))}
+            </div>
+          </div>
         )}
         <div className='w-full flex items-center justify-between lg:mt-0 mt-4 px-1'>
           <div className='flex flex-wrap items-center justify-start'>
-            Created by Sam (protocodex)
-            <IconButton className='ml-1' tooltip='Visit Youtube Channel' css={{
-              color: '#ff0000',
-            }}>
-              <BsYoutube />
-            </IconButton>
-            <IconButton className='ml-1' tooltip='Follow on instagram' css={{
-              color: '#ff0000',
-              '&:hover': {
-                filter: 'brightness(0.8)'
-              }
-            }}>
-              <img src='/instagram.svg' css={{ width: 16, height: 16 }} />
-            </IconButton>
+            <div className='mr-1'>
+              Created by Sam (protocodex)
+            </div>
+            <div className='flex items-center'>
+              <IconButton tooltip='Follow on instagram' css={{
+                color: '#ff0000',
+                '&:hover': {
+                  filter: 'brightness(0.8)'
+                }
+              }}>
+                <img src='/instagram.svg' css={{ width: 16, height: 16 }} />
+              </IconButton>
+              <IconButton className='ml-1' tooltip='Visit Youtube Channel' css={{
+                color: '#ff0000'
+              }}>
+                <BsYoutube />
+              </IconButton>
+            </div>
           </div>
           <div className='text-right'>
             Learn more about the project{' '}
@@ -218,7 +256,7 @@ const RoundReview = ({ game }) => {
           const imgs = round.artifact?.images.external
           
           return (
-            <div className='mb-8 w-full md:w-[calc(48%)] lg:w-[calc(30%)]' css={{
+            <div key={round.round} className='mb-8 w-full md:w-[calc(48%)] lg:w-[calc(30%)]' css={{
               '@media (min-width: 2400px)': { width: '18%' },
             }}>
               <div className='mb-3 text-xl text-center font-mono'>

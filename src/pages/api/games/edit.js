@@ -21,6 +21,11 @@ async function editGame(req, res) {
 
   if (typeof data.startedAt === 'string') data.startedAt = moment(data.startedAt).toDate()
 
+  if (data.newMode) {
+    await db.collection('accounts').updateOne({ _id: new ObjectId(user._id) }, { $set: { currentMode: data.newMode } })
+    delete data.newMode
+  }
+
   await db.collection('games').updateOne({ _id: new ObjectId(_id) }, { $set: { ...data, roundData: processedRounds } })
   res.send({ success: true })
 }

@@ -24,6 +24,8 @@ import { BsDiscord } from "react-icons/bs"
 import { FaTrophy } from "react-icons/fa"
 import { LeaderBoard } from "../gameui/LeaderBoard"
 import { useTheme } from "@/pages/_app"
+import { Tag } from "../tag/Tag"
+import { modes } from "../gameui/ModeButton"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -39,6 +41,7 @@ const GameComponent = () => {
 
 const GameUI = () => {
   const {
+    game,
     selectedDate,
     setSelectedDate,
     selectedCountry,
@@ -49,7 +52,8 @@ const GameUI = () => {
     loading,
     setLoading,
     isViewingSummary,
-    nextStepKey
+    nextStepKey,
+    handleArtifactLoadError
   } = useGame()
   
   const { height, width } = useWindowDimensions()
@@ -91,45 +95,59 @@ const GameUI = () => {
       background: isViewingSummary ? 'linear-gradient(0deg, #061c0d, #28663c)' : 'black',
       overflow: 'hidden',
     }}>
-      <div className='fixed flex items-center m-1 top-0 left-0 text-sm z-[10]'>
-        <div className='flex items-center bg-black p-[0px_7px_0px_5px] rounded-[4px] h-[24px] overflow-hidden'>
-          <GiGreekSphinx className='mr-2' />
-          <span className='mt-[1px]'>Artifact Guesser</span>
+      <div className='fixed flex items-start m-1 top-0 left-0 text-sm z-[10]' css={{
+          '@media (max-width: 600px)': { display: 'block' }
+        }}>
+        <div className='flex items-center mb-1'>
+          <div className='flex items-center bg-black p-[0px_7px_0px_5px] rounded-[4px] h-[24px] overflow-hidden'>
+            <GiGreekSphinx className='mr-2' />
+            <span className='mt-[1px]'>Artifact Guesser</span>
+          </div>
+          {game?.mode && (
+            <Tag className='ml-1.5' css={{ height: 24 }} bold color={modes[game.mode].color}>
+              {game.mode}
+            </Tag>
+          )}
         </div>
-        <MenuIconButton
-          className='ml-1.5'
-          css={{ border: '1px solid #00000033' }}
-          tooltip='Highscores'
-          theme={{
-            textColor: '#000000',
-            primaryColor: '#c9ae5f',
-            backgroundColor: '#c9ae5f'
-          }}
-          onClick={() => setLeaderBoardOpen(lbo => !lbo)}
-        >
-          <FaTrophy />
-        </MenuIconButton>
-        <Link href='https://discord.gg/r7bZ5QYv'>
-          <MenuIconButton className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
-            textColor: '#ffffff',
-            primaryColor: '#5562ea',
-            backgroundColor: '#5562ea'
-          }}>
-            <BsDiscord />
+        <div className='flex items-center'>
+          <MenuIconButton
+            className='ml-1.5'
+            css={{
+              border: '1px solid #00000033',
+              '@media (max-width: 600px)': { marginLeft: 0 }
+            }}
+            tooltip='Highscores'
+            theme={{
+              textColor: '#000000',
+              primaryColor: '#c9ae5f',
+              backgroundColor: '#c9ae5f'
+            }}
+            onClick={() => setLeaderBoardOpen(lbo => !lbo)}
+          >
+            <FaTrophy />
           </MenuIconButton>
-        </Link>
-        <Link href='/artifacts'>
-          <MenuIconButton className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
-            <GiAmphora />
-          </MenuIconButton>
-        </Link>
-        <Link href='/about'>
-          <MenuIconButton className='ml-1.5' tooltip='About' css={{
-            border: '1px solid #ffffff66'
-          }}>
-            <BiQuestionMark />
-          </MenuIconButton>
-        </Link>
+          <Link href='https://discord.gg/r7bZ5QYv'>
+            <MenuIconButton className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
+              textColor: '#ffffff',
+              primaryColor: '#5562ea',
+              backgroundColor: '#5562ea'
+            }}>
+              <BsDiscord />
+            </MenuIconButton>
+          </Link>
+          <Link href='/artifacts'>
+            <MenuIconButton className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
+              <GiAmphora />
+            </MenuIconButton>
+          </Link>
+          <Link href='/about'>
+            <MenuIconButton className='ml-1.5' tooltip='About' css={{
+              border: '1px solid #ffffff66'
+            }}>
+              <BiQuestionMark />
+            </MenuIconButton>
+          </Link>
+        </div>
       </div>
 
       <AuthHeader />
@@ -143,10 +161,15 @@ const GameUI = () => {
       {!isViewingSummary && (
         <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100} >
           <div onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
-            <img src={primaryImage} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }} onLoad={({ target: img }) => {
-              setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
-              setLoading(false)
-            }} />
+            <img
+              src={primaryImage}
+              css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }}
+              onLoad={({ target: img }) => {
+                setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
+                setLoading(false)
+              }}
+              onError={handleArtifactLoadError}
+            />
             {additionalImages?.length > 0 && additionalImages.map(img => (
               <img key={img} src={img} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s' }} />
             ))}
