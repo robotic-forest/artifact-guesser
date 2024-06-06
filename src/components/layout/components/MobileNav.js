@@ -133,7 +133,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                         </MenuButton>
                       </>
                     ) : (
-                      <MenuButton css={{ background: '#5562ea', color: 'white' }} url='https://discord.gg/UMrz4Aat'>
+                      <MenuButton css={{ background: '#5562ea', color: 'white' }} url='https://discord.gg/MvkqPTdcwm'>
                         <BsDiscord className='mr-2' />
                         Join Discord
                       </MenuButton>
@@ -168,7 +168,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       <BiQuestionMark className='mr-2' />
                       About
                     </MenuButton>
-                    <MenuButton css={{ background: '#5562ea', color: 'white' }} url='https://discord.gg/UMrz4Aat'>
+                    <MenuButton css={{ background: '#5562ea', color: 'white' }} url='https://discord.gg/MvkqPTdcwm'>
                       <BsDiscord className='mr-2' />
                       Join Discord
                     </MenuButton>

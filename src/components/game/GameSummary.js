@@ -170,7 +170,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
             to save your games, highscores, and favorite artifacts!
             <div className='mt-2'>
               Join our community on{' '}
-              <a href='https://discord.gg/TaS779hh' className='text-blue-300 hover:text-blue-500 hover:underline mx-1'>
+              <a href='https://discord.gg/MvkqPTdcwm' className='text-blue-300 hover:text-blue-500 hover:underline mx-1'>
                 Discord
                 <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
               </a>{' '} for updates, feature requests, and to chat about the neat artifacts you find!

@@ -64,7 +64,7 @@ export default () => {
           background: 'var(--backgroundColorBarelyDark)'
         }}>
           To add more, please head to the <b>#feature-requests</b> channel in the{' '}
-          <a href='https://discord.gg/TaS779hh' className='text-blue-500 hover:underline'>
+          <a href='https://discord.gg/MvkqPTdcwm' className='text-blue-500 hover:underline'>
             Discord
           </a>
           .
