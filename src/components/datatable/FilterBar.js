@@ -300,14 +300,20 @@ export const FilterBar = ({
               <div
                 key={item.name}
                 css={{
-                  boxShadow: '0 2px 5px 0px var(--textSuperLowOpacity)',
                   display: 'flex',
-                  alignItems: 'center',
                   borderRadius: 6,
-                  padding: '0px 2px 0px 8px',
-                  margin: '0 6px 4px 0',
+                  alignItems: 'center',
+                  padding: '4px 4px 4px 8px',
                   width: 'fit-content',
-                  minHeight: 29
+                  transition: 'background-color 0.1s ease-in-out',
+                  margin: '0 6px 4px 0',
+                  userSelect: 'none',
+                  height: 29,
+                  background: 'var(--backgroundColorBarelyLight)',
+                  '&:hover': {
+                    backgroundColor: 'var(--backgroundColorSlightlyLight)'
+                  },
+                  boxShadow: '0 2px 5px 0px var(--textSuperLowOpacity)'
                 }}
               >
                 <div css={{ marginRight: 8 }}>

@@ -41,7 +41,14 @@ export default function Account() {
               )}
               renderFilter={[]}
             >
-              {user?.isLoggedIn && <GameList {...u} skip={!account?._id} baseFilter={{ userId: account?._id }} />}
+              {user?.isLoggedIn && (
+                <GameList
+                  {...u}
+                  skip={!account?._id}
+                  baseFilter={{ userId: account?._id }}
+                  excludeColumns={['Player']}
+                />
+              )}
             </FilterBar>
           </div>
         </div>

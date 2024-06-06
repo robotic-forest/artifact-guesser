@@ -311,6 +311,28 @@ const artifactFilter = [
         })
       }
     }
+  },
+  {
+    name: 'problematic',
+    filter: (addFilterItem, setFilter) => {
+      const contents = (
+        <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
+          😡 Problematic
+        </span>
+      )
+
+      return {
+        contents,
+        onClick: () => {
+          setFilter(f => ({ ...f, problematic: true }))
+          addFilterItem({
+            name: 'problematic',
+            type: 'boolean',
+            contents
+          })
+        }
+      }
+    }
   }
 ]
 
