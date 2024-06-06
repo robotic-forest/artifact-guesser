@@ -1,6 +1,7 @@
 import { Layout } from "@/components/layout/Layout"
 import { artifactsTheme } from "./artifacts"
 import { IconGenerator } from "@/components/art/IconGenerator"
+import { PiRedditLogoFill } from "react-icons/pi"
 
 
 export default () => {
@@ -30,6 +31,17 @@ export default () => {
       </h3>
 
       <div className='mt-4'>
+        <div className='w-full flex justify-center mb-4'>
+          <div className='my-3 p-2 px-3 rounded w-[fit-content] flex items-center flex-wrap' css={{
+            background: 'var(--backgroundColorBarelyLight)'
+          }}>
+            <PiRedditLogoFill className='mr-2' />
+            Join the subreddit at
+            <a href='https://reddit.com/r/artifactguesser' className='text-blue-500 hover:underline ml-1'>
+              /r/artifactguesser
+            </a>!
+          </div>
+        </div>
         Artifact Guesser is a game where you guess the country and date of an artifact.{' '}
         Development stage is currently in <b>alpha</b>.
         <div>
@@ -41,7 +53,7 @@ export default () => {
             API
           </a> to access their collection, with more sources (such as the Harvard Museum, the British Museum, etc) to be added as development progresses.
         </div>
-        <div className='my-2'>
+        <div className='mt-4 mb-2'>
           <b>Feature Requests so far</b> (to be implemented soon):
         </div>
         <ul className='list-disc ml-8'>
