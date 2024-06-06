@@ -10,7 +10,7 @@ export const artifactsTheme =  {
 }
 
 export default () => {
-  const { user } = useUser()
+  const { user, isAdmin } = useUser()
 
   return (
     <Layout title='Artifacts List' theme={artifactsTheme} contentCSS={{ marginBottom: 32 }}>
@@ -31,6 +31,7 @@ export default () => {
           { label: 'Country', value: 'location.country' },
           { label: 'Medium', value: 'medium' },
         ]}
+        excludeFilters={isAdmin ? [] : ['problematic']}
       />
     </Layout>
   )

@@ -2,9 +2,11 @@ import { Layout } from "@/components/layout/Layout"
 import { ArtifactsList } from "@/components/list/ArtifactList"
 import { FaHeart } from "react-icons/fa"
 import { artifactsTheme } from "./artifacts"
+import useUser from "@/hooks/useUser"
 
 export default () => {
-
+  const { isAdmin } = useUser()
+  
   return (
     <Layout title='Artifacts List' theme={artifactsTheme}>
       <ArtifactsList
@@ -23,6 +25,7 @@ export default () => {
           { label: 'Country', value: 'location.country' },
         ]}
         isFavorites
+        excludeFilters={isAdmin ? [] : ['problematic']}
       />
     </Layout>
   )
