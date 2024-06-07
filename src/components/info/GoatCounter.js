@@ -8,26 +8,28 @@ import { GiGoat } from "react-icons/gi"
 export const GoatStats = () => {
   
   return (
-    <Link href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
-      <div className='p-3 pb-1 mb-2 cursor-pointer' css={{
-        // borderRadius: '0.5rem',
-        border: '1px solid #ffffff33',
-        background: 'var(--backgroundColorBarelyLight)',
-        '&:hover': { background: 'var(--backgroundColorSlightlyLight)' }
-      }}>
-        <div className='flex items-center text-sm' css={{
-          marginBottom: 8
+    <>
+      <Link href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
+        <div className='p-3 pb-1 mb-2 cursor-pointer' css={{
+          border: '1px solid #ffffff33',
+          background: 'var(--backgroundColorBarelyLight)',
+          '&:hover': { background: 'var(--backgroundColorSlightlyLight)' }
         }}>
-          <GiGoat style={{ marginRight: 10 }} />
-          Goatcounter Views
+          <div className='flex items-center text-sm' css={{
+            marginBottom: 8
+          }}>
+            <GiGoat style={{ marginRight: 10 }} />
+            Goatcounter Views
+          </div>
+          <div className='mt-4 flex items-center' css={{ flexFlow: 'row wrap' }}>
+            <Views {...{ amount: 10, unit: 'years', title: 'All' }} />
+            <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
+            <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />
+          </div>
         </div>
-        <div className='mt-4 flex items-center' css={{ flexFlow: 'row wrap' }}>
-          <Views {...{ amount: 10, unit: 'years', title: 'All' }} />
-          <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
-          <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />
-        </div>
-      </div>
-    </Link>
+      </Link>
+      {/* <iframe src='https://artifactguesser.goatcounter.com?access-token=23tsomunmqdat18fd3116omwxtrdlb1e894rn9holxx2qzgc8t' title='Goatcounter' css={{ width: '100%', height: 300, border: 'none' }} /> */}
+    </>
   )
 }
 

@@ -22,7 +22,7 @@ export const DashInfo = ({ title, count, url, theme, actions, extraInfo }) => {
           </div>
           <div className='flex items-center'>
             <Link href={url}>
-              <IconButton tooltip='View'>
+              <IconButton>
                 <IoMdEye />
               </IconButton>
             </Link>
