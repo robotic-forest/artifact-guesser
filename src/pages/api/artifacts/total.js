@@ -1,8 +1,6 @@
 import { initDB } from "@/lib/apiUtils/mongodb"
-import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
 
 const artifactStats = async (req, res) => {
-  const v = verifyAuth(req, res); if (!v) return
   const db = await initDB()
 
   const total = await db.collection('artifacts').countDocuments()
@@ -17,4 +15,4 @@ const artifactStats = async (req, res) => {
   res.send({ data: { total, problematic, byCountry } })
 }
 
-export default withSessionRoute(artifactStats)
+export default artifactStats
