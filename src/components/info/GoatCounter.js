@@ -28,7 +28,7 @@ export const GoatStats = () => {
           </div>
         </div>
       </Link>
-      <iframe src='https://artifactguesser.goatcounter.com?access-token=23tsomunmqdat18fd3116omwxtrdlb1e894rn9holxx2qzgc8t' title='Goatcounter' css={{ width: '100%', height: 300, border: 'none', marginBottom: 8  }} />
+      <iframe src='https://artifactguesser.goatcounter.com?access-token=264hh6p4q75z4up6x6330z61v302j5m1d1d' title='Goatcounter' css={{ width: '100%', height: 300, border: 'none', marginBottom: 8  }} />
     </>
   )
 }
