@@ -2,9 +2,11 @@ import { Layout } from "@/components/layout/Layout"
 import { artifactsTheme } from "./artifacts"
 import { IconGenerator } from "@/components/art/IconGenerator"
 import { PiRedditLogoFill } from "react-icons/pi"
-
+import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
+import { ArtifactCountMap } from "./dashboard"
 
 export default () => {
+  const { artifacts } = useArtifacts({ total: true })
 
   return (
     <Layout title='Artifacts List' theme={artifactsTheme} contentCSS={{ fontFamily: 'monospace' }}>
@@ -80,6 +82,10 @@ export default () => {
             Discord
           </a>
           .
+        </div>
+        <div className='mb-1'><b>Current Artifacts in the DB by country</b> (zoomable, click to country to view its list):</div>
+        <div className='w-[1200px] max-w-[100%]'>
+          <ArtifactCountMap artifacts={artifacts?.byCountry} />
         </div>
       </div>
     </Layout>

@@ -15,8 +15,6 @@ import { MasonryLayout } from "@/components/layout/MasonryLayout"
 import useSWR from "swr"
 import { ArtefactMap } from "@/components/gameui/Map"
 import { useState } from "react"
-import { useRouter } from "next/router"
-
 export const dashbaordTheme = {
   backgroundColor: '#78c9ab',
   primaryColor: '#96a1f7',
@@ -77,7 +75,7 @@ export default () => {
   )
 }
 
-const ArtifactCountMap = ({ artifacts, className }) => {
+export const ArtifactCountMap = ({ artifacts, className }) => {
   const [hover, setHover] = useState(null)
 
   // TODO: resolve artifact country names,
