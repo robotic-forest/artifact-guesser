@@ -3,7 +3,7 @@ import { artifactsTheme } from "./artifacts"
 import { IconGenerator } from "@/components/art/IconGenerator"
 import { PiRedditLogoFill } from "react-icons/pi"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
-import { ArtifactCountMap } from "./dashboard"
+import { ArtifactCountMap } from "@/components/dashbaord/ArtifactCountMap"
 
 export default () => {
   const { artifacts } = useArtifacts({ total: true })
@@ -84,7 +84,7 @@ export default () => {
           .
         </div>
         <div className='mb-1'><b>Current Artifacts in the DB by country</b> (zoomable, click to country to view its list):</div>
-        <div className='w-[1200px] max-w-[100%]'>
+        <div className='w-[1000px] max-w-[100%]'>
           <ArtifactCountMap artifacts={artifacts?.byCountry} />
         </div>
       </div>
