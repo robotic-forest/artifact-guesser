@@ -1,12 +1,15 @@
 import { useState } from "react"
 import { Range } from "./form/FormRange"
 import { formatDate } from "@/lib/artifactUtils"
+import useUser from "@/hooks/useUser"
 
+// Docs: https://www.runningreality.org/docs/tutorial/embedding.jsp
 
 export const Experiments = () => {
+  const { user } = useUser()
   const [selectedDate, setSelectedDate] = useState(0)
 
-  return (
+  return user?.isLoggedIn && (
     <div css={{
       width: '100vw',
       height: '100vh',
