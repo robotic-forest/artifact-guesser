@@ -15,6 +15,8 @@ import { MasonryLayout } from "@/components/layout/MasonryLayout"
 import useSWR from "swr"
 import { ArtefactMap } from "@/components/gameui/Map"
 import { useState } from "react"
+import { Button } from "@/components/buttons/Button"
+import Link from "next/link"
 export const dashbaordTheme = {
   backgroundColor: '#78c9ab',
   primaryColor: '#96a1f7',
@@ -63,8 +65,12 @@ export default () => {
           theme={artifactsTheme}
           extraInfo={(
             <div className='mt-1 text-sm'>
-              <div className='mb-1 p-3'>
-                <span className='opacity-60 mr-1'>Problem</span> {artifacts?.problematic}
+              <div className='mb-1 p-3 px-2'>
+                <Link href='/artifacts?problematic=true'>
+                  <Button variant='outlined'>
+                    <span className='opacity-60 mr-2'>Problem</span> {artifacts?.problematic}
+                  </Button>
+                </Link>
               </div>
               <ArtifactCountMap className='m-1' artifacts={artifacts?.byCountry} />
             </div>
