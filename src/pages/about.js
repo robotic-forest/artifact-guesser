@@ -62,7 +62,7 @@ export default () => {
           <li>Timed round function</li>
           <li>
             <b>New Game Modes</b>: Continent Modes, Country Modes (timeline only), Era Modes (timeline constrained between set dates, ie. BC only, AD only, etc),{' '}
-            medium modes (ie. only bronze artifacts), artifact types (swords, coins, etc)
+            medium modes (ie. only bronze artifacts), artifact types (swords, coins, etc), artifact subjects (frogs, dragons, etc)
           </li>
         </ul>
         <div className='my-2'>

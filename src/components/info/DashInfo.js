@@ -8,8 +8,12 @@ export const DashInfo = ({ title, count, url, theme, actions, extraInfo }) => {
 
   return (
     <div css={themeCSS(theme)}>
-      <div className='p-3 pl-4 rounded-lg mb-2' css={{ background: 'var(--backgroundColorBarelyLight)' }}>
-        <div className='flex items-center justify-between'>
+      <div className='mb-2' css={{
+        background: 'var(--backgroundColorBarelyLight)',
+        border: '1px outset',
+        borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+      }}>
+        <div className='p-3 flex items-center justify-between'>
           <div className='flex items-center'>
             {title}
             <Tag className='ml-2' bold noBorder big color='var(--backgroundColorLight)'>

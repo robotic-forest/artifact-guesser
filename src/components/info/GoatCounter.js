@@ -10,17 +10,18 @@ export const GoatStats = () => {
   return (
     <Link href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
       <div className='p-3 pb-1 mb-2 cursor-pointer' css={{
-        borderRadius: '0.5rem',
+        // borderRadius: '0.5rem',
+        border: '1px solid #ffffff33',
         background: 'var(--backgroundColorBarelyLight)',
         '&:hover': { background: 'var(--backgroundColorSlightlyLight)' }
       }}>
         <div className='flex items-center text-sm' css={{
           marginBottom: 8
         }}>
-          <GiGoat style={{ marginRight: 6 }} />
+          <GiGoat style={{ marginRight: 10 }} />
           Goatcounter Views
         </div>
-        <div className='flex items-center' css={{ flexFlow: 'row wrap' }}>
+        <div className='mt-4 flex items-center' css={{ flexFlow: 'row wrap' }}>
           <Views {...{ amount: 10, unit: 'years', title: 'All' }} />
           <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
           <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />

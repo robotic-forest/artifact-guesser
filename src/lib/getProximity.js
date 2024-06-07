@@ -32,7 +32,7 @@ const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
 
 const deg2rad = deg => deg * (Math.PI/180)
 
-const centroids = [
+export const centroids = [
   {
     "alpha2": "AD",
     "alpha3": "AND",
