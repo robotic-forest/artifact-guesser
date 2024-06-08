@@ -6,8 +6,8 @@ export const useGames = args => {
   const { mutate: mutateAll } = useSWRConfig()
   const sort = useSort(args?.sort)
 
-  let apiUrl = args?.total
-    ? `/api/games/total`
+  let apiUrl = args?.stats
+    ? `/api/games/stats?filter=${JSON.stringify(args?.filter)}`
     : `/api/games?filter=${JSON.stringify(args?.filter)}`
     
   if (args?.sort) apiUrl += sort.url

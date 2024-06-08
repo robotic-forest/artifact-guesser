@@ -179,7 +179,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         renderRow={(row, rowContent) => (
           <Link
             key={row.id}
-            href={row.source.url}
+            href={`/artifacts/${row._id}`}
             css={{
               textDecoration: 'none',
               '&:first-of-type': {
