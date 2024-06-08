@@ -200,7 +200,8 @@ export const GameProvider = ({ children }) => {
     }
 
     // Mark artifact as problematic, so it won't be shown again
-    await axios.post(`/api/artifacts/${artifact._id}/edit`, { problematic: true, problem: 'no image' })
+    // this is cuasing alot of false positives
+    // await axios.post(`/api/artifacts/${artifact._id}/edit`, { problematic: true, problem: 'no image' })
 
     updateGame(newGame)
   }
