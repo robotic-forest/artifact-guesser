@@ -74,6 +74,13 @@ export default () => {
           <li>Multiplayer!</li>
           <li>Map shows world/empires as they were when adjusting timeline date</li>
         </ul>
+        <div className='my-2'>
+          <b>Brainstorming</b>:
+        </div>
+        <ul className='list-disc ml-8'>
+          <li>Detect Forgery Mode - instead of, or perhaps additionally to, guessing date/location,{' '}
+          determine if a piece is authentic.</li>
+        </ul>
         <div className='my-3 p-2 rounded w-[fit-content]' css={{
           background: 'var(--backgroundColorBarelyDark)'
         }}>
