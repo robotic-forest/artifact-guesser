@@ -17,8 +17,10 @@ export const FavoritesToggle = ({ artifactId }) => {
       boxShadow: 'none',
       borderRadius: 0,
     }}>
-      <FaHeart color={isFavorite ? 'green' :  '#ff4f4f'} className='mr-2' />
-      {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+      <FaHeart color={isFavorite ? 'green' :  '#ff4f4f'} className='mr-2 text-xs' />
+      <span className='relative top-[-1px]'>
+        {isFavorite ? 'Unfavorite' : 'Favorite'}
+      </span>
     </Button>
   )
 }
