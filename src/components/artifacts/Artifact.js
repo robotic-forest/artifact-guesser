@@ -5,8 +5,7 @@ import { ArtifactOverview } from "./components/ArtifactOverview"
 import { IconButton } from "../buttons/IconButton"
 import { ArtifactSource } from "./components/ArtifactSource"
 import { FaExpand } from "react-icons/fa"
-import { useState } from "react"
-import { IoChevronBack } from "react-icons/io5"
+import { useEffect, useState } from "react"
 import { ImmersiveDialog } from "../dialogs/ImmersiveDialog"
 import Link from "next/link"
 import { useRouter } from "next/router"
@@ -15,12 +14,16 @@ import { MasonryLayout } from "../layout/MasonryLayout"
 import { ArtifactImage } from "./list/components.js/ArtifactImage"
 import { BiWorld } from "react-icons/bi"
 import { GiAmphora } from "react-icons/gi"
+import { LoadingArtifact } from "../loading/LoadingArtifact"
+import useUser from "@/hooks/useUser"
 
-export const Artifact = ({ artifact: a }) => {
+export const Artifact = ({ artifact: a, previousRoute }) => {
+  const { user } = useUser()
   const router = useRouter()
   const [immersive, setImmersive] = useState(false)
-  const { artifacts: relatedArtifacts } = useArtifacts({
+  const { artifacts: relatedArtifacts, isValidating } = useArtifacts({
     filter: {
+      'excludeId': a._id,
       'location.country': { $regex: a.location.country, $options: 'i' },
       'startDateAfter': a.time.start - 10,
       'endDateBefore': a.time.end + 10,
@@ -30,15 +33,12 @@ export const Artifact = ({ artifact: a }) => {
     }
   })
 
-  console.log(relatedArtifacts)
+  // Handle image loading
+  const [loadingComplete, setLoadingComplete] = useState(false)
 
   const averageTime = Math.round((a.time.start + a.time.end) / 2)
   const centroid = centroids.find(c => c.name === a.location.country)
   const latLng = centroid && `${centroid.latitude},${centroid.longitude}`
-
-  const relatedArtifactsHref = `/artifacts?location.country=${a?.location.country}` +
-    `&startDateAfter=${a.time.start - 10}&endDateBefore=${a.time.end + 10}` +
-    '&imageMode=true'
 
   return (
     <>
@@ -47,51 +47,39 @@ export const Artifact = ({ artifact: a }) => {
           <ImageView imgs={a.images.external} />
         </ImmersiveDialog>
       )}
-      <div>
+      <div className='flex flex-col' css={{ minHeight: '100vh' }}>
         <div className='flex flex-wrap w-full h-[50vh] min-h-[500px] bg-black relative'>
-          <div className='absolute top-1 left-1.5 z-10 hidden items-center' css={{
-            '@media (min-width: 768px)': {
-              display: 'flex'
+          <div className='absolute top-1 left-1.5 z-10 flex items-center' css={{
+            padding: user?.isLoggedIn ? 0 : '8px 0 0 40px',
+            '@media (max-width: 768px)': {
+              padding: '8px 0 0 40px',
             }
           }}>
-            <IconButton onClick={() => router.back()} css={{
+            <IconButton onClick={() => router.push(previousRoute?.includes('/artifacts?') ? previousRoute : '/artifacts')} css={{
               background: 'black',
               color: 'white',
               border: '1px solid #ffffff55',
               '&:hover': {
                 background: '#343434',
                 color: 'white'
+              },
+              marginRight: 4
+            }}>
+              <GiAmphora />
+            </IconButton>
+            <div className='p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30 hidden' css={{
+              '@media (min-width: 768px)': {
+                display: 'flex'
               }
             }}>
-              <IoChevronBack />
-            </IconButton>
-            <div className='ml-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
               {a.name}, {a?.location.country}, {formatDateRange(a?.time.start, a?.time.end)}
             </div>
           </div>
 
-          <div className='absolute top-[11px] left-[40px] z-10 flex items-center' css={{
-            '@media (min-width: 768px)': {
-              display: 'none'
-            }
-          }}>
-            <IconButton size={26} onClick={() => router.back()} css={{
-              background: 'black',
-              color: 'white',
-              '&:hover': {
-                background: '#343434',
-                color: 'white'
-              }
-            }}>
-              <IoChevronBack className='relative left-[-1px]' />
-            </IconButton>
-            <div className='ml-1 p-[2px_6px_2.5px] rounded text-white bg-black border border-white/30'>
-              {a.name}
-            </div>
-          </div>
+          {!loadingComplete && <LoadingArtifact className='absolute' />}
 
           <MapInteractionCSS maxScale={100}>
-            <ImageView imgs={a.images.external} />
+            <ImageView imgs={a.images.external} setLoadingComplete={setLoadingComplete} />
           </MapInteractionCSS>
 
           <div className='absolute bottom-1 right-1 z-10 flex items-center'>
@@ -130,13 +118,12 @@ export const Artifact = ({ artifact: a }) => {
                 Adding context information to artifacts is a work in progress. Click the source link for most of the good info on this object.
               </div>
             </div>
-            <div className='relative top-1 flex items-center'>
-              <span className='opacity-70 relative top-[1px]'>Related Artifacts</span>
-              <Link href={relatedArtifactsHref}>
-                <IconButton tooltip='View in Artifacts DB' className='ml-2'>
-                  <GiAmphora />
-                </IconButton>
-              </Link>
+            <div className='relative top-1' css={{
+              '@media (max-width: 768px)': {
+                display: 'none'
+              }
+            }}>
+              <RelatedArtifactsTitle artifact={a} />
             </div>
           </div>
 
@@ -159,7 +146,6 @@ export const Artifact = ({ artifact: a }) => {
               </div>
               <iframe
                 src={`https://www.runningreality.org/?notimeline&nobox&nocontrols#01/01/${averageTime}&${latLng}`}
-                sandbox="allow-same-origin allow-scripts"
                 width="100%"
                 height="100%"
               />
@@ -183,36 +169,55 @@ export const Artifact = ({ artifact: a }) => {
             <div className='mb-1 opacity-70 flex justify-end'>
               <a href='https://www.runningreality.org/projects/' target='_blank'>runningreality.org</a>
             </div>
+            <div className='relative top-1' css={{
+              '@media (min-width: 768px)': {
+                display: 'none'
+              }
+            }}>
+              <RelatedArtifactsTitle artifact={a} />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div css={{
-        background: 'var(--backgroundColorSlightlyDark)',
-      }}>
-        {relatedArtifacts?.length> 0 && (
-          <MasonryLayout
-            gutter={0}
-            breaks={{
-              default: 6,
-              600: 2,
-              900: 3,
-              1200: 4,
-              1600: 5
-            }}
-            noCalc
-          >
-            {relatedArtifacts.map(row => (
-              <ArtifactImage key={row._id} artifact={row} />
-            ))}
-          </MasonryLayout>
-        )}
+        <div css={{
+          background: 'var(--backgroundColorSlightlyDark)',
+          flexGrow: 1
+        }}>
+          {relatedArtifacts?.length> 0 ? (
+            <MasonryLayout
+              gutter={0}
+              breaks={{
+                default: 6,
+                600: 2,
+                900: 3,
+                1200: 4,
+                1600: 5
+              }}
+              noCalc
+            >
+              {relatedArtifacts.map(row => (
+                <ArtifactImage key={row._id} artifact={row} />
+              ))}
+            </MasonryLayout>
+          ) : !isValidating && (
+            <div className='p-4 text-center opacity-70'>
+              No related artifacts found.
+            </div>
+          )}
+        </div>
       </div>
     </>
   )
 }
 
-const ImageView = ({ imgs }) => {
+const ImageView = ({ imgs, setLoadingComplete }) => {
+  const [loaded, setLoaded] = useState(0)
+
+  useEffect(() => {
+    if (imgs?.length === loaded && setLoadingComplete) {
+      setLoadingComplete(true)
+    }
+  }, [loaded])
 
   return (
     <>
@@ -232,9 +237,34 @@ const ImageView = ({ imgs }) => {
           }}
         >
           {imgs?.length > 0 && imgs.map(img => (
-            <img key={img} src={img} />
+            <img
+              key={img}
+              src={img}
+              css={{
+                opacity: imgs?.length === loaded ? 1 : 0,
+                transition: 'all 0.4s ease-in'
+              }}
+              onLoad={() => setLoaded(l => l + 1)}
+            />
           ))}
         </MasonryLayout>
     </>
+  )
+}
+
+const RelatedArtifactsTitle = ({ artifact: a }) => {
+  const relatedArtifactsHref = `/artifacts?location.country=${a?.location.country}` +
+    `&startDateAfter=${a.time.start - 10}&endDateBefore=${a.time.end + 10}` +
+    '&imageMode=true&__noTrack'
+
+  return (
+    <div className='flex items-center'>
+      <span className='opacity-70 relative top-[1px]'>Related Artifacts</span>
+      <Link href={relatedArtifactsHref}>
+        <IconButton tooltip='View in Artifacts DB' className='ml-2'>
+          <GiAmphora />
+        </IconButton>
+      </Link>
+    </div>
   )
 }

@@ -135,6 +135,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
             1200: 4,
             1600: 5
           }}
+          noCalc
         >
           {artifacts?.map(row => (
             <ArtifactImage key={row._id} artifact={row} noTumbnail />

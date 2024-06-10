@@ -153,7 +153,7 @@ const GameUI = () => {
 
       {leaderBoardOpen && <LeaderBoard onClose={() => setLeaderBoardOpen(false)} />}
 
-      {loading && !isViewingSummary && <LoadingArtifact />}
+      {loading && !isViewingSummary && <LoadingArtifact className='fixed' />}
 
       {isViewingSummary && <GameSummary />}
 
