@@ -25,6 +25,7 @@ export const GameProvider = ({ children }) => {
   const [selectedCountry, setSelectedCountry] = useState()
   const [loading, setLoading] = useState(true)
   const { data, mutate } = useSWR(user?.isLoggedIn && '/api/games/current')
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const initGame = g => {
     setGame(g)
@@ -101,7 +102,7 @@ export const GameProvider = ({ children }) => {
   const currentRound = game?.roundData?.find(round => round.round === game.round)
   const artifact = currentRound?.artifact
 
-  const guessed = currentRound?.guessed
+  const guessed = currentRound?.guessed  
 
   const makeGuess = () => {
     if (!selectedCountry) return toast.error('You have to select a country!')
@@ -140,6 +141,7 @@ export const GameProvider = ({ children }) => {
     }
 
     newGame.score += points
+    setIsFullscreen(false)
 
     updateGame(newGame)
   }
@@ -252,7 +254,9 @@ export const GameProvider = ({ children }) => {
       viewSummary,
       isViewingSummary,
       nextStepKey,
-      handleArtifactLoadError
+      handleArtifactLoadError,
+      isFullscreen,
+      setIsFullscreen,
     }}>
       {children}
     </GameContext.Provider>

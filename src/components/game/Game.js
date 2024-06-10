@@ -26,6 +26,7 @@ import { LeaderBoard } from "../gameui/LeaderBoard"
 import { useTheme } from "@/pages/_app"
 import { Tag } from "../tag/Tag"
 import { modes } from "../gameui/ModeButton"
+import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -53,7 +54,9 @@ const GameUI = () => {
     setLoading,
     isViewingSummary,
     nextStepKey,
-    handleArtifactLoadError
+    handleArtifactLoadError,
+    isFullscreen,
+    setIsFullscreen
   } = useGame()
   
   const { height, width } = useWindowDimensions()
@@ -158,29 +161,38 @@ const GameUI = () => {
 
       {isViewingSummary && <GameSummary />}
 
-      {!isViewingSummary && (
-        <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100} >
-          <div onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
-            <img
-              src={primaryImage}
-              css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }}
-              onLoad={({ target: img }) => {
-                setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
-                setLoading(false)
-              }}
-              onError={handleArtifactLoadError}
-            />
-            {additionalImages?.length > 0 && additionalImages.map(img => (
-              <img key={img} src={img} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s' }} />
-            ))}
-          </div>
-        </MapInteractionCSS>
-      )}
+        {!isViewingSummary && (
+          <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100} >
+            <div className={isFullscreen ? "w-full h-full" : ""} onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
+              <img
+                src={primaryImage}
+                css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }}
+                onLoad={({ target: img }) => {
+                  setDimensions({ height: img.offsetHeight, width: img.offsetWidth })
+                  setLoading(false)
+                }}
+                onError={handleArtifactLoadError}
+              />
+              {additionalImages?.length > 0 && additionalImages.map(img => (
+                <img key={img} src={img} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s' }} />
+              ))}
+            </div>
+          </MapInteractionCSS>
+           )}
 
       {(!dimensions || loading || isViewingSummary) ? null : !guessed ? (
-        <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
-          '@media (max-width: 500px)': { width: '100vw' }
-        }}>
+          <div 
+          className={`fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none ${isFullscreen ? 'w-full h-full' : 'w-[400px]'}`} 
+          css={{ 
+            '@media (max-width: 500px)': { width: '100vw' }
+          }}
+        >
+          <button
+          className="text-2xl right-0 bg-black m-1 p-1 border rounded border-white/60 hover:bg-black/50"
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          >
+            {isFullscreen ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
+          </button>
           <div className='flex items-end mb-1'>
             <div
               className='flex items-end'
@@ -220,11 +232,11 @@ const GameUI = () => {
             </div>
             <GameInfo />
           </div>
-          <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full' css={{
-            height: 200,
-            transition: 'height 0.4s',
-            '@media (max-width: 500px)': { height: mobileMapHeight }
-          }}>
+          <div className={`bg-black rounded border border-white/30 mb-1 overflow-hidden relative 
+          w-full ${isFullscreen ? 'h-full w-full' : ''}`} css={{
+          transition: 'height 0.4s',
+          '@media (max-width: 500px)': { height: mobileMapHeight }
+            }}>
             <Map setHover={setHoverCountry} setSelectedCountry={setSelectedCountry} selectedCountry={selectedCountry} />
             {hoverCountry && (
               <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] absolute bottom-1 right-1 invisible md:visible'>
