@@ -13,15 +13,17 @@ import { useRouter } from "next/router"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { ArtifactImage } from "./list/components.js/ArtifactImage"
+import { BiWorld } from "react-icons/bi"
+import { GiAmphora } from "react-icons/gi"
 
 export const Artifact = ({ artifact: a }) => {
   const router = useRouter()
   const [immersive, setImmersive] = useState(false)
   const { artifacts: relatedArtifacts } = useArtifacts({
     filter: {
-      'location.country': a.location.country,
-      'time.start': { $gte: a.time.start - 10 },
-      'time.end': { $lte: a.time.end + 10 },
+      'location.country': { $regex: a.location.country, $options: 'i' },
+      'startDateAfter': a.time.start - 10,
+      'endDateBefore': a.time.end + 10,
     },
     paginate: {
       defaultPageSize: 12
@@ -34,19 +36,19 @@ export const Artifact = ({ artifact: a }) => {
   const centroid = centroids.find(c => c.name === a.location.country)
   const latLng = centroid && `${centroid.latitude},${centroid.longitude}`
 
+  const relatedArtifactsHref = `/artifacts?location.country=${a?.location.country}` +
+    `&startDateAfter=${a.time.start - 10}&endDateBefore=${a.time.end + 10}` +
+    '&imageMode=true'
+
   return (
     <>
       {immersive && (
         <ImmersiveDialog visible closeDialog={() => setImmersive(false)}>
-          <div className='flex flex-wrap w-screen'>
-            {a.images.external?.length > 0 && a.images.external.map(img => (
-              <img key={img} src={img} css={{ height: 500 }} />
-            ))}
-          </div>
+          <ImageView imgs={a.images.external} />
         </ImmersiveDialog>
       )}
       <div>
-        <div className='flex flex-wrap w-full h-[500px] bg-black relative'>
+        <div className='flex flex-wrap w-full h-[50vh] min-h-[500px] bg-black relative'>
           <div className='absolute top-1 left-1.5 z-10 hidden items-center' css={{
             '@media (min-width: 768px)': {
               display: 'flex'
@@ -89,14 +91,13 @@ export const Artifact = ({ artifact: a }) => {
           </div>
 
           <MapInteractionCSS maxScale={100}>
-            <div className='flex flex-wrap w-screen'>
-              {a.images.external?.length > 0 && a.images.external.map(img => (
-                <img key={img} src={img} css={{ height: 400 }} />
-              ))}
-            </div>
+            <ImageView imgs={a.images.external} />
           </MapInteractionCSS>
 
           <div className='absolute bottom-1 right-1 z-10 flex items-center'>
+            <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
+              {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
+            </div>
             <IconButton tooltip='Expand' onClick={() => setImmersive(true)} css={{
               background: 'black',
               color: 'white',
@@ -117,15 +118,25 @@ export const Artifact = ({ artifact: a }) => {
             gridTemplateColumns: '1fr'
           }
         }}>
-          <div css={{ padding: 10 }}>
-            <ArtifactOverview artifact={a} />
-            <div className='mt-3 mb-1 opacity-70'>
-              Context
+          <div className='p-[10px] flex flex-col justify-between'>
+            <div>
+              <ArtifactOverview artifact={a} />
+              <div className='mt-3 mb-1 opacity-70'>
+                Context
+              </div>
+              <div className='p-2 rounded' css={{
+                background: 'var(--backgroundColorBarelyLight)',
+              }}>
+                Adding context information to artifacts is a work in progress. Click the source link for most of the good info on this object.
+              </div>
             </div>
-            <div className='p-2 rounded' css={{
-              background: 'var(--backgroundColorBarelyLight)',
-            }}>
-              Adding context information to artifacts is a work in progress. Click the source link for most of the good info on this object.
+            <div className='relative top-1 flex items-center'>
+              <span className='opacity-70 relative top-[1px]'>Related Artifacts</span>
+              <Link href={relatedArtifactsHref}>
+                <IconButton tooltip='View in Artifacts DB' className='ml-2'>
+                  <GiAmphora />
+                </IconButton>
+              </Link>
             </div>
           </div>
 
@@ -164,7 +175,7 @@ export const Artifact = ({ artifact: a }) => {
                     },
                     outline: 0
                   }}>
-                    <FaExpand />
+                    <BiWorld />
                   </IconButton>
                 </Link>
               </div>
@@ -189,13 +200,41 @@ export const Artifact = ({ artifact: a }) => {
               1200: 4,
               1600: 5
             }}
+            noCalc
           >
             {relatedArtifacts.map(row => (
-              <ArtifactImage key={row._id} artifact={row} noTumbnail />
+              <ArtifactImage key={row._id} artifact={row} />
             ))}
           </MasonryLayout>
         )}
       </div>
+    </>
+  )
+}
+
+const ImageView = ({ imgs }) => {
+
+  return (
+    <>
+      {/* <div className='flex flex-wrap w-screen'>
+        {imgs?.length > 0 && imgs.map(img => (
+          <img key={img} src={img} css={{ height: 400 }} />
+        ))}
+      </div> */}
+      <MasonryLayout
+          gutter={0}
+          breaks={{
+            default: 6,
+            600: 2,
+            900: 3,
+            1200: 4,
+            1600: 5
+          }}
+        >
+          {imgs?.length > 0 && imgs.map(img => (
+            <img key={img} src={img} />
+          ))}
+        </MasonryLayout>
     </>
   )
 }
