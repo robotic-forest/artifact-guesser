@@ -45,7 +45,7 @@ export const ArtifactImage = ({ artifact, immersive }) => {
             background: 'transparent'
           }
         }}
-        href={artifact.source.url}
+        href={`/artifacts/${artifact._id}`}
         target='_blank'
       >
         <a
@@ -57,7 +57,7 @@ export const ArtifactImage = ({ artifact, immersive }) => {
               display: 'none'
             }
           }}
-          href={artifact.source.url}
+          href={`/artifacts/${artifact._id}`}
           target='_blank'
           onClick={e => e.stopPropagation()}
         >

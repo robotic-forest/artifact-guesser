@@ -16,7 +16,11 @@ export const ArtifactInfo = ({ artifact, style }) => {
     '&imageMode=true'
 
   return (
-    <div className='bg-black rounded border border-white/30 w-full' css={{ padding: '5px 5px 5px 8px', ...style }}>
+    <div className='rounded border border-white/30 w-full' css={{
+      background: 'var(--backgroundColor)',
+      padding: '5px 5px 5px 8px',
+      ...style
+    }}>
       <div className='mb-4 flex justify-between items-start'>
         <div className='flex'>
           <img
@@ -30,7 +34,7 @@ export const ArtifactInfo = ({ artifact, style }) => {
             </div>
             <div className='text-sm'>
               {artifact?.culture && (
-                <div className='text-white/70 mb-1'>
+                <div className='mb-1' css={{ color: 'var(--textLowOpacity)' }}>
                   {artifact?.culture}
                 </div>
               )}

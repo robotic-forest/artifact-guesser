@@ -22,13 +22,15 @@ export const ImmersiveDialog = ({ closeDialog, visible, children, bg, text }) =>
   )
 }
 
-export const ExpandedStyles = styled.div`
+const ExpandedStyles = styled.div`
   position: relative;
   overflow: hidden;
   width: 100vw;
   height: 100vh;
   min-height: 100vh;
   min-height: -webkit-fill-available;
+  background: black;
+  color: white;
 
   @media (max-width: 500px), (min-aspect-ratio: 16/9) {
     width: 100%;

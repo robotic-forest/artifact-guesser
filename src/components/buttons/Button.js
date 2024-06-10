@@ -9,7 +9,7 @@ const OutlinedButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 2px;
   font-size: ${p => p.small ? '0.9em' : '1em'};
   font-family: inherit;
   border: none;
@@ -57,7 +57,7 @@ export const TextButton = styled.button`
   padding: 2px 10px 1px 10px;
   font-family: inherit;
   font-size: 0.9em;
-  border-radius: 6px;
+  border-radius: 2px;
   font-weight: 600;
   border: none;
   color: ${p => p.disable ? `var(--textLowOpacity)` : p.textColor ? p.textColor : 'var(--textColor)'};
@@ -80,7 +80,7 @@ export const ReliefButton = styled.button`
   align-items: center;
   justify-content: center;
   position: relative;
-  border-radius: 6px;
+  border-radius: 2px;
   font-size: 0.9em;
   font-family: inherit;
   font-weight: 600;
