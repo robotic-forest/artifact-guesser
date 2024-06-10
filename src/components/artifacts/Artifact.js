@@ -47,7 +47,7 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
           <ImageView imgs={a.images.external} />
         </ImmersiveDialog>
       )}
-      <div className='flex flex-col' css={{ minHeight: '100vh' }}>
+      <div>
         <div className='flex flex-wrap w-full h-[50vh] min-h-[500px] bg-black relative'>
           <div className='absolute top-1 left-1.5 z-10 flex items-center' css={{
             padding: user?.isLoggedIn ? 0 : '8px 0 0 40px',
@@ -179,32 +179,32 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
           </div>
         </div>
 
-        <div css={{
-          background: 'var(--backgroundColorSlightlyDark)',
-          flexGrow: 1
-        }}>
-          {relatedArtifacts?.length> 0 ? (
-            <MasonryLayout
-              gutter={0}
-              breaks={{
-                default: 6,
-                600: 2,
-                900: 3,
-                1200: 4,
-                1600: 5
-              }}
-              noCalc
-            >
-              {relatedArtifacts.map(row => (
-                <ArtifactImage key={row._id} artifact={row} />
-              ))}
-            </MasonryLayout>
-          ) : !isValidating && (
-            <div className='p-4 text-center opacity-70'>
-              No related artifacts found.
-            </div>
-          )}
-        </div>
+      </div>
+      <div css={{
+        background: 'var(--backgroundColorSlightlyDark)',
+        flexGrow: 1
+      }}>
+        {relatedArtifacts?.length> 0 ? (
+          <MasonryLayout
+            gutter={0}
+            breaks={{
+              default: 6,
+              600: 2,
+              900: 3,
+              1200: 4,
+              1600: 5
+            }}
+            noCalc
+          >
+            {relatedArtifacts.map(row => (
+              <ArtifactImage key={row._id} artifact={row} />
+            ))}
+          </MasonryLayout>
+        ) : !isValidating && (
+          <div className='p-4 text-center opacity-70'>
+            No related artifacts found.
+          </div>
+        )}
       </div>
     </>
   )
