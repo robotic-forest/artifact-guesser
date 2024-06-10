@@ -55,10 +55,7 @@ export const formatTime = t => {
   if (t.dynasty) s += t.dynasty + ', '
   if (t.reign) s += t.reign + ', '
 
-  if (!s || isNumeric(s.replace(/-/g, ''))) {
-    if (t.start === t.end) return formatDate(t.start)
-    return `${formatDate(t.start)} → ${formatDate(t.end)}`
-  }
+  s += t.start == t.end ? formatDate(t.start) : `${formatDate(t.start)} → ${formatDate(t.end)}`
 
   if (s.endsWith(', ')) s = s.slice(0, -2)
   return s

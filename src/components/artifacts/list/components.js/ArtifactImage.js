@@ -1,8 +1,9 @@
 import { IconButton } from "@/components/buttons/IconButton"
 import { formatDateRange } from "@/lib/artifactUtils"
+import Link from "next/link"
 import { BiLinkExternal } from "react-icons/bi"
 
-export const ArtifactImage = ({ artifact, immersive }) => {
+export const ArtifactImage = ({ artifact, immersive, newTab }) => {
 
   return (
     <div css={{
@@ -28,7 +29,7 @@ export const ArtifactImage = ({ artifact, immersive }) => {
           height: 'auto',
         }}
       />
-      <a
+      <Link
         className='overlay'
         css={{
           opacity: 0,
@@ -45,8 +46,8 @@ export const ArtifactImage = ({ artifact, immersive }) => {
             background: 'transparent'
           }
         }}
-        href={artifact.source.url}
-        target='_blank'
+        href={`/artifacts/${artifact._id}`}
+        target={newTab ? '_blank' : '_self'}
       >
         <a
           css={{
@@ -57,7 +58,7 @@ export const ArtifactImage = ({ artifact, immersive }) => {
               display: 'none'
             }
           }}
-          href={artifact.source.url}
+          href={artifact?.source.url}
           target='_blank'
           onClick={e => e.stopPropagation()}
         >
@@ -83,7 +84,7 @@ export const ArtifactImage = ({ artifact, immersive }) => {
         }}>
           {artifact.name}, {artifact?.location.country}, {formatDateRange(artifact?.time.start, artifact?.time.end)}
         </div>
-      </a>
+      </Link>
     </div>
   )
 }

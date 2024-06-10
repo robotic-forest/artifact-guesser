@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout/Layout"
-import { ArtifactsList } from "@/components/list/ArtifactList"
+import { ArtifactsList } from "@/components/artifacts/list/ArtifactList"
 import useUser from "@/hooks/useUser"
 import { GiAmphora } from "react-icons/gi"
 

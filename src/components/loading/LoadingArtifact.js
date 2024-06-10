@@ -1,12 +1,10 @@
-import { GiGreekSphinx } from "react-icons/gi"
 import { SuperKaballah } from "../art/Kaballah"
 import { useEffect, useState } from "react"
 
-
-export const LoadingArtifact = () => {
+export const LoadingArtifact = ({ className }) => {
 
   return (
-    <div className='fixed flex flex-col w-full h-full justify-center items-center overflow-hidden'>
+    <div className={`flex flex-col w-full h-full justify-center items-center text-white overflow-hidden ${className}`}>
       <SuperKaballah speed={500} />
       <div className='my-12 flex items-center justify-center'>
         {/* <GiGreekSphinx className='mr-4 text-white/70' css={{

@@ -19,7 +19,7 @@ import { ArtifactCountMap } from "./ArtifactCountMap"
 export const Statistics = () => {
   const { artifacts } = useArtifacts({ total: true })
   const { accounts } = useAccounts({ total: true })
-  const { games } = useGames({ total: true })
+  const { games } = useGames({ stats: true })
   const { data: stats } = useSWR('/api/platform/stats')
 
   return (

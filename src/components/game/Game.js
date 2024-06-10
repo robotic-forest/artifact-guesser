@@ -65,7 +65,6 @@ const GameUI = () => {
 
   const stringifiedDimensions = JSON.stringify(dimensions)
 
-  // BUG: new artifact gets loaded, zoom doesnt adjust
   useEffect(() => {
     if (dimensions && height && width) {
       const w = width / dimensions.width
@@ -154,13 +153,13 @@ const GameUI = () => {
 
       {leaderBoardOpen && <LeaderBoard onClose={() => setLeaderBoardOpen(false)} />}
 
-      {loading && !isViewingSummary && <LoadingArtifact />}
+      {loading && !isViewingSummary && <LoadingArtifact className='fixed' />}
 
       {isViewingSummary && <GameSummary />}
 
       {!isViewingSummary && (
-        <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100} >
-          <div onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
+        <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
+          <div>
             <img
               src={primaryImage}
               css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }}
@@ -169,9 +168,12 @@ const GameUI = () => {
                 setLoading(false)
               }}
               onError={handleArtifactLoadError}
+              onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}
             />
             {additionalImages?.length > 0 && additionalImages.map(img => (
-              <img key={img} src={img} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s' }} />
+              <img key={img} src={img} css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s' }}
+                onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}
+              />
             ))}
           </div>
         </MapInteractionCSS>

@@ -1,5 +1,6 @@
 import { cleanMDB, processCriteria } from "@/lib/apiUtils/misc"
 import { initDB } from "@/lib/apiUtils/mongodb"
+import { ObjectId } from "mongodb"
 
 const artifacts = async (req, res) => {
   const db = await initDB()
@@ -27,6 +28,7 @@ const artifacts = async (req, res) => {
 export const buildArtifactCriteria = filter => {
   filter.$and = []
 
+  // Time stuff!
   if (![undefined, null].includes(filter.startDateAfter)) {
     filter.$and.push({ 'time.start': { $gte: Number(filter.startDateAfter) } })
     delete filter.startDateAfter
@@ -42,6 +44,12 @@ export const buildArtifactCriteria = filter => {
   if (![undefined, null].includes(filter.endDateBefore)) {
     filter.$and.push({ 'time.end': { $lte: Number(filter.endDateBefore) } })
     delete filter.endDateBefore
+  }
+
+  // Exclude self from relatedARtifacts in Artifact View
+  if (![undefined, null].includes(filter.excludeId)) {
+    filter.$and.push({ '_id': { $ne: new ObjectId(filter.excludeId) } })
+    delete filter.excludeId
   }
 
   if (filter.$and.length === 0) delete filter.$and

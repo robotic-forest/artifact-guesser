@@ -1,15 +1,15 @@
 import { formatDateRange } from "@/lib/artifactUtils"
-import { DataTable } from "../datatable/DataTable"
-import FilterBar, { useFilter } from "../datatable/FilterBar"
+import { DataTable } from "../../datatable/DataTable"
+import FilterBar, { useFilter } from "../../datatable/FilterBar"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { GiAmphora } from "react-icons/gi"
 import { MdCalendarMonth, MdImage } from "react-icons/md"
 import Link from "next/link"
 import { useQuery } from "@/hooks/useQuery"
-import { IconButton } from "../buttons/IconButton"
+import { IconButton } from "../../buttons/IconButton"
 import { GoEye } from "react-icons/go"
-import { MasonryLayout } from "../layout/MasonryLayout"
-import { ImmersiveDialog } from "../dialogs/ImmersiveDialog"
+import { MasonryLayout } from "../../layout/MasonryLayout"
+import { ImmersiveDialog } from "../../dialogs/ImmersiveDialog"
 import { ArtifactImage } from "./components.js/ArtifactImage"
 import dynamic from "next/dynamic"
 import { useMediaQuery } from "react-responsive"
@@ -135,6 +135,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
             1200: 4,
             1600: 5
           }}
+          noCalc
         >
           {artifacts?.map(row => (
             <ArtifactImage key={row._id} artifact={row} noTumbnail />
@@ -146,7 +147,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
           {artifacts.map((a, i) => {
 
             return (
-              <Link key={a._id} href={a.source.url} target='_blank' css={{ textDecoration: 'none' }}>
+              <Link key={a._id} href={`/artifacts/${a._id}`} target='_blank' css={{ textDecoration: 'none' }}>
                 <div css={{ borderBottom: i === artifacts?.length - 1 ? 'none' : '1px solid var(--backgroundColorSlightlyDark)' }}>
                   <div css={{ display: 'flex', alignItems: 'center', padding: 8 }}>
                     <img
@@ -179,7 +180,7 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
         renderRow={(row, rowContent) => (
           <Link
             key={row.id}
-            href={row.source.url}
+            href={`/artifacts/${row._id}`}
             css={{
               textDecoration: 'none',
               '&:first-of-type': {
@@ -194,7 +195,6 @@ const ArtifactsDataTable = ({ baseFilter, excludeFields, isFavorites, immersiveM
               overflow: 'hidden',
               borderBottom: '1px solid var(--backgroundColorSlightlyDark)'
             }}
-            target='_blank'
           >
             {rowContent}
           </Link>

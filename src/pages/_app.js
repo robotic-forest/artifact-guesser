@@ -1,10 +1,11 @@
 import '@/globals.css'
 import axios from 'axios'
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast'
 import { SWRConfig } from 'swr'
 import { GlobalStyles } from "@/components/GlobalStyles"
-import { PromiseDialog } from '@/components/dialogs/Dialog';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { PromiseDialog } from '@/components/dialogs/Dialog'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { usePreviousRoute } from '@/hooks/usePreviousRoute'
 
 const fetcher = url => axios.get(url).then(res => res.data)
 
@@ -35,6 +36,7 @@ export const useTheme = (localTheme) => {
 }
 
 let CyberInvocation; export default CyberInvocation = ({ Component, pageProps }) => {
+  const previousRoute = usePreviousRoute()
   const [t, setTheme] = useState(theme)
   
   return (
@@ -42,7 +44,7 @@ let CyberInvocation; export default CyberInvocation = ({ Component, pageProps })
       <GlobalStyles theme={t} />
       <PromiseDialog>
         <ThemeContext.Provider value={{ theme: t, setTheme }}>
-          <Component {...pageProps} />
+          <Component {...pageProps} previousRoute={previousRoute} />
         </ThemeContext.Provider>
       </PromiseDialog>
       <Toaster position='bottom-center' />

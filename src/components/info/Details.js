@@ -5,7 +5,7 @@ export const DetailsDoubleItem = ({ item1, item2, s, mb = 0 }) => {
     <div css={{ marginBottom: mb, ...s }}>
       <div css={{ display: 'flex' }}>
         <div css={{ width: 'calc(50% - 8px)', marginRight: 16 }}>
-          <div css={{ color: 'var(--textLowOpacity)', fontSize: '0.8em' }}>
+          <div css={{ color: 'var(--textLowOpacity)', fontSize: '0.9em' }}>
             {item1.label}
           </div>
           <div className='text-sm' css={{
@@ -17,7 +17,7 @@ export const DetailsDoubleItem = ({ item1, item2, s, mb = 0 }) => {
         </div>
         {item2 && (
           <div css={{ width: 'calc(50% - 8px)' }}>
-            <div css={{ color: 'var(--textLowOpacity)', fontSize: '0.8em' }}>
+            <div css={{ color: 'var(--textLowOpacity)', fontSize: '0.9em' }}>
               {item2.label}
             </div>
             <div className='text-sm'>
@@ -34,7 +34,7 @@ export const DetailsItem = ({ value, label, mb, s }) => {
 
   return (
     <div css={{ marginBottom: mb, ...s }}>
-      <div css={{ color: 'var(--textLowOpacity)', fontSize: '0.8em' }}>
+      <div css={{ color: 'var(--textLowOpacity)', fontSize: '0.9em' }}>
         {label}
       </div>
       <div className='text-sm' css={{ display: 'flex', flexFlow: 'row wrap' }}>
