@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Dropdown } from "../dropdown/Dropdown"
 
-export const EditableDate = ({ value, onChange, className, dropDownPlace = 'top' }) => {
+export const EditableDate = ({ value, onChange, className, dropDownPlace = 'top', autoFocus }) => {
   const [editing, setEditing] = useState(false)
   const [notation, setNotation] = useState(value >= 0 ? 'AD' : 'BC')
 
@@ -21,7 +21,7 @@ export const EditableDate = ({ value, onChange, className, dropDownPlace = 'top'
         }}
         onFocus={() => setEditing(true)}
         onBlur={() => setEditing(false)}
-        // autoFocus
+        autoFocus={autoFocus}
         css={{
           ':focus': { outline: 'none' },
           width: 40,

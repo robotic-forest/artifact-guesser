@@ -365,6 +365,7 @@ export const FilterBar = ({
                     onChange={(v) => setFilter((f) => ({ ...f, [item.name]: v }))}
                     dropDownPlace='bottom'
                     className='relative top-[-1px]'
+                    autoFocus
                   />
                 )}
                 {item.type === 'text' && (

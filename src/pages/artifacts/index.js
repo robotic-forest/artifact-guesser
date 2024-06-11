@@ -32,6 +32,10 @@ export default () => {
           { label: 'Medium', value: 'medium' },
         ]}
         excludeFilters={isAdmin ? [] : ['problematic']}
+        style={{
+          marginRight: user?.isLoggedIn ? 0 : 32,
+          '@media (max-width: 600px)': { marginRight: 32 },
+        }}
       />
     </Layout>
   )

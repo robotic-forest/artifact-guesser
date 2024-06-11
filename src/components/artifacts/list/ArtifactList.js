@@ -26,7 +26,8 @@ const ArtifactsListUI = ({
   customFilter,
   toggleFields,
   minimal,
-  isFavorites
+  isFavorites,
+  style
 }) => {
   const { query, setQuery } = useQuery()
 
@@ -49,6 +50,7 @@ const ArtifactsListUI = ({
       minimal={minimal}
       hiddenFields={hiddenFields}
       searchFields={searchFields}
+      style={style}
       customFilter={(
         <div className='flex' css={{
           '@media (max-width: 600px)': { marginRight: 32 },

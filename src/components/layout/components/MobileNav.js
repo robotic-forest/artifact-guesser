@@ -19,6 +19,8 @@ import { accountTheme } from "@/pages/accounts"
 import { dashbaordTheme } from "@/pages/dashboard"
 import { SignupDialog } from "@/components/dialogs/SignupDialog"
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
+import { PiRedditLogoFill } from "react-icons/pi"
+import { TbPigMoney } from "react-icons/tb"
 
 export const MobileNav = ({ user, isAdmin, logout }) => {
   const [open, setOpen] = useState(false)
@@ -84,7 +86,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
           },
         }}>
           <div className='flex items-center justify-between'>
-            <div className='flex items-center'>
+            <div className='flex items-center ml-1'>
               <GiGreekSphinx className='mr-2' />
               Artifact Guesser
             </div>
@@ -126,22 +128,44 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       About
                     </MenuButton>
                     {isAdmin ? (
-                      <>
-                        <MenuButton theme={accountTheme} url='/accounts'>
-                          <FaUser className='mr-2 text-xs' />
-                          Accounts
-                        </MenuButton>
-                      </>
+                      <MenuButton theme={accountTheme} url='/accounts'>
+                        <FaUser className='mr-2 text-xs' />
+                        Accounts
+                      </MenuButton>
                     ) : (
-                      <MenuButton css={{ background: '#5562ea', color: 'white' }} url='https://discord.gg/MvkqPTdcwm'>
+                      <MenuButton
+                        theme={{ backgroundColor: '#5562ea', primaryColor: '#5562ea', textColor: 'white' }}
+                        url='https://discord.gg/MvkqPTdcwm'
+                        target='_blank'
+                      >
                         <BsDiscord className='mr-2' />
                         Join Discord
                       </MenuButton>
                     )}
+                    <MenuButton
+                      theme={{ backgroundColor: '#ff4500', primaryColor: '#ff4500', textColor: 'white' }}
+                      url='https://reddit.com/r/artifactguesser'
+                      target='_blank'
+                    >
+                      <PiRedditLogoFill className='mr-2' />
+                      Subreddit
+                    </MenuButton>
+                    <MenuButton
+                      theme={{
+                        backgroundColor: '#e7ba56',
+                        primaryColor: '#e7ba56',
+                        textColor: 'black'
+                      }} 
+                      url='https://ko-fi.com/protocodex'
+                      target='_blank'
+                    >
+                      <TbPigMoney className='mr-2' />
+                      Support
+                    </MenuButton>
                   </div>
                 </div>
                 <div className='flex items-center justify-between'>
-                  <div className='flex items-center'>
+                  <div className='flex items-center ml-1'>
                     <FaUser className='mr-2 text-xs' />
                     {user.username}
                   </div>
@@ -156,7 +180,12 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                   background: 'var(--backgroundColorBarelyDark)'
                 }}>
                    <div className='grid grid-cols-2 gap-2'>
-                     <MenuButton theme={theme} url='/'>
+                     <MenuButton theme={theme} url='/' css={{
+                      '&:hover': {
+                        color: 'black',
+                        background: 'white'
+                      }
+                     }}>
                       <GiGreekSphinx className='mr-2' />
                       Resume Game
                     </MenuButton>
@@ -168,9 +197,33 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       <BiQuestionMark className='mr-2' />
                       About
                     </MenuButton>
-                    <MenuButton css={{ background: '#5562ea', color: 'white' }} url='https://discord.gg/MvkqPTdcwm'>
+                    <MenuButton
+                      theme={{
+                        backgroundColor: '#e7ba56',
+                        primaryColor: '#e7ba56',
+                        textColor: 'black'
+                      }} 
+                      url='https://ko-fi.com/protocodex'
+                      target='_blank'
+                    >
+                      <TbPigMoney className='mr-2' />
+                      Support
+                    </MenuButton>
+                    <MenuButton
+                      theme={{ backgroundColor: '#5562ea', primaryColor: '#5562ea', textColor: 'white' }}
+                      url='https://discord.gg/MvkqPTdcwm'
+                      target='_blank'
+                    >
                       <BsDiscord className='mr-2' />
                       Join Discord
+                    </MenuButton>
+                    <MenuButton
+                      theme={{ backgroundColor: '#ff4500', primaryColor: '#ff4500', textColor: 'white' }}
+                      url='https://reddit.com/r/artifactguesser'
+                      target='_blank'
+                    >
+                      <PiRedditLogoFill className='mr-2' />
+                      Subreddit
                     </MenuButton>
                   </div>
                 </div>
@@ -199,7 +252,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
 }
 
 export const MenuButton = p => (
-  <Link href={p.url} css={{ width: '100%' }}>
+  <Link href={p.url} target={p.target} css={{ width: '100%', ...(p.style || {}) }}>
     <MenuButtonUI {...p} />
   </Link>
 )
@@ -213,7 +266,11 @@ const MenuButtonUI = ({ theme, children, ...props }) => {
   `
 
   return (
-    <Button {...props} css={{ ...styles, ...props.css, minWidth: '100%' }}>
+    <Button {...props} color={theme?.backgroundColor} css={{
+      ...styles,
+      ...props.css,
+      minWidth: '100%'
+    }}>
       {children}
     </Button>
   )

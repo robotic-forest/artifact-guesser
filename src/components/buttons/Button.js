@@ -99,7 +99,7 @@ export const ReliefButton = styled.button`
   };
 
   &:hover {
-    background: ${p => p.disable ? 'none' : p.color ? darken(0.3, p.color) : 'var(--primaryShadow)'};
+    background: ${p => p.disable ? 'none' : p.color ? darken(0.1, p.color) : 'var(--primaryShadow)'};
     box-shadow: ${p => p.disable
       ? '0 0 0 1px transparent'
       : 'rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 12%) ' +

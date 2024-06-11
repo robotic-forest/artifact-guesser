@@ -15,6 +15,7 @@ export default () => {
             <FaHeart color='#ff4f4f' css={{
               marginRight: 8,
               '@media (max-width: 600px)': { marginLeft: 32 },
+              marginLeft: user?.isLoggedIn ? 0 : 32
             }} />
             Favorite Artifacts
           </div>
@@ -26,6 +27,10 @@ export default () => {
         ]}
         isFavorites
         excludeFilters={isAdmin ? [] : ['problematic']}
+        style={{
+          marginRight: user?.isLoggedIn ? 0 : 32,
+          '@media (max-width: 600px)': { marginRight: 32 },
+        }}
       />
     </Layout>
   )

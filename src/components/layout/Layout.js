@@ -18,6 +18,8 @@ import { useTheme } from "@/pages/_app"
 import { MobileNav } from "./components/MobileNav"
 import { BsDiscord } from "react-icons/bs"
 import { BiQuestionMark } from "react-icons/bi"
+import { PiRedditLogoFill } from "react-icons/pi"
+import { TbPigMoney } from "react-icons/tb"
 
 export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
   const u = useUser()
@@ -93,6 +95,36 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
                   }
                 }}>
                   <BiQuestionMark />
+                </MenuIconButton>
+              </Link>
+              <Link
+                href='https://ko-fi.com/protocodex'
+                css={{ '&:hover': { color: 'var(--textColor)'} }}
+                target='_blank'
+              >
+                <MenuIconButton
+                  tooltip='Support'
+                  className='mb-3'
+                  theme={{
+                    backgroundColor: '#e7ba56',
+                    primaryColor: '#e7ba56',
+                    textColor: 'black'
+                  }} 
+                >
+                  <TbPigMoney className='text-sm' />
+                </MenuIconButton>
+              </Link>
+              <Link
+                href='https://reddit.com/r/artifactguesser'
+                css={{ '&:hover': { color: 'var(--textColor)'} }}
+                target='_blank'
+              >
+                <MenuIconButton
+                  tooltip='r/artifactguesser'
+                  className='mb-3'
+                  theme={{ backgroundColor: '#ed6330', primaryColor: '#ed6330', textColor: 'white' }}
+                >
+                  <PiRedditLogoFill className='text-sm' />
                 </MenuIconButton>
               </Link>
               {!isAdmin && (

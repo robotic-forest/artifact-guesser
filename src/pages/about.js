@@ -4,6 +4,9 @@ import { IconGenerator } from "@/components/art/IconGenerator"
 import { PiRedditLogoFill } from "react-icons/pi"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { ArtifactCountMap } from "@/components/dashbaord/ArtifactCountMap"
+import { TbPigMoney } from "react-icons/tb"
+import { SiKofi } from "react-icons/si"
+import { MenuButton } from "@/components/layout/components/MobileNav"
 
 export default () => {
   const { artifacts } = useArtifacts({ total: true })
@@ -33,7 +36,7 @@ export default () => {
       </h3>
 
       <div className='mt-4'>
-        <div className='w-full flex justify-center mb-4'>
+        <div className='w-full flex justify-center my-2'>
           <div className='my-3 p-2 px-3 rounded w-[fit-content] flex items-center flex-wrap' css={{
             background: 'var(--backgroundColorBarelyLight)'
           }}>
@@ -54,6 +57,31 @@ export default () => {
           <a href='https://metmuseum.github.io/' target='_blank' className='text-blue-500 hover:underline'>
             API
           </a> to access their collection, with more sources (such as the Harvard Museum, the British Museum, etc) to be added as development progresses.
+        </div>
+        <div className='w-full flex justify-center my-2'>
+          <div className='my-3 p-2 pb-0 rounded w-[fit-content] inline-flex items-center flex-wrap justify-end'
+          css={{ background: '#f1d18b' }}>
+            <span className='mr-2 mb-2'>
+              Want to help support this project?{' '}
+              All donations go toward development, server costs, and occasionally goat-treats.{' '}
+            </span>
+            <MenuButton
+              theme={{
+                backgroundColor: '#e7ba56',
+                primaryColor: '#e7ba56',
+                textColor: 'black'
+              }} 
+              url='https://ko-fi.com/protocodex'
+              target='_blank'
+              style={{
+                width: 'fit-content',
+                marginBottom: 4
+              }}
+            >
+              <SiKofi className='mr-2' />
+              Donate Here
+            </MenuButton>
+          </div>
         </div>
         <div className='mt-4 mb-2'>
           <b>Feature Requests so far</b> (to be implemented soon):
