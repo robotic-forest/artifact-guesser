@@ -5,7 +5,7 @@ import { artifactsTheme } from "./artifacts"
 import useUser from "@/hooks/useUser"
 
 export default () => {
-  const { isAdmin } = useUser()
+  const { user, isAdmin } = useUser()
   
   return (
     <Layout title='Artifacts List' theme={artifactsTheme}>
