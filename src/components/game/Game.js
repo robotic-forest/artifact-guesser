@@ -26,7 +26,6 @@ import { LeaderBoard } from "../gameui/LeaderBoard"
 import { useTheme } from "@/pages/_app"
 import { Tag } from "../tag/Tag"
 import { modes } from "../gameui/ModeButton"
-import { FaPlus, FaMinus } from "react-icons/fa"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -39,7 +38,6 @@ const GameComponent = () => {
     </GameProvider>
   )
 }
-
 const GameUI = () => {
   const {
     game,
@@ -229,10 +227,10 @@ const handleZoomOut = () => {
         >
           <div className="mb-2 flex">
             <button className="text-2xl bg-black border border-white/50 m-1 md:block hidden" onClick={handleZoomIn}>
-              <FaPlus />
+              <BiPlus />
             </button>
             <button className="text-2xl bg-black border border-white/50 m-1 md:block hidden" onClick={handleZoomOut}>
-              <FaMinus />
+              <BiMinus />
             </button>
           </div>
           <div className='flex items-end mb-1'>
