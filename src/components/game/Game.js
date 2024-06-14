@@ -38,6 +38,7 @@ const GameComponent = () => {
     </GameProvider>
   )
 }
+
 const GameUI = () => {
   const {
     game,
