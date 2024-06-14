@@ -26,7 +26,7 @@ import { LeaderBoard } from "../gameui/LeaderBoard"
 import { useTheme } from "@/pages/_app"
 import { Tag } from "../tag/Tag"
 import { modes } from "../gameui/ModeButton"
-import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
+import { FaPlus, FaMinus } from "react-icons/fa"
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -55,8 +55,8 @@ const GameUI = () => {
     isViewingSummary,
     nextStepKey,
     handleArtifactLoadError,
-    isFullscreen,
-    setIsFullscreen
+    setZoomLevel,
+    zoomLevel
   } = useGame()
   
   const { height, width } = useWindowDimensions()
@@ -88,6 +88,42 @@ const GameUI = () => {
 
     return () => document.body.style.position = "static"
   }, [isViewingSummary])
+  
+// Function to handle zoom in (+) button
+const handleZoomIn = () => {
+  switch (zoomLevel) {
+    case '':
+      setZoomLevel('medium')
+      break
+    case 'medium':
+      setZoomLevel('fullscreen')
+      break
+    case 'fullscreen':
+      break
+    default:
+      setZoomLevel('medium')
+      break
+  }
+}
+
+// Function to handle zoom out (-) button
+const handleZoomOut = () => {
+  switch (zoomLevel) {
+    case 'fullscreen':
+      setZoomLevel('medium')
+      break
+    case 'medium':
+      setZoomLevel('')
+      break
+    case '':
+      break
+    default:
+      setZoomLevel('')
+      break
+  }
+}
+
+
 
   return (
     <div css={{
@@ -163,7 +199,7 @@ const GameUI = () => {
 
         {!isViewingSummary && (
           <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100} >
-            <div className={isFullscreen ? "w-full h-full" : ""} onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
+            <div onDoubleClick={() => setValue(v => ({ ...v, scale: v.scale * 1.2 }))}>
               <img
                 src={primaryImage}
                 css={{ opacity: (!loading && dimensions) ? 1 : 0, transition: 'all 0.4s ease-in' }}
@@ -182,17 +218,19 @@ const GameUI = () => {
 
       {(!dimensions || loading || isViewingSummary) ? null : !guessed ? (
           <div 
-          className={`fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none ${isFullscreen ? 'w-full h-full' : 'w-[400px]'}`} 
+          className={`fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none
+          ${
+          zoomLevel === 'fullscreen' ? 'h-full w-full' : 
+          zoomLevel === 'medium' ? 'h-[60vh] w-[60vh]' : 'w-[400px]'
+        }`} 
           css={{ 
             '@media (max-width: 500px)': { width: '100vw' }
           }}
         >
-          <button
-          className="text-2xl right-0 bg-black m-1 p-1 border rounded border-white/60 hover:bg-black/50"
-          onClick={() => setIsFullscreen(!isFullscreen)}
-          >
-            {isFullscreen ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
-          </button>
+      <div className="mb-2 flex">
+      <button className="text-2xl bg-black border broder-white/50 mr-1 m-1 p-1 md:block hidden" onClick={handleZoomIn}><FaPlus /></button>
+        <button className="text-2xl bg-black border broder-white/50 m-1 p-1 md:block hidden" onClick={handleZoomOut}><FaMinus /></button>
+      </div>
           <div className='flex items-end mb-1'>
             <div
               className='flex items-end'
@@ -232,12 +270,21 @@ const GameUI = () => {
             </div>
             <GameInfo />
           </div>
-          <div className={`bg-black rounded border border-white/30 mb-1 overflow-hidden relative 
-          w-full ${isFullscreen ? 'h-full w-full' : ''}`} css={{
+          <div className={`bg-black rounded border border-white/30 mb-1 overflow-hidden
+          ${
+          zoomLevel === 'fullscreen' ? 'h-[90vh] w-full' : 
+          zoomLevel === 'medium' ? 'h-full w-[60vh]' : 'w-full'
+        }`}
+        css={{
           transition: 'height 0.4s',
           '@media (max-width: 500px)': { height: mobileMapHeight }
-            }}>
-            <Map setHover={setHoverCountry} setSelectedCountry={setSelectedCountry} selectedCountry={selectedCountry} />
+          }}>
+            <Map
+            setHover={setHoverCountry}
+            setSelectedCountry={setSelectedCountry}
+            selectedCountry={selectedCountry}
+            zoomLevel={zoomLevel}
+            />
             {hoverCountry && (
               <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] absolute bottom-1 right-1 invisible md:visible'>
                 {hoverCountry}

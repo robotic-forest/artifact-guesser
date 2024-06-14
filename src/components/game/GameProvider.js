@@ -25,7 +25,7 @@ export const GameProvider = ({ children }) => {
   const [selectedCountry, setSelectedCountry] = useState()
   const [loading, setLoading] = useState(true)
   const { data, mutate } = useSWR(user?.isLoggedIn && '/api/games/current')
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState('')
 
   const initGame = g => {
     setGame(g)
@@ -141,7 +141,7 @@ export const GameProvider = ({ children }) => {
     }
 
     newGame.score += points
-    setIsFullscreen(false)
+    setZoomLevel('')
 
     updateGame(newGame)
   }
@@ -255,8 +255,8 @@ export const GameProvider = ({ children }) => {
       isViewingSummary,
       nextStepKey,
       handleArtifactLoadError,
-      isFullscreen,
-      setIsFullscreen,
+      setZoomLevel,
+      zoomLevel,
     }}>
       {children}
     </GameContext.Provider>
