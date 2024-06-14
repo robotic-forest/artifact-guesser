@@ -227,10 +227,14 @@ const handleZoomOut = () => {
             '@media (max-width: 500px)': { width: '100vw' }
           }}
         >
-      <div className="mb-2 flex">
-      <button className="text-2xl bg-black border broder-white/50 mr-1 m-1 p-1 md:block hidden" onClick={handleZoomIn}><FaPlus /></button>
-        <button className="text-2xl bg-black border broder-white/50 m-1 p-1 md:block hidden" onClick={handleZoomOut}><FaMinus /></button>
-      </div>
+          <div className="mb-2 flex">
+            <button className="text-2xl bg-black border border-white/50 m-1 md:block hidden" onClick={handleZoomIn}>
+              <FaPlus />
+            </button>
+            <button className="text-2xl bg-black border border-white/50 m-1 md:block hidden" onClick={handleZoomOut}>
+              <FaMinus />
+            </button>
+          </div>
           <div className='flex items-end mb-1'>
             <div
               className='flex items-end'
