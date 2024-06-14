@@ -1,9 +1,16 @@
 import { IconButton } from "@/components/buttons/IconButton"
+import { useArtifact } from "@/hooks/artifacts/useArtifact"
+import useUser from "@/hooks/useUser"
 import { formatDateRange } from "@/lib/artifactUtils"
 import Link from "next/link"
+import toast from "react-hot-toast"
 import { BiLinkExternal } from "react-icons/bi"
+import { FaRedditAlien } from "react-icons/fa"
+import { IoCheckmarkSharp } from "react-icons/io5"
 
 export const ArtifactImage = ({ artifact, immersive, newTab }) => {
+  const { isAdmin } = useUser()
+  const { updateArtifact } = useArtifact({ artifact })
 
   return (
     <div css={{
@@ -44,33 +51,47 @@ export const ArtifactImage = ({ artifact, immersive, newTab }) => {
             : `linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0.1) 100%)`,
           '@media (max-width: 800px)': {
             background: 'transparent'
+          },
+          '&:hover': {
+            color: 'var(--textColor)'
           }
         }}
         href={`/artifacts/${artifact._id}`}
         target={newTab ? '_blank' : '_self'}
       >
-        <a
-          css={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            '@media (max-width: 800px)': {
-              display: 'none'
-            }
-          }}
-          href={artifact?.source.url}
-          target='_blank'
-          onClick={e => e.stopPropagation()}
-        >
-          <IconButton tooltip='View Source' size={20} css={{
-            background: '#ffffff55',
-            '&:hover': {
-              background: '#ffffffaa'
-            }
-          }}>
-            <BiLinkExternal />
-          </IconButton>
-        </a>
+        <div className='absolute top-2 right-2'>
+          <a
+            href={artifact?.source.url}
+            target='_blank'
+            onClick={e => e.stopPropagation()}
+          >
+            <IconButton tooltip='View Source' size={20} css={{
+              background: '#ffffff55',
+              '&:hover': {
+                background: '#ffffffaa'
+              }
+            }}>
+              <BiLinkExternal />
+            </IconButton>
+          </a>
+          {isAdmin && (
+            <IconButton size={20} tooltip={artifact.inPostQueue ? 'Remove from post queue' : 'Add to post queue'} css={{
+              background: '#ffffff55',
+              '&:hover': {
+                background: '#ffffffaa'
+              },
+              marginTop: 6
+            }} onClick={e => {
+              e.preventDefault()
+              e.stopPropagation()
+
+              updateArtifact({ inPostQueue: !artifact.inPostQueue })
+              toast.success(`${artifact.inPostQueue ? 'Removed from' : 'Added to'} post queue!`)
+            }}>
+              {artifact.inPostQueue ? <IoCheckmarkSharp /> :  <FaRedditAlien />}
+            </IconButton>
+          )}
+        </div>
         <div css={{
           color: 'white',
           position: 'absolute',

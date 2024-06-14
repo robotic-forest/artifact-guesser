@@ -335,6 +335,28 @@ const artifactFilter = [
         }
       }
     }
+  },
+  {
+    name: 'isHighlight',
+    filter: (addFilterItem, setFilter) => {
+      const contents = (
+        <span css={{ fontSize: '0.9em', display: 'inline-flex', alignItems: 'center' }}>
+          ✨ Highlight
+        </span>
+      )
+
+      return {
+        contents,
+        onClick: () => {
+          setFilter(f => ({ ...f, isHighlight: true }))
+          addFilterItem({
+            name: 'isHighlight',
+            type: 'boolean',
+            contents
+          })
+        }
+      }
+    }
   }
 ]
 

@@ -15,6 +15,7 @@ import { gamesTheme } from "@/pages/games"
 import { accountTheme } from "@/pages/accounts"
 import { artifactsTheme } from "@/pages/artifacts"
 import { ArtifactCountMap } from "./ArtifactCountMap"
+import { Behistun } from "./Behistun"
 
 export const Statistics = () => {
   const { artifacts } = useArtifacts({ total: true })
@@ -63,6 +64,7 @@ export const Statistics = () => {
           </div>
         )}
       />
+      <Behistun />
     </MasonryLayout>
   )
 }

@@ -1,8 +1,16 @@
 import { formatLocation, formatTime } from "@/lib/artifactUtils"
 import { DetailsDoubleItem } from "@/components/info/Details"
 import { FavoritesToggle } from "./FavoritesToggle"
+import { useArtifact } from "@/hooks/artifacts/useArtifact"
+import useUser from "@/hooks/useUser"
+import { IconButton } from "@/components/buttons/IconButton"
+import { FaRedditAlien } from "react-icons/fa"
+import toast from "react-hot-toast"
+import { IoCheckmarkSharp } from "react-icons/io5"
 
 export const ArtifactOverview = ({ artifact, style }) => {
+  const { updateArtifact } = useArtifact({ artifact })
+  const { isAdmin } = useUser()
 
   return (
     <div className='w-full' css={style}>
@@ -26,7 +34,22 @@ export const ArtifactOverview = ({ artifact, style }) => {
             </div>
           </div>
         </div>
-        <div className='flex justify-end mb-1.5'>
+        <div className='flex items-center'>
+          {isAdmin && (
+            <IconButton tooltip={artifact.inPostQueue ? 'Remove from post queue' : 'Add to post queue'} css={{
+              background: '#ffffff55',
+              '&:hover': {
+                background: '#ffffffaa'
+              },
+              marginRight: 6,
+              borderRadius: 3
+            }} onClick={() => {
+              updateArtifact({ inPostQueue: !artifact.inPostQueue })
+              toast.success(`${artifact.inPostQueue ? 'Removed from' : 'Added to'} post queue!`)
+            }}>
+              {artifact.inPostQueue ? <IoCheckmarkSharp /> :  <FaRedditAlien />}
+            </IconButton>
+          )}
           <FavoritesToggle artifactId={artifact?._id} />
         </div>
       </div>

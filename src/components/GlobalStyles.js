@@ -5,6 +5,7 @@ import { complement, darken, lighten, desaturate } from 'polished'
 export const themeCSS = theme => css`
   --backgroundColor: ${theme.backgroundColor};
 
+  --backgroundColorGhostDark: ${darken(0.01, theme.backgroundColor)};
   --backgroundColorBarelyDark: ${darken(0.03, theme.backgroundColor)};
   --backgroundColorSlightlyDark: ${darken(0.07, theme.backgroundColor)};
   --backgroundColorSliightlyDark: ${darken(0.05, theme.backgroundColor)};
