@@ -85,6 +85,8 @@ export const ArtifactImage = ({ artifact, immersive, newTab }) => {
               e.preventDefault()
               e.stopPropagation()
 
+              if (artifact.postUrl) return toast.error('This artifact has already been posted!')
+
               updateArtifact({ inPostQueue: !artifact.inPostQueue })
               toast.success(`${artifact.inPostQueue ? 'Removed from' : 'Added to'} post queue!`)
             }}>

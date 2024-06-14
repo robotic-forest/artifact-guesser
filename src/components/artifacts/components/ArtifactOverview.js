@@ -44,6 +44,8 @@ export const ArtifactOverview = ({ artifact, style }) => {
               marginRight: 6,
               borderRadius: 3
             }} onClick={() => {
+              if (artifact.postUrl) return toast.error('This artifact has already been posted!')
+                
               updateArtifact({ inPostQueue: !artifact.inPostQueue })
               toast.success(`${artifact.inPostQueue ? 'Removed from' : 'Added to'} post queue!`)
             }}>

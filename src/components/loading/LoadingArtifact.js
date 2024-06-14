@@ -1,20 +1,16 @@
 import { SuperKaballah } from "../art/Kaballah"
 import { useEffect, useState } from "react"
 
-export const LoadingArtifact = ({ className }) => {
+export const LoadingArtifact = ({ className, msg, color = '#ffffff' }) => {
 
   return (
-    <div className={`flex flex-col w-full h-full justify-center items-center text-white overflow-hidden ${className}`}>
-      <SuperKaballah speed={500} />
+    <div className={`flex flex-col w-full h-full justify-center items-center overflow-hidden ${className}`} css={{
+      color
+    }}>
+      <SuperKaballah speed={500} color={color} />
       <div className='my-12 flex items-center justify-center'>
-        {/* <GiGreekSphinx className='mr-4 text-white/70' css={{
-          transform: 'scaleX(-1)'
-        }} /> */}
-        <div>
-          Loading Artifact
-          <span className='inline-block tracking-widest ml-[2px] min-w-[16px]'><EllipsesAnimation /></span>
-        </div>
-        {/* <GiGreekSphinx className='ml-3 text-white/70' /> */}
+        {msg || 'Loading Artifact'}
+        <span className='inline-block tracking-widest ml-[2px] min-w-[16px]'><EllipsesAnimation /></span>
       </div>
     </div>
   )
