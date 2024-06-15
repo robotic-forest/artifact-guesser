@@ -16,6 +16,7 @@ import { accountTheme } from "@/pages/accounts"
 import { artifactsTheme } from "@/pages/artifacts"
 import { ArtifactCountMap } from "./ArtifactCountMap"
 import { Behistun } from "./Behistun"
+import { Notes } from "./Notes"
 
 export const Statistics = () => {
   const { artifacts } = useArtifacts({ total: true })
@@ -24,47 +25,52 @@ export const Statistics = () => {
   const { data: stats } = useSWR('/api/platform/stats')
 
   return (
-    <MasonryLayout breaks={{ 600: 1, default: 2 }}>
-      <GoatStats /> 
-      <DashInfo
-        title={<><GiAbstract034 className='text-sm mr-3'/>Games played</>}
-        count={(stats?.noauthGames && games) && (games + stats?.noauthGames)}
-        extraInfo={(
-          <div className='p-3 text-sm'>
-            <span className='mr-2'><span className='opacity-60 mr-1'>Auth</span> {games}</span>
-            <span className='opacity-60 mr-1'>Anon</span> {stats?.noauthGames}
-          </div>
-        )}
-        url='/games?__sortfield=startedAt&__sortdirection=-1'
-        theme={gamesTheme}
-      />
-      <DashInfo
-        title={<><FaUser className='text-xs mr-3'/>Accounts</>}
-        count={accounts}
-        url='/accounts'
-        theme={accountTheme}
-        actions={<AllAccountActions />}
-      />
-      <DashInfo
-        title={<><GiAmphora className='mr-3'/>Artifacts</>}
-        count={artifacts?.total}
-        url='/artifacts'
-        theme={artifactsTheme}
-        extraInfo={(
-          <div className='mt-1 text-xs'>
-            <div className='flex items-center pt-3 pb-1 px-2'>
-              <span className='opacity-60 mr-2'>Problem</span> {artifacts?.problematic}
-              <Link href='/artifacts?problematic=true' className='ml-2.5'>
-                <IconButton size={20} tooltipPlace='right'>
-                  <IoMdEye />
-                </IconButton>
-              </Link>
+    <div className='grid grid-cols-1 gap-2 md:grid-cols-2'>
+      <div>
+        <GoatStats />
+        <DashInfo
+          title={<><FaUser className='text-xs mr-3'/>Accounts</>}
+          count={accounts}
+          url='/accounts'
+          theme={accountTheme}
+          actions={<AllAccountActions />}
+        />
+        <Behistun />
+        <Notes />
+      </div>
+      <div>
+        <DashInfo
+          title={<><GiAbstract034 className='text-sm mr-3'/>Games played</>}
+          count={(stats?.noauthGames && games) && (games + stats?.noauthGames)}
+          extraInfo={(
+            <div className='p-3 text-sm'>
+              <span className='mr-2'><span className='opacity-60 mr-1'>Auth</span> {games}</span>
+              <span className='opacity-60 mr-1'>Anon</span> {stats?.noauthGames}
             </div>
-            <ArtifactCountMap className='m-1' artifacts={artifacts?.byCountry} />
-          </div>
-        )}
-      />
-      <Behistun />
-    </MasonryLayout>
+          )}
+          url='/games?__sortfield=startedAt&__sortdirection=-1'
+          theme={gamesTheme}
+        />
+        <DashInfo
+          title={<><GiAmphora className='mr-3'/>Artifacts</>}
+          count={artifacts?.total}
+          url='/artifacts'
+          theme={artifactsTheme}
+          extraInfo={(
+            <div className='mt-1 text-xs'>
+              <div className='flex items-center pt-3 pb-1 px-2'>
+                <span className='opacity-60 mr-2'>Problem</span> {artifacts?.problematic}
+                <Link href='/artifacts?problematic=true' className='ml-2.5'>
+                  <IconButton size={20} tooltipPlace='right'>
+                    <IoMdEye />
+                  </IconButton>
+                </Link>
+              </div>
+              <ArtifactCountMap className='m-1' artifacts={artifacts?.byCountry} />
+            </div>
+          )}
+        />
+      </div>
+    </div>
   )
 }
