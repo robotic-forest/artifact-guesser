@@ -19,7 +19,7 @@ export const Notes = () => {
         borderColor: '#00000055 #ffffff77 #ffffff77 #00000055',
       }}>
         <div className='p-3'>
-          <div>
+          <div className='mb-2'>
             <b>Artifact Page as a info aggregator?</b> links to wiki, articles, reddit threads
 
             <div className='ml-6'>
@@ -28,7 +28,7 @@ export const Notes = () => {
             </div>
           </div>
 
-          <div className='mb-2'>
+          <div>
             What can be done to make AG something that suports r/ArtefactPorn
           </div>
         </div>
