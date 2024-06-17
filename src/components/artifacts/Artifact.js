@@ -115,6 +115,9 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
           </MapInteractionCSS>
 
           <div className='absolute bottom-1 right-1 z-10 flex items-center'>
+            <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
+              {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
+            </div>
             <IconButton tooltip='Reset View' onClick={() => setValue(defaultMapValue)} css={{
               background: 'black',
               color: 'white',
@@ -123,14 +126,10 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
                 background: '#343434',
                 color: 'white'
               },
-              outline: 0,
-              marginRight: 4
+              outline: 0
             }}>
               <BiRefresh />
             </IconButton>
-            <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
-              {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
-            </div>
           </div>
         </div>
 
