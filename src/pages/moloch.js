@@ -1,13 +1,12 @@
 import { Layout } from "@/components/layout/Layout"
 
 const molochTheme = {
-  primary: '#FF0000',
-  secondary: '#000000',
-  tertiary: '#FFFFFF',
-  quaternary: '#000000',
+  primaryColor: '#71b8cf',
+  backgroundColor: '#cf7171',
+  textColor: '#000000'
 }
 
-export default = () => {
+export default () => {
 
   return (
     <Layout title='Moloch' theme={molochTheme} contentCSS={{ fontFamily: 'monospace' }}>
