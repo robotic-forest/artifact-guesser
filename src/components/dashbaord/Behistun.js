@@ -7,6 +7,7 @@ import { IconButton } from "../buttons/IconButton"
 import { IoMdClose } from "react-icons/io"
 import { useArtifact } from "@/hooks/artifacts/useArtifact"
 import toast from "react-hot-toast"
+import { GiWaxTablet } from "react-icons/gi"
 
 export const behistunTheme = {
   backgroundColor: '#cb788a',
@@ -31,6 +32,7 @@ export const Behistun = () => {
       }}>
         <div className='p-3 pb-2 flex items-center justify-between'>
           <div className='flex items-center'>
+            <GiWaxTablet className='mr-2 scale-x-[-1]' />
             <b className='mr-2'>Behistun</b>
             <a href='https://reddit.com/r/ArtefactPorn' className='underline mr-2' target='_blank'>
               r/ArtefactPorn
