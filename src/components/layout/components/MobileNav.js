@@ -119,7 +119,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       <GiAbstract034 className='mr-2' />
                       {isAdmin ? 'Games' : 'Played Games'}
                     </MenuButton>
-                    <MenuButton theme={artifactsTheme} url='/artifacts'>
+                    <MenuButton theme={artifactsTheme} url='/artifacts?imageMode=true'>
                       <GiAmphora className='mr-2' />
                       Artifacts DB
                     </MenuButton>
@@ -189,7 +189,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       <GiGreekSphinx className='mr-2' />
                       Resume Game
                     </MenuButton>
-                    <MenuButton theme={artifactsTheme} url='/artifacts'>
+                    <MenuButton theme={artifactsTheme} url='/artifacts?imageMode=true'>
                       <GiAmphora className='mr-2' />
                       Artifacts DB
                     </MenuButton>

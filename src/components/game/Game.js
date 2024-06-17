@@ -134,7 +134,7 @@ const GameUI = () => {
               <BsDiscord />
             </MenuIconButton>
           </Link>
-          <Link href='/artifacts'>
+          <Link href='/artifacts?imageMode=true'>
             <MenuIconButton className='ml-1.5' css={{ border: '1px solid #00000033' }} tooltip='View Artifact Database' theme={artifactsTheme}>
               <GiAmphora />
             </MenuIconButton>

@@ -54,7 +54,7 @@ export const Statistics = () => {
         <DashInfo
           title={<><GiAmphora className='mr-3'/>Artifacts</>}
           count={artifacts?.total}
-          url='/artifacts'
+          url='/artifacts?imageMode=true'
           theme={artifactsTheme}
           extraInfo={(
             <div className='mt-1 text-xs'>

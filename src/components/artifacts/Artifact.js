@@ -21,7 +21,6 @@ import { DetailsItemAlt } from "../info/Details"
 export const Artifact = ({ artifact: a, previousRoute }) => {
   const { user } = useUser()
   const router = useRouter()
-  const [immersive, setImmersive] = useState(false)
   const { artifacts: relatedArtifacts, isValidating } = useArtifacts({
     filter: {
       'excludeId': a._id,
@@ -33,9 +32,15 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
       defaultPageSize: 12
     }
   })
-
-  // map values
+  
+  // Image Map values
   const [value, setValue] = useState(defaultMapValue)
+
+  const [immersive, setImmersive] = useState(false)
+  useEffect(() => {
+    if (value.scale > 2 && !immersive) setImmersive(true)
+    if (value.scale <= 2 && immersive) setImmersive(false)
+  }, [value])
 
   // Handle image loading
   const [loadingComplete, setLoadingComplete] = useState(false)
@@ -48,17 +53,6 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
   const centroid = centroids.find(c => c.name === a.location.country)
   const latLng = centroid && `${centroid.latitude},${centroid.longitude}`
 
-  useEffect(() => {
-    if (value.scale > 2 && !immersive) {
-      setImmersive(true)
-    }
-
-    if (value.scale <= 2 && immersive) {
-      setImmersive(false)
-    }
-  }, [value])
-
-  console.log(value.translation.y)
 
   return (
     <>
