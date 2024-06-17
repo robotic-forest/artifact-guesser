@@ -6,10 +6,10 @@ export const ArtifactSource = ({ source, style }) => {
 
   return (
     <Link href={source.url} className='p-2 flex justify-between items-center' target='_blank' css={{
-      background: 'var(--backgroundColor)',
+      background: 'var(--backgroundColorSlightlyLight)',
       '&:hover': {
         color: 'var(--textColor)' ,
-        background: 'var(--backgroundColorBarelyLight)',
+        background: 'var(--backgroundColorLight)',
       },
       border: '1px outset',
       borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
@@ -17,7 +17,7 @@ export const ArtifactSource = ({ source, style }) => {
       ...style
     }}>
       <div className='flex items-center'>
-        <GiGreekTemple className='mr-2 relative top-[-1px]' />
+        <GiGreekTemple className='mr-3 relative top-[-1px]' />
         {source.name}
       </div>
       <BiLinkExternal className="mr-1 opacity-70" />

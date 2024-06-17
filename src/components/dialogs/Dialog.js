@@ -237,13 +237,13 @@ const DialogComponent = ({
             ? <TitleContainer { ...{ fullScreen } }>
                 <span className='title'>{title}</span>
                 {!noClose && <Close { ...{ fullScreen } }>
-                  <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--textVeryLowOpacity)' } }}>
+                  <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--backgroundColorDark)' } }}>
                     <IoMdClose />
                   </IconButton>
                 </Close>}
               </TitleContainer>
             : noClose ? null : <Close { ...{ fullScreen } }>
-                <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--textVeryLowOpacity)' } }}>
+                <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--backgroundColorDark)' } }}>
                   <IoMdClose />
                 </IconButton>
               </Close>

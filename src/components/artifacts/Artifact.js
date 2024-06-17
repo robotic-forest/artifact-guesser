@@ -4,7 +4,6 @@ import { MapInteractionCSS } from 'react-map-interaction'
 import { ArtifactOverview } from "./components/ArtifactOverview"
 import { IconButton } from "../buttons/IconButton"
 import { ArtifactSource } from "./components/ArtifactSource"
-import { FaExpand } from "react-icons/fa"
 import { useEffect, useState } from "react"
 import { ImmersiveDialog } from "../dialogs/ImmersiveDialog"
 import Link from "next/link"
@@ -12,10 +11,12 @@ import { useRouter } from "next/router"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { ArtifactImage } from "./list/components.js/ArtifactImage"
-import { BiWorld } from "react-icons/bi"
+import { BiLinkExternal, BiRefresh, BiWorld } from "react-icons/bi"
 import { GiAmphora } from "react-icons/gi"
 import { LoadingArtifact } from "../loading/LoadingArtifact"
 import useUser from "@/hooks/useUser"
+import { LuScroll } from 'react-icons/lu'
+import { PiEyeFill } from "react-icons/pi"
 
 export const Artifact = ({ artifact: a, previousRoute }) => {
   const { user } = useUser()
@@ -33,8 +34,15 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
     }
   })
 
+  // map values
+  const [value, setValue] = useState(defaultMapValue)
+
   // Handle image loading
   const [loadingComplete, setLoadingComplete] = useState(false)
+
+  // Handle expansion
+  const [expandDescription, setExpandDescription] = useState(false)
+  const [expandReferences, setExpandReferences] = useState(false)
 
   const averageTime = Math.round((a.time.start + a.time.end) / 2)
   const centroid = centroids.find(c => c.name === a.location.country)
@@ -43,7 +51,7 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
   return (
     <>
       {immersive && (
-        <ImmersiveDialog visible closeDialog={() => setImmersive(false)}>
+        <ImmersiveDialog value={value} setValue={setValue} visible closeDialog={() => setImmersive(false)}>
           <ImageView imgs={a.images.external} />
         </ImmersiveDialog>
       )}
@@ -78,15 +86,16 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
 
           {!loadingComplete && <LoadingArtifact className='absolute' />}
 
-          <MapInteractionCSS maxScale={100}>
-            <ImageView imgs={a.images.external} setLoadingComplete={setLoadingComplete} />
+          <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
+            <ImageView
+              imgs={a.images.external}
+              setLoadingComplete={setLoadingComplete}
+              loadingComplete={loadingComplete}
+            />
           </MapInteractionCSS>
 
           <div className='absolute bottom-1 right-1 z-10 flex items-center'>
-            <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
-              {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
-            </div>
-            <IconButton tooltip='Expand' onClick={() => setImmersive(true)} css={{
+            <IconButton tooltip='Reset View' onClick={() => setValue(defaultMapValue)} css={{
               background: 'black',
               color: 'white',
               border: '1px solid #ffffff55',
@@ -94,10 +103,27 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
                 background: '#343434',
                 color: 'white'
               },
-              outline: 0
+              outline: 0,
+              marginRight: 4
             }}>
-              <FaExpand />
+              <BiRefresh />
             </IconButton>
+            <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
+              {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
+            </div>
+            <button
+              onClick={() => setImmersive(true)}
+              className='p-[2px_12px] rounded inline-flex border border-white/30'
+              css={{
+                background: 'var(--primaryColor)',
+                '&:hover': {
+                  background: 'var(--primaryColorLight)',
+                },
+              }}
+            >
+              <PiEyeFill className='mr-2 relative top-[3px]' />
+              View immersively
+            </button>
           </div>
         </div>
 
@@ -109,14 +135,94 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
           <div className='p-[10px] flex flex-col justify-between'>
             <div>
               <ArtifactOverview artifact={a} />
-              <div className='mt-3 mb-1 opacity-70'>
-                Context
-              </div>
-              <div className='p-2 rounded' css={{
-                background: 'var(--backgroundColorBarelyLight)',
-              }}>
-                Adding context information to artifacts is a work in progress. Click the source link for most of the good info on this object.
-              </div>
+              {a.description && (
+                <>
+                  <div className='mt-3 mb-1 opacity-70'>
+                    Description
+                  </div>
+                  <div className='p-2 mb-6 rounded' css={{
+                    background: 'var(--backgroundColorBarelyLight)',
+                  }}>
+                    <div dangerouslySetInnerHTML={{
+                      __html: (expandDescription || a.description.split('<br><br>').length <= 3)
+                        ? a.description
+                        : a.description.split('<br><br>').slice(0, 3).join('<br><br>')
+                    }} />
+                    {a.description.split('<br><br>').length > 3 && (
+                      <div className='mt-3 flex justify-end'>
+                        <button
+                          onClick={() => setExpandDescription(ed => !ed)}
+                          className='p-[2px_12px] rounded inline-flex'
+                          css={{
+                            background: 'var(--primaryColor)',
+                            '&:hover': {
+                              background: 'var(--primaryColorLight)',
+                            },
+                            '& svg': {
+                              color: 'var(--primaryColorVeryDark)',
+                              fill: 'var(--primaryColor)',
+                            }
+                          }}
+                        >
+                          <LuScroll className='mr-2 relative top-[3px]' />
+                          {expandDescription ? 'Read less' : 'Read more'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {a.references?.length > 0 && (
+                <div className='mb-6'>
+                  <div className='mb-1 opacity-70'>
+                    References
+                  </div>
+                  <div>
+                    {a.references.slice(0, 4).map((ref, i) => (
+                      <div className='p-2 mb-1 rounded' css={{
+                        background: 'var(--backgroundColorBarelyLight)',
+                      }}>
+                        <div key={i} dangerouslySetInnerHTML={{ __html: ref }} />
+                      </div>
+                    ))}
+                  </div>
+                  {a.references.length > 4 && (
+                    <>
+                      {expandReferences && (
+                        <div>
+                          {a.references.slice(4).map((ref, i) => (
+                            <div className='p-2 mb-1 rounded' css={{
+                              background: 'var(--backgroundColorBarelyLight)',
+                            }}>
+                              <div key={i} dangerouslySetInnerHTML={{ __html: ref }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className='flex justify-end'>
+                        <button
+                          onClick={() => setExpandReferences(ed => !ed)}
+                          className='p-[2px_12px] rounded inline-flex'
+                          css={{
+                            background: 'var(--backgroundColorSlightlyLight)',
+                            '&:hover': {
+                              background: 'var(--backgroundColorLight)',
+                            },
+                            '& svg': {
+                              color: 'var(--primaryColorVeryDark)',
+                              fill: 'var(--primaryColor)',
+                            }
+                          }}
+                        >
+                          <LuScroll className='mr-2 relative top-[3px]' />
+                          {expandReferences ? 'Hide references' : 'Show all references'}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
             <div className='relative top-1' css={{
               '@media (max-width: 768px)': {
@@ -169,6 +275,42 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
             <div className='mb-1 opacity-70 flex justify-end'>
               <a href='https://www.runningreality.org/projects/' target='_blank'>runningreality.org</a>
             </div>
+            {a.wikiDataUrl && (
+              <div className='mb-1 opacity-70'>
+                Meta
+              </div>
+            )}
+            {a.wikiDataUrl && (
+              <>
+                <div className='mb-6'>
+                  <Link
+                    href={a.wikiDataUrl}
+                    className='p-2 flex justify-between items-center'
+                    target='_blank'
+                    css={{
+                      background: 'var(--backgroundColor)',
+                      '&:hover': {
+                        color: 'var(--textColor)' ,
+                        background: 'var(--backgroundColorBarelyLight)',
+                      },
+                      border: '1px outset',
+                      borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+                      transition: 'color 0.2s, background 0.2s'
+                    }}
+                  >
+                    <div className='flex items-center'>
+                      <img
+                        src='https://upload.wikimedia.org/wikipedia/commons/f/ff/Wikidata-logo.svg'
+                        width={20}
+                        className="mr-3"
+                      />
+                      Wiki Data Entry
+                    </div>
+                    <BiLinkExternal className="mr-1 opacity-70" />
+                  </Link>
+                </div>
+              </>
+            )}
             <div className='relative top-1' css={{
               '@media (min-width: 768px)': {
                 display: 'none'
@@ -210,45 +352,49 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
   )
 }
 
-const ImageView = ({ imgs, setLoadingComplete }) => {
+const defaultMapValue = {
+  scale: 1,
+  translation: { x: 0, y: 0 }
+}
+
+const ImageView = ({ imgs, setLoadingComplete, loadingComplete }) => {
   const [loaded, setLoaded] = useState(0)
+  const [errorImgs, setErrorImgs] = useState([])
+
+  const renderImgs = imgs.filter(img => !errorImgs.includes(img))
 
   useEffect(() => {
-    if (imgs?.length === loaded && setLoadingComplete) {
+    if (renderImgs?.length === loaded && setLoadingComplete) {
       setLoadingComplete(true)
     }
-  }, [loaded])
+  }, [loaded, renderImgs])
 
   return (
-    <>
-      {/* <div className='flex flex-wrap w-screen'>
+    <MasonryLayout
+        gutter={0}
+        breaks={{
+          default: 6,
+          600: 2,
+          900: 3,
+          1200: 4,
+          1600: 5
+        }}
+      >
         {imgs?.length > 0 && imgs.map(img => (
-          <img key={img} src={img} css={{ height: 400 }} />
+          <img
+            key={img}
+            src={img}
+            css={{
+              opacity: (loadingComplete || !setLoadingComplete) ? 1 : 0,
+              display: errorImgs.includes(img) ? 'none' : 'block',
+            }}
+            onLoad={() => setLoaded(l => l + 1)}
+            onError={() => {
+              setErrorImgs(ei => [...ei, img])
+            }}
+          />
         ))}
-      </div> */}
-      <MasonryLayout
-          gutter={0}
-          breaks={{
-            default: 6,
-            600: 2,
-            900: 3,
-            1200: 4,
-            1600: 5
-          }}
-        >
-          {imgs?.length > 0 && imgs.map(img => (
-            <img
-              key={img}
-              src={img}
-              css={{
-                opacity: imgs?.length === loaded ? 1 : 0,
-                transition: 'all 0.4s ease-in'
-              }}
-              onLoad={() => setLoaded(l => l + 1)}
-            />
-          ))}
-        </MasonryLayout>
-    </>
+      </MasonryLayout>
   )
 }
 
