@@ -14,9 +14,15 @@ export const ImmersiveDialog = ({ closeDialog, visible, children, bg, text, valu
       fullScreen
     >
       <ExpandedStyles style={{ background: bg, color: text }}>
-        <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
-          {children}
-        </MapInteractionCSS>
+        {value ? (
+          <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
+            {children}
+          </MapInteractionCSS>
+        ) : (
+          <MapInteractionCSS maxScale={100}>
+            {children}
+          </MapInteractionCSS>
+        )}
       </ExpandedStyles>
     </Dialog>
   )

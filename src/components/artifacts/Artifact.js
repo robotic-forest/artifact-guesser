@@ -16,7 +16,7 @@ import { GiAmphora } from "react-icons/gi"
 import { LoadingArtifact } from "../loading/LoadingArtifact"
 import useUser from "@/hooks/useUser"
 import { LuScroll } from 'react-icons/lu'
-import { PiEyeFill } from "react-icons/pi"
+import { DetailsItemAlt } from "../info/Details"
 
 export const Artifact = ({ artifact: a, previousRoute }) => {
   const { user } = useUser()
@@ -48,15 +48,35 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
   const centroid = centroids.find(c => c.name === a.location.country)
   const latLng = centroid && `${centroid.latitude},${centroid.longitude}`
 
+  useEffect(() => {
+    if (value.scale > 2 && !immersive) {
+      setImmersive(true)
+    }
+
+    if (value.scale <= 2 && immersive) {
+      setImmersive(false)
+    }
+  }, [value])
+
+  console.log(value.translation.y)
+
   return (
     <>
       {immersive && (
-        <ImmersiveDialog value={value} setValue={setValue} visible closeDialog={() => setImmersive(false)}>
+        <ImmersiveDialog
+          value={value}
+          setValue={setValue}
+          visible
+          closeDialog={() => setValue(defaultMapValue)}
+        >
           <ImageView imgs={a.images.external} />
         </ImmersiveDialog>
       )}
       <div>
-        <div className='flex flex-wrap w-full h-[50vh] min-h-[500px] bg-black relative'>
+        <div className='flex flex-wrap w-full h-[50vh] min-h-[500px] bg-black relative' css={{
+          height: immersive ? '90vh' : '50vh',
+          transition: 'height 0.15s',
+        }}>
           <div className='absolute top-1 left-1.5 z-10 flex items-center' css={{
             padding: user?.isLoggedIn ? 0 : '8px 0 0 40px',
             '@media (max-width: 768px)': {
@@ -111,19 +131,6 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
             <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
               {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
             </div>
-            <button
-              onClick={() => setImmersive(true)}
-              className='p-[2px_12px] rounded inline-flex border border-white/30'
-              css={{
-                background: 'var(--primaryColor)',
-                '&:hover': {
-                  background: 'var(--primaryColorLight)',
-                },
-              }}
-            >
-              <PiEyeFill className='mr-2 relative top-[3px]' />
-              View immersively
-            </button>
           </div>
         </div>
 
@@ -137,11 +144,13 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
               <ArtifactOverview artifact={a} />
               {a.description && (
                 <>
-                  <div className='mt-3 mb-1 opacity-70'>
+                  <div className='mt-4 mb-1' css={{
+                    color: 'var(--textLowOpacity)'
+                  }}>
                     Description
                   </div>
-                  <div className='p-2 mb-6 rounded' css={{
-                    background: 'var(--backgroundColorBarelyLight)',
+                  <div className='px-3 p-2 mb-6 rounded text-sm' css={{
+                    background: 'var(--backgroundColorSlightlyLight)',
                   }}>
                     <div dangerouslySetInnerHTML={{
                       __html: (expandDescription || a.description.split('<br><br>').length <= 3)
@@ -173,14 +182,18 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
                 </>
               )}
 
+              {a?.dimensions && (
+                <DetailsItemAlt mb={20} label='Dimensions' value={a?.dimensions} />
+              )}
+
               {a.references?.length > 0 && (
                 <div className='mb-6'>
-                  <div className='mb-1 opacity-70'>
+                  <div className='mb-1' css={{ color: 'var(--textLowOpacity)' }}>
                     References
                   </div>
                   <div>
                     {a.references.slice(0, 4).map((ref, i) => (
-                      <div className='p-2 mb-1 rounded' css={{
+                      <div className='p-2 px-3 mb-1 rounded' css={{
                         background: 'var(--backgroundColorBarelyLight)',
                       }}>
                         <div key={i} dangerouslySetInnerHTML={{ __html: ref }} />
@@ -192,7 +205,7 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
                       {expandReferences && (
                         <div>
                           {a.references.slice(4).map((ref, i) => (
-                            <div className='p-2 mb-1 rounded' css={{
+                            <div className='p-2 px-3 mb-1 rounded' css={{
                               background: 'var(--backgroundColorBarelyLight)',
                             }}>
                               <div key={i} dangerouslySetInnerHTML={{ __html: ref }} />
@@ -236,11 +249,11 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
           <div className='p-2' css={{
             background: 'var(--backgroundColorBarelyDark)',
           }}>
-            <div className='mb-1 opacity-70'>
+            <div className='mb-1' css={{ color: 'var(--textLowOpacity)' }}>
               Source
             </div>
             <ArtifactSource source={a.source} style={{ marginBottom: 8 }} />
-            <div className='mb-1 opacity-70 flex items-center'>
+            <div className='mb-1 flex items-center' css={{ color: 'var(--textLowOpacity)' }}>
               The world at that time
             </div>
             <div className='h-[300px] w-full relative' css={{
@@ -272,11 +285,11 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
                 </Link>
               </div>
             </div>
-            <div className='mb-1 opacity-70 flex justify-end'>
+            <div className='mb-1 flex justify-end' css={{ color: 'var(--textLowOpacity)' }}>
               <a href='https://www.runningreality.org/projects/' target='_blank'>runningreality.org</a>
             </div>
             {a.wikiDataUrl && (
-              <div className='mb-1 opacity-70'>
+              <div className='mb-1' css={{ color: 'var(--textLowOpacity)' }}>
                 Meta
               </div>
             )}
@@ -405,7 +418,11 @@ const RelatedArtifactsTitle = ({ artifact: a }) => {
 
   return (
     <div className='flex items-center'>
-      <span className='opacity-70 relative top-[1px]'>Related Artifacts</span>
+      <span className=' relative top-[1px]' css={{
+        color: 'var(--textLowOpacity)'
+      }}>
+        Related Artifacts
+      </span>
       <Link href={relatedArtifactsHref}>
         <IconButton tooltip='View in Artifacts DB' className='ml-2'>
           <GiAmphora />

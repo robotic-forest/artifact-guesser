@@ -1,5 +1,5 @@
 import { formatLocation, formatTime } from "@/lib/artifactUtils"
-import { DetailsDoubleItem } from "@/components/info/Details"
+import { DetailsDoubleItemAlt } from "@/components/info/Details"
 import { FavoritesToggle } from "./FavoritesToggle"
 import { useArtifact } from "@/hooks/artifacts/useArtifact"
 import useUser from "@/hooks/useUser"
@@ -56,13 +56,13 @@ export const ArtifactOverview = ({ artifact, style }) => {
         </div>
       </div>
       <div>
-        <DetailsDoubleItem mb={12}
+        <DetailsDoubleItemAlt mb={12}
           item1={{ label: 'Location', value: formatLocation(artifact?.location) }}
           item2={{ label: 'Time', value: formatTime(artifact?.time) }}
         />
-        <DetailsDoubleItem mb={8}
+        <DetailsDoubleItemAlt mb={12}
           item1={{ label: 'Medium', value: artifact?.medium }}
-          item2={{ label: 'Dimensions', value: artifact?.dimensions }}
+          item2={artifact?.classification && { label: 'Classification', value: artifact?.classification }}
         />
       </div>
     </div>
