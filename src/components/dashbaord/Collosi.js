@@ -12,6 +12,7 @@ export const Collosi = ({ className }) => {
         reactionSpeed={20}
         scale={0.3}
         canvasStyle={{
+          marginRight: 8,
           width: 120,
           height: 120,
           zIndex: 666
