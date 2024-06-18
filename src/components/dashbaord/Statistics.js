@@ -17,6 +17,7 @@ import { artifactsTheme } from "@/pages/artifacts"
 import { ArtifactCountMap } from "./ArtifactCountMap"
 import { Behistun } from "./Behistun"
 import { Notes } from "./Notes"
+import { Collosi } from "./Collosi"
 
 export const Statistics = () => {
   const { artifacts } = useArtifacts({ total: true })
@@ -70,6 +71,7 @@ export const Statistics = () => {
             </div>
           )}
         />
+        <Collosi className='flex justify-end mb-2' />
       </div>
     </div>
   )

@@ -7,6 +7,7 @@ import { ArtifactCountMap } from "@/components/dashbaord/ArtifactCountMap"
 import { TbPigMoney } from "react-icons/tb"
 import { SiKofi } from "react-icons/si"
 import { MenuButton } from "@/components/layout/components/MobileNav"
+import { Collosi } from "@/components/dashbaord/Collosi"
 
 export default () => {
   const { artifacts } = useArtifacts({ total: true })
@@ -101,6 +102,10 @@ export default () => {
         <ul className='list-disc ml-8'>
           <li>Multiplayer!</li>
           <li>Map shows world/empires as they were when adjusting timeline date</li>
+          <li>
+            <b>3D Artifacts!</b> Preview:
+            <Collosi className='flex m-2' />
+          </li>
         </ul>
         <div className='my-2'>
           <b>Brainstorming</b>:

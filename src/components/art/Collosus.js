@@ -1,7 +1,7 @@
 import React, { useRef, Suspense, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import dynamic from 'next/dynamic'
-import { OrthographicCamera, useGLTF } from '@react-three/drei'
+import { MeshDistortMaterial, OrthographicCamera, useGLTF } from '@react-three/drei'
 import useWindowDimensions from '@/hooks/useWindowDimensions'
 import { SuperKaballah } from '../art/Kaballah'
 
@@ -14,10 +14,10 @@ const Map = ({ url, placeholderColor, reactionSpeed = 10, scale = 1, divideBy })
   const { width, height } = useWindowDimensions()
 
   useFrame(() => {
-    const x = Math.max(-1, Math.min(1, normalize(mx,  width/ divideBy)))
+    const x = Math.max(-2, Math.min(2, normalize(mx,  width)))
     group.current.rotation.y += (x / reactionSpeed  - group.current.rotation.y / reactionSpeed)
 
-    const y = Math.max(0, Math.min(0.5, normalize(my, height)))
+    const y = Math.max(-2, Math.min(1, normalize(my, height)))
     group.current.rotation.x += (y / reactionSpeed  - group.current.rotation.x / reactionSpeed)
   })
 
@@ -57,7 +57,7 @@ export const Collosus = ({ gltf, color, reactionSpeed, canvasStyle, scale, previ
 
   return (
     <Suspense fallback={preview ? preview === 'super' ? (
-      <SuperKaballah n={2} style={canvasStyle} speed={500} smol />
+      <SuperKaballah n={2} style={canvasStyle} speed={500} smol color='#000000' />
     ) : (
       <div style={canvasStyle} />
     ) : null}>
@@ -72,6 +72,19 @@ export const Collosus = ({ gltf, color, reactionSpeed, canvasStyle, scale, previ
         <ambientLight />
         <pointLight position={[10, 10, 10]} />
         <Model url={gltf} placeholderColor={color} reactionSpeed={reactionSpeed} scale={scale} divideBy={divideBy} />
+
+        <mesh scale={0.4 * scale} position={[0, 0, -1]}>
+          <circleGeometry />
+          <MeshDistortMaterial color='#ffffff' opacity={0.3} transparent distort={0.3} speed={0.7} />
+        </mesh>
+        <mesh scale={0.7 * scale} position={[0, 0, -1]}>
+          <circleGeometry />
+          <MeshDistortMaterial color='#ffffff' opacity={0.3} transparent distort={0.4} speed={0.7} />
+        </mesh>
+        <mesh scale={0.9 * scale} position={[0, 0, -1]}>
+          <circleGeometry />
+          <MeshDistortMaterial color='#ffffff' opacity={0.3} transparent distort={0.5} speed={0.7} />
+        </mesh>
       </Canvas>
     </Suspense>
   )
