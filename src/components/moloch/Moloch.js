@@ -4,10 +4,10 @@ export const Moloch = () => {
 
   return (
     <div className='flex flex-col items-center'>
-      <img src='/babel.webp' width={350} className='rounded-lg mb-2' />
+      <img src='/babel.webp' width={294} className='rounded-lg mb-2' />
 
       <div className='p-3 px-5 mb-2 rounded-lg text-xl' css={{
-        background: 'var(--backgroundColorSlightlyLight)'
+        background: 'var(--backgroundColorLight)'
       }}>
         <b>Feeding the capitalist machine</b> -  Supporting Artifact Guesser
       </div>

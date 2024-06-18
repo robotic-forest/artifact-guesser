@@ -10,7 +10,11 @@ const molochTheme = {
 export default () => {
 
   return (
-    <Layout title='Moloch' theme={molochTheme} contentCSS={{ fontFamily: 'monospace' }}>
+    <Layout title='Moloch' theme={molochTheme} contentCSS={{
+      fontFamily: 'monospace',
+      background: 'linear-gradient(180deg, var(--backgroundColor), var(--backgroundColorDark))',
+      minHeight: '100vh',
+    }}>
       <Moloch />
     </Layout>
   )

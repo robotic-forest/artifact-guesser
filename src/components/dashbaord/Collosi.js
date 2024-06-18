@@ -1,6 +1,5 @@
 import { Collosus } from "../art/Collosus"
 
-
 export const Collosi = ({ className }) => {
 
   return(

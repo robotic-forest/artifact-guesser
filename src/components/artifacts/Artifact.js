@@ -142,7 +142,7 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
                   }}>
                     Description
                   </div>
-                  <div className='px-3 p-2 mb-6 rounded text-sm' css={{
+                  <div className='pl-2.5 p-2 mb-6 rounded text-sm' css={{
                     background: 'var(--backgroundColorSlightlyLight)',
                   }}>
                     <div dangerouslySetInnerHTML={{

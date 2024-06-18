@@ -54,7 +54,7 @@ export const DetailsDoubleItemAlt = ({ item1, item2, s, mb = 0 }) => {
           <div css={{ color: 'var(--textLowOpacity)', marginBottom: 4 }}>
             {item1.label}
           </div>
-          <div className='p-2 px-3 rounded text-sm w-[fit-content]' css={{
+          <div className='p-2 px-2.5 rounded text-sm w-[fit-content]' css={{
               background: 'var(--backgroundColorSlightlyLight)',
             }}>
             {item1.value || 'N/A'}
@@ -65,7 +65,7 @@ export const DetailsDoubleItemAlt = ({ item1, item2, s, mb = 0 }) => {
             <div css={{ color: 'var(--textLowOpacity)', marginBottom: 4 }}>
               {item2.label}
             </div>
-            <div className='p-2 px-3 rounded text-sm w-[fit-content]' css={{
+            <div className='p-2 px-2.5 rounded text-sm w-[fit-content]' css={{
               background: 'var(--backgroundColorSlightlyLight)',
             }}>
               {item2.value || 'N/A'}
@@ -84,7 +84,7 @@ export const DetailsItemAlt = ({ value, label, mb, s }) => {
       <div css={{ color: 'var(--textLowOpacity)', marginBottom: 4 }}>
         {label}
       </div>
-      <div className='p-2 px-3 rounded w-[fit-content]' css={{
+      <div className='p-2 px-2.5 rounded w-[fit-content]' css={{
         background: 'var(--backgroundColorBarelyLight)',
       }}>
         {value || 'N/A'}
