@@ -4,7 +4,6 @@ import { IconGenerator } from "@/components/art/IconGenerator"
 import { PiRedditLogoFill } from "react-icons/pi"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { ArtifactCountMap } from "@/components/dashbaord/ArtifactCountMap"
-import { TbPigMoney } from "react-icons/tb"
 import { SiKofi } from "react-icons/si"
 import { MenuButton } from "@/components/layout/components/MobileNav"
 import { Collosi } from "@/components/dashbaord/Collosi"
@@ -13,7 +12,11 @@ export default () => {
   const { artifacts } = useArtifacts({ total: true })
 
   return (
-    <Layout title='Artifacts List' theme={artifactsTheme} contentCSS={{ fontFamily: 'monospace' }}>
+    <Layout title='Artifacts List' theme={artifactsTheme} contentCSS={{
+      fontFamily: 'monospace',
+      background: 'linear-gradient(180deg, var(--backgroundColor), var(--backgroundColorDark))',
+      minHeight: '100vh',
+    }}>
       <h3 className='flex mt-3 font-bold justify-center text-center w-full' css={{
         fontSize: '1.1rem',
         '@media (max-width: 600px)': {
@@ -22,13 +25,13 @@ export default () => {
           padding: '0 2rem'
         }
       }}>
-        <div className='mr-4' css={{
+        <div className='mr-4 mt-1' css={{
           '@media (max-width: 600px)': { display: 'none' }
         }}>
           <IconGenerator />
         </div>
         About Artifact Guesser
-        <div className='ml-4' css={{
+        <div className='ml-4 mt-1' css={{
           transform: 'scaleX(-1)',
           '@media (max-width: 600px)': { display: 'none' }
         }}>
@@ -104,7 +107,7 @@ export default () => {
           <li>Map shows world/empires as they were when adjusting timeline date</li>
           <li>
             <b>3D Artifacts!</b> Preview:
-            <Collosi className='flex m-2' />
+            <Collosi className='flex my-2' />
           </li>
         </ul>
         <div className='my-2'>
@@ -115,7 +118,7 @@ export default () => {
           determine if a piece is authentic.</li>
         </ul>
         <div className='my-3 p-2 rounded w-[fit-content]' css={{
-          background: 'var(--backgroundColorBarelyDark)'
+          background: 'var(--backgroundColorDark)'
         }}>
           To add more, please head to the <b>#feature-requests</b> channel in the{' '}
           <a href='https://discord.gg/MvkqPTdcwm' className='text-blue-500 hover:underline'>
@@ -123,7 +126,7 @@ export default () => {
           </a>
           .
         </div>
-        <div className='mb-1'><b>Current Artifacts in the DB by country</b> (zoomable, click to country to view its list):</div>
+        <div className='mt-8 mb-1'><b>Current Artifacts in the DB by country</b> (zoomable, click to country to view its list):</div>
         <div className='w-[1000px] max-w-[100%]'>
           <ArtifactCountMap artifacts={artifacts?.byCountry} />
         </div>
