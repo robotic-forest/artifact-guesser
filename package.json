@@ -22,7 +22,7 @@
     "mongodb": "^6.6.2",
     "next": "13.4.10-canary.2",
     "node-mailjet": "^6.0.5",
-    "polished": "^4.2.2",
+    "polished": "^4.3.1",
     "react": "18.2.0",
     "react-data-table-component": "https://github.com/robotic-forest/react-data-table",
     "react-dom": "18.2.0",

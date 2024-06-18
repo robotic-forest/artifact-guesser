@@ -1,5 +1,5 @@
 import { centroids } from "@/lib/getProximity"
-import { ComposableMap, Geographies, Geography, Annotation, ZoomableGroup, Marker } from "react-simple-maps"
+import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from "react-simple-maps"
 
 export const Map = ({ selectedCountry, setSelectedCountry, setHover }) => {
   return (
@@ -39,6 +39,16 @@ export const Map = ({ selectedCountry, setSelectedCountry, setHover }) => {
 }
 
 export const ArtefactMap = ({ artifacts, onClick, setHover }) => {
+  const sortedArtifacts = artifacts?.sort((a, b) => b.count - a.count)
+  const highestCount = sortedArtifacts?.[0]?.count
+  const lowestCount = 0
+
+  const colorScale = (count, color1, color2) => {
+    if (!count) return 'rgb(215, 215, 215)'
+    if (count > highestCount) return `rgb(${color2[0]}, ${color2[1]}, ${color2[2]})`
+    const scale = (count - lowestCount) / (highestCount - lowestCount)
+    return `rgb(${color1[0] + scale * (color2[0] - color1[0])}, ${color1[1] + scale * (color2[1] - color1[1])}, ${color1[2] + scale * (color2[2] - color1[2])})`
+  }
 
   return (
     <ComposableMap width={800} height={400}>
@@ -47,37 +57,40 @@ export const ArtefactMap = ({ artifacts, onClick, setHover }) => {
           {({ geographies }) => (
             <>
               {geographies.map((geo) => {
-                const artifactCount = artifacts?.find(a => a._id === geo.properties.name)?.count
+                const artifactCount = artifacts?.find(a => a._id === geo.properties.name)?.count || 0
+                const fill = colorScale(artifactCount, [175, 221, 204], [13, 120, 81])
 
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     onClick={() => {
-                      onClick?.(geo.properties.name)
+                      artifactCount > 0 && onClick?.(geo.properties.name)
                     }}
                     onMouseOver={() => setHover({
                       name: geo.properties.name,
-                      count: artifactCount || 0
+                      count: artifactCount
                     })}
                     onMouseLeave={() => setHover(null)}
                     style={{
                       default: {
                         outline: "none",
-                        fill: "#5db293",
+                        fill,
                         stroke: '#2d7a5e',
                         strokeWidth: 0.5,
                       },
                       hover: {
                         stroke: '#2d7a5e',
                         strokeWidth: 0.5,
-                        fill: "#8ed2b9",
-                        cursor: "pointer",
-                        outline: "none"
+                        fill,
+                        cursor: artifactCount === 0 ? null : "pointer",
+                        outline: "none",
+                        filter: artifactCount === 0 ? null : 'brightness(1.1)'
                       },
                       pressed: {
-                        fill: "#8ed2b9",
-                        outline: "none"
+                        fill,
+                        outline: "none",
+                        filter: 'brightness(1.1)'
                       }
                     }}
                   />
@@ -89,7 +102,7 @@ export const ArtefactMap = ({ artifacts, onClick, setHover }) => {
 
                 return centroid && (
                   <Marker coordinates={[centroid.longitude, centroid.latitude]}>
-                    <text css={{ fontSize: '0.4em',  }}>{artifactCount}</text>
+                    <text css={{ fontSize: '0.4em' }}>{artifactCount}</text>
                   </Marker>
                 )
               })}

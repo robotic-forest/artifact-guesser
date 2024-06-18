@@ -127,6 +127,11 @@ export default () => {
         <div className='w-[1000px] max-w-[100%]'>
           <ArtifactCountMap artifacts={artifacts?.byCountry} />
         </div>
+        <div className='my-3 flex items-center'>
+          <IconGenerator className='mr-2' />
+          <IconGenerator className='mr-2' />
+          <IconGenerator className='mr-2' />
+        </div>
       </div>
     </Layout>
   )
