@@ -4,6 +4,7 @@ import { useConfirmation } from "../dialogs/Dialog"
 import { FormInput, FormTextArea } from "../form/Form"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { PiTestTubeFill } from "react-icons/pi"
+import toast from "react-hot-toast"
 
 export const AllAccountActions = () => {
   const confirm = useConfirmation()
@@ -52,10 +53,8 @@ export const AllAccountActions = () => {
                     className='mt-1'
                     type='button'
                     onClick={() => {
-                      sendEmail({
-                        test: true,
-                        ...values
-                      })
+                      sendEmail({ test: true, ...values })
+                      toast.success('Test email sent!')
                     }}
                   >
                     <PiTestTubeFill />
@@ -67,7 +66,10 @@ export const AllAccountActions = () => {
           confirmText: 'Send'
         })
 
-        if (ok) sendEmail(ok)
+        if (ok) {
+          sendEmail(ok)
+          toast.success('Mass Email sent!')
+        }
       }}
     >
       <MdMail />
