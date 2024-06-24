@@ -70,7 +70,7 @@ export const Statistics = () => {
             </div>
           )}
         />
-        <Collosi className='flex justify-end mb-2' />
+        {/* <Collosi className='flex justify-end mb-2' /> */}
       </div>
     </div>
   )
