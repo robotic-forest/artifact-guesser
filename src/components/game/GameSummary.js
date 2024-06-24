@@ -203,40 +203,14 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
               ))}
             </div>
             <b>Continent Modes!</b>
-            <span className='text-center'>
-              Only available to logged in users, as my ego is directly tied to the number of users I have.
-            </span>
             <div className='flex flex-wrap justify-center mt-3 mb-2'>
               {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Continent').map(mode => (
-                <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => {
-                  if (user?.isLoggedIn) startNewGame({ mode })
-                    else {
-                      setSignupOpen(true)
-                      toast.custom(
-                        <AAAAAA
-                          initialAngry
-                          initialText={(
-                            <>
-                              Sign up to play this mode,<br/>
-                              you {generateInsult('name')}!
-                            </>
-                          )}
-                          initialWidth={320}
-                          angle={5}
-                          textColor='#ffffff'
-                          style={{
-                            padding: '0 12px 12px 0'
-                          }}
-                        />,
-                        { position: 'bottom-right' }
-                      )
-                    }
-                }} />
+                <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => startNewGame({ mode })} />
               ))}
             </div>
             <b>Era Modes!</b>
             <span className='text-center'>
-              5 games per day if logged in, unlimited for project supporters.
+              Experimental - please log in to play.
             </span>
             <div className='flex flex-wrap justify-center mt-3 mb-2'>
               {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Era').map(mode => (
@@ -253,7 +227,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
                             you {generateInsult('name')}!
                           </>
                         )}
-                        initialWidth={320}
+                        initialWidth={280}
                         angle={5}
                         textColor='#ffffff'
                         style={{

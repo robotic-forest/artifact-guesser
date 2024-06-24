@@ -176,12 +176,6 @@ export const GameProvider = ({ children }) => {
   }
 
   const startNewGame = ({ mode }) => {
-    if (user && !user?.plan) {
-      if (modes[g.mode].type === 'Era') {
-        if (!user.eraGames || user.eraGames < 5) updateUser({ eraGames: (user.eraGames || 0) + 1 })
-      }
-    }
-
     setLoading(true)
     setSelectedCountry(null)
     setSelectedDate(modes[mode]?.type === 'Era' ? ((modes[mode].start + modes[mode].end) / 2) : 0)
