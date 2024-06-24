@@ -210,7 +210,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
             </div>
             <b>Era Modes!</b>
             <span className='text-center'>
-              Experimental - please log in to play.
+              Experimental! {!user?.isLoggedIn && 'Please log in to play.'}
             </span>
             <div className='flex flex-wrap justify-center mt-3 mb-2'>
               {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Era').map(mode => (
