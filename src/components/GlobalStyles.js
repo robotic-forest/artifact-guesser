@@ -2,6 +2,17 @@ import { Global, css } from '@emotion/react'
 import { useRouter } from 'next/router'
 import { complement, darken, lighten, desaturate } from 'polished'
 
+export const createStyles = theme => theme && css`
+  ${themeCSS(theme)}
+  background-color: var(--backgroundColor);
+  color: var(--textColor);
+
+  body, html {
+    background-color: var(--backgroundColor) !important;
+    color: var(--textColor) !important;
+  }
+`
+
 export const themeCSS = theme => css`
   --backgroundColor: ${theme.backgroundColor};
 
@@ -79,6 +90,8 @@ export const GlobalStyles = ({ theme }) => {
       font-family: -apple-system, 'Roboto', BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
         sans-serif;
+
+      scroll-behavior: smooth
     }
 
     a {

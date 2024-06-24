@@ -1,4 +1,4 @@
-import { formatDate, formatDateRange } from "@/lib/artifactUtils"
+import { formatDate } from "@/lib/artifactUtils"
 import { centroids } from "@/lib/getProximity"
 import { MapInteractionCSS } from 'react-map-interaction'
 import { ArtifactOverview } from "./components/ArtifactOverview"
@@ -7,20 +7,25 @@ import { ArtifactSource } from "./components/ArtifactSource"
 import { useEffect, useState } from "react"
 import { ImmersiveDialog } from "../dialogs/ImmersiveDialog"
 import Link from "next/link"
-import { useRouter } from "next/router"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { ArtifactImage } from "./list/components.js/ArtifactImage"
 import { BiLinkExternal, BiRefresh, BiWorld } from "react-icons/bi"
 import { GiAmphora } from "react-icons/gi"
 import { LoadingArtifact } from "../loading/LoadingArtifact"
-import useUser from "@/hooks/useUser"
 import { LuScroll } from 'react-icons/lu'
 import { DetailsItemAlt } from "../info/Details"
+import { ArtifactNav } from "./components/ArtifactNav"
+import { themeCSS } from "../GlobalStyles"
+import { theme } from "@/pages/_app"
+import { MainHeader } from "../gameui/MainHeader"
+import { AuthHeader } from "../layout/AuthHeader"
+import useMeasure from "react-use-measure"
 
-export const Artifact = ({ artifact: a, previousRoute }) => {
-  const { user } = useUser()
-  const router = useRouter()
+export const Artifact = ({ artifact: a, roundSummary }) => {
+  const [ref, bounds] = useMeasure()
+  const { height: windowHeight, width: windowWidth } = bounds
+
   const { artifacts: relatedArtifacts, isValidating } = useArtifacts({
     filter: {
       'excludeId': a._id,
@@ -53,7 +58,6 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
   const centroid = centroids.find(c => c.name === a.location.country)
   const latLng = centroid && `${centroid.latitude},${centroid.longitude}`
 
-
   return (
     <>
       {immersive && (
@@ -62,53 +66,58 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
           setValue={setValue}
           visible
           closeDialog={() => setValue(defaultMapValue)}
+          roundSummary={roundSummary && (
+            <>
+              <MainHeader />
+              <AuthHeader />
+              <div className='absolute bottom-1 right-1 z-10' css={themeCSS(theme)}>
+                {roundSummary}
+              </div>
+            </>
+          )}
         >
           <ImageView imgs={a.images.external} />
         </ImmersiveDialog>
       )}
       <div>
-        <div className='flex flex-wrap w-full h-[50vh] min-h-[500px] bg-black relative' css={{
-          height: immersive ? '90vh' : '50vh',
+        <div className='flex flex-wrap w-full h-[50vh] min-h-[500px] bg-black relative' ref={ref} css={{
+          height: immersive ? '90vh' : '60vh',
           transition: 'height 0.15s',
         }}>
-          <div className='absolute top-1 left-1.5 z-10 flex items-center' css={{
-            padding: user?.isLoggedIn ? 0 : '8px 0 0 40px',
-            '@media (max-width: 768px)': {
-              padding: '8px 0 0 40px',
-            }
-          }}>
-            <IconButton onClick={() => router.push(previousRoute?.includes('/artifacts?') ? previousRoute : '/artifacts')} css={{
-              background: 'black',
-              color: 'white',
-              border: '1px solid #ffffff55',
-              '&:hover': {
-                background: '#343434',
-                color: 'white'
-              },
-              marginRight: 4
-            }}>
-              <GiAmphora />
-            </IconButton>
-            <div className='p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30 hidden' css={{
-              '@media (min-width: 768px)': {
-                display: 'flex'
-              }
-            }}>
-              {a.name}, {a?.location.country}, {formatDateRange(a?.time.start, a?.time.end)}
-            </div>
-          </div>
+          {!roundSummary && <ArtifactNav artifact={a} />}
 
           {!loadingComplete && <LoadingArtifact className='absolute' />}
 
           <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
             <ImageView
               imgs={a.images.external}
-              setLoadingComplete={setLoadingComplete}
               loadingComplete={loadingComplete}
+              setLoadingComplete={bounds => {
+                const h = bounds.height
+  
+                if (h) {
+                  if (h < windowHeight) {
+                    const newY = (windowHeight - h) / 2
+                    if (!loadingComplete && value.translation.y !== newY) {
+                      setValue(() => ({ scale: 1, translation: { x: 0, y: newY } }))
+                    }
+                  } else {
+                    const newScale = windowHeight / h
+                    const newX = (windowWidth - (bounds.width * newScale)) / 2
+                    if (!loadingComplete && value.scale !== newScale) {
+                      setValue(() => ({ scale: newScale, translation: { x: newX, y: 0 } }))
+                    }
+                  }
+                  
+                  setLoadingComplete(true)
+                }
+              }}
             />
           </MapInteractionCSS>
 
-          <div className='absolute bottom-1 right-1 z-10 flex items-center'>
+          <div className='absolute bottom-1 right-1 z-10 flex items-center' css={{
+            ...(roundSummary ? { left: 4 } : { right: 4 })
+          }}>
             <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
               {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
             </div>
@@ -125,6 +134,12 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
               <BiRefresh />
             </IconButton>
           </div>
+
+          {roundSummary && (
+            <div className='absolute bottom-1 right-1 z-10' css={themeCSS(theme)}>
+              {roundSummary}
+            </div>
+          )}
         </div>
 
         <div className='grid grid-cols-[3fr_2fr] w-full h-full flex-grow' css={{
@@ -358,25 +373,33 @@ export const Artifact = ({ artifact: a, previousRoute }) => {
   )
 }
 
-const defaultMapValue = {
+export const defaultMapValue = {
   scale: 1,
   translation: { x: 0, y: 0 }
 }
 
-const ImageView = ({ imgs, setLoadingComplete, loadingComplete }) => {
+export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError }) => {
+  const [ref, bounds] = useMeasure()
   const [loaded, setLoaded] = useState(0)
   const [errorImgs, setErrorImgs] = useState([])
 
   const renderImgs = imgs.filter(img => !errorImgs.includes(img))
 
   useEffect(() => {
-    if (renderImgs?.length === loaded && setLoadingComplete) {
-      setLoadingComplete(true)
+    if (bounds && renderImgs?.length === loaded && setLoadingComplete) {
+      setLoadingComplete(bounds)
     }
-  }, [loaded, renderImgs])
+  }, [loaded, renderImgs, bounds])
+
+  useEffect(() => {
+    if (imgs?.length === errorImgs.length) {
+      onError && onError()
+    }
+  }, [imgs, errorImgs])
 
   return (
-    <MasonryLayout
+    <div ref={ref}>
+      <MasonryLayout
         gutter={0}
         breaks={{
           default: 6,
@@ -401,6 +424,7 @@ const ImageView = ({ imgs, setLoadingComplete, loadingComplete }) => {
           />
         ))}
       </MasonryLayout>
+    </div>
   )
 }
 

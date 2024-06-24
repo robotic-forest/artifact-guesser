@@ -7,6 +7,9 @@ import { getProximity } from "@/lib/getProximity"
 import useSWR from "swr"
 import { useHotkeys } from "react-hotkeys-hook"
 import toast from "react-hot-toast"
+import { modes } from "../gameui/ModeButton"
+import { generateInsult } from "@/hooks/useInsult"
+import AAAAAA from "../art/AAAAAA"
 
 const GameContext = createContext(null)
 
@@ -19,16 +22,16 @@ export const useGame = () => {
 }
 
 export const GameProvider = ({ children }) => {
-  const { user } = useUser()
+  const { user, updateUser } = useUser()
   const [game, setGame] = useState()
-  const [selectedDate, setSelectedDate] = useState(0)
+  const [selectedDate, setSelectedDate] = useState()
   const [selectedCountry, setSelectedCountry] = useState()
   const [loading, setLoading] = useState(true)
   const { data, mutate } = useSWR(user?.isLoggedIn && '/api/games/current')
 
   const initGame = g => {
     setGame(g)
-    setSelectedDate(g.roundData[g.round - 1].selectedDate || 0)
+    setSelectedDate(g.roundData[g.round - 1].selectedDate || modes[g.mode]?.type === 'Era' ? ((modes[g.mode].start + modes[g.mode].end) / 2) : 0)
     setSelectedCountry(g.roundData[g.round - 1].selectedCountry || null)
   }
 
@@ -51,15 +54,16 @@ export const GameProvider = ({ children }) => {
 
         if (localG) initGame(localG)
         else {
-          const mode = localStorage.getItem('mode')
+          const lsMode = localStorage.getItem('mode')
+          const newMode = lsMode || 'Balanced'
 
-          const newArtifact = await getRandomArtifact(null, mode)
+          const newArtifact = await getRandomArtifact(null, newMode)
           const newGame = {
             startedAt: new Date(),
             round: 1,
             rounds: 5,
             score: 0,
-            mode: mode || 'Balanced',
+            mode: newMode,
             roundData: [
               {
                 round: 1,
@@ -71,6 +75,7 @@ export const GameProvider = ({ children }) => {
           }
 
           setGame(newGame)
+          setSelectedDate(modes[newMode]?.type === 'Era' ? ((modes[newMode].start + modes[newMode].end) / 2) : 0)
           // sync localstorage
           localStorage.setItem('game', JSON.stringify(newGame))
         }
@@ -98,10 +103,11 @@ export const GameProvider = ({ children }) => {
     }
   }
 
+  // random useful variables
   const currentRound = game?.roundData?.find(round => round.round === game.round)
   const artifact = currentRound?.artifact
-
   const guessed = currentRound?.guessed
+  const modeInfo = modes[game?.mode]
 
   const makeGuess = () => {
     if (!selectedCountry) return toast.error('You have to select a country!')
@@ -146,10 +152,10 @@ export const GameProvider = ({ children }) => {
 
   const startNextRound = async () => {
     if (game.round === game.rounds) return
+    setLoading(true)
 
     setSelectedCountry(null)
-    setSelectedDate(0)
-    setLoading(true)
+    setSelectedDate(modeInfo?.type === 'Era' ? ((modeInfo.start + modeInfo.end) / 2) : 0)
 
     const newArtifact = await getRandomArtifact(game, game.mode)
     const newGame = {
@@ -170,9 +176,15 @@ export const GameProvider = ({ children }) => {
   }
 
   const startNewGame = ({ mode }) => {
-    setSelectedCountry(null)
-    setSelectedDate(0)
+    if (user && !user?.plan) {
+      if (modes[g.mode].type === 'Era') {
+        if (!user.eraGames || user.eraGames < 5) updateUser({ eraGames: (user.eraGames || 0) + 1 })
+      }
+    }
+
     setLoading(true)
+    setSelectedCountry(null)
+    setSelectedDate(modes[mode]?.type === 'Era' ? ((modes[mode].start + modes[mode].end) / 2) : 0)
     updateGame({ ...game, ongoing: false }, true, mode)
   }
 

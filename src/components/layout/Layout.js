@@ -7,7 +7,7 @@ import useUser from "@/hooks/useUser"
 import { GrLogout } from "react-icons/gr"
 import { FaHeart, FaUser } from "react-icons/fa"
 import { css } from "@emotion/react"
-import { themeCSS } from "../GlobalStyles"
+import { createStyles, themeCSS } from "../GlobalStyles"
 import { dashbaordTheme } from "@/pages/dashboard"
 import { artifactsTheme } from "@/pages/artifacts"
 import { gamesTheme } from "@/pages/games"
@@ -30,26 +30,13 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
   const noauthroutes = ['/', '/artifacts', '/about', '/games/[id]', '/artifacts/[id]', '/moloch']
   if (user && !user.isLoggedIn && !noauthroutes.includes(router.pathname)) router.push('/')
 
-  const styles = theme && css`
-    ${themeCSS(theme)}
-    background-color: var(--backgroundColor);
-    color: var(--textColor);
-    font-size: var(--fs);
-
-    body, html {
-      background-color: var(--backgroundColor) !important;
-      color: var(--textColor) !important;
-      font-size: var(--fs) !important;
-    }
-  `
-
   return (
     <>
       <Head>
         <title>{title || 'Artifact Guesser'}</title>
         <meta name="viewport" content="initial-scale=1.0, maximum-scale=1, width=device-width" />
       </Head>
-      <div className='relative flex w-[100%] min-h-[100vh]' css={styles}>
+      <div className='relative flex w-[100%] min-h-[100vh]' css={createStyles(theme)}>
         {/* Mobile Menu */}
         <MobileNav {...u} />
 

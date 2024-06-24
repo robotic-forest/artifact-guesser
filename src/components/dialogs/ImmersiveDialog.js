@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 import { MapInteractionCSS } from 'react-map-interaction'
 import { Dialog } from "./Dialog"
 
-export const ImmersiveDialog = ({ closeDialog, visible, children, bg, text, value, setValue }) => {
+export const ImmersiveDialog = ({ closeDialog, visible, children, bg, text, value, setValue, roundSummary }) => {
 
   return !visible ? null : (
     <Dialog
@@ -12,8 +12,10 @@ export const ImmersiveDialog = ({ closeDialog, visible, children, bg, text, valu
       visible={visible}
       closeDialog={closeDialog}
       fullScreen
+      noClose={!!roundSummary}
     >
       <ExpandedStyles style={{ background: bg, color: text }}>
+        {roundSummary}
         {value ? (
           <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
             {children}

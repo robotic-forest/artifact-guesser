@@ -17,7 +17,8 @@ export default function AAAAAA({
   fontSize = 'inherit',
   excited,
   style,
-  angle
+  angle,
+  textColor
 }) {
   const container = useRef(null)
   const [refHeight, setRefHeight] = useState(0)
@@ -52,7 +53,7 @@ export default function AAAAAA({
                 maxWdith: '40vw',
                 minWidth: 30,
                 width: !staticWidth ? 'max-content' : 'auto',
-                paddingRight: !staticWidth ? 15 : 5,
+                paddingRight: !staticWidth ? 15 : 8,
                 backgroundColor: 'var(--backgroundColor)'
               }}
             >
@@ -60,8 +61,8 @@ export default function AAAAAA({
                 style={{
                   overflowWrap: 'break-word',
                   margin: 0,
-                  textAlign: 'center',
-                  color: excited ? '#00ff00' : angry ? '#ff0000' : 'var(--textColor)',
+                  textAlign: 'end',
+                  color: textColor || (excited ? '#00ff00' : angry ? '#ff0000' : 'var(--textColor)'),
                   fontWeight: angry ? 'bold' : 'normal',
                   fontSize
                 }}

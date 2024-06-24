@@ -2,11 +2,12 @@ import { VscLinkExternal } from "react-icons/vsc"
 import { FaHeart } from "react-icons/fa"
 import { formatLocation, formatTime } from "@/lib/artifactUtils"
 import { IconButton } from "@/components/buttons/IconButton"
-import { DetailsDoubleItem, DetailsItem } from "@/components/info/Details"
+import { DetailsDoubleItem } from "@/components/info/Details"
 import { GameButton } from "@/components/buttons/GameButton"
 import { useFavorites } from "@/hooks/artifacts/useFavorites"
 import { GiAmphora } from "react-icons/gi"
 import Link from "next/link"
+import { TbEyeFilled } from "react-icons/tb"
 
 export const ArtifactInfo = ({ artifact, style }) => {
   const { isFavorite, toggleFavorite } = useFavorites({ artifactId: artifact?._id })
@@ -45,7 +46,7 @@ export const ArtifactInfo = ({ artifact, style }) => {
           <Link href={relatedArtifactsHref}>
             <IconButton
               tooltip='View Related Artifacts'
-              size={22}
+              size={24}
               iconSize={10}
               css={{
                 border: '1px solid #ffffff66',
@@ -65,7 +66,7 @@ export const ArtifactInfo = ({ artifact, style }) => {
           <IconButton
             tooltip={isFavorite ? 'Unfavorite' : 'Favorite'}
             onClick={toggleFavorite}
-            size={22}
+            size={24}
             iconSize={10}
             css={{
               border: '1px solid #ffffff66',
@@ -76,19 +77,17 @@ export const ArtifactInfo = ({ artifact, style }) => {
           >
             <FaHeart color={isFavorite ? 'green' :  '#ff4f4f'} />
           </IconButton>
-          <a
+          <Link
             css={{
               textDecoration: 'none',
               fontSize: '0.9em'
             }}
-            href={artifact?.source.url}
-            target='_blank'
-            rel='noreferrer'
+            href={`/artifacts/${artifact?._id}`}
           >
             <GameButton css={{ padding: '2px 6px', '@media (max-width: 800px)': { display: 'none' } }}>
-              <VscLinkExternal className='mr-2 text-xs' />
+              <TbEyeFilled className='mr-2 text-xs' />
               <span className='relative -top-[1px]'>
-                Source
+                View
               </span>
             </GameButton>
             <IconButton size={22} css={{
@@ -96,9 +95,9 @@ export const ArtifactInfo = ({ artifact, style }) => {
               border: '1px solid #ffffff66',
               borderRadius: 3
             }}>
-              <VscLinkExternal />
+              <TbEyeFilled />
             </IconButton>
-          </a>
+          </Link>
         </div>
       </div>
       <div>
@@ -108,9 +107,12 @@ export const ArtifactInfo = ({ artifact, style }) => {
         />
         <DetailsDoubleItem mb={8}
           item1={{ label: 'Medium', value: artifact?.medium }}
-          item2={{ label: 'Source', value: artifact?.source.name }}
+          item2={{ label: 'Source', value: (
+            <a href={artifact?.source.url} target='_blank' rel='noreferrer' className='inline underline'>
+              {artifact?.source.name} <VscLinkExternal size={10} className='inline ml-2 relative top-[-1px]' />
+            </a>
+          ) }}
         />
-        {/* <DetailsItem label='Dimensions' value={artifact?.dimensions} /> */}
       </div>
     </div>
   )

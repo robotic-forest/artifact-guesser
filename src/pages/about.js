@@ -12,7 +12,7 @@ export default () => {
   const { artifacts } = useArtifacts({ total: true })
 
   return (
-    <Layout title='Artifacts List' theme={artifactsTheme} contentCSS={{
+    <Layout title='About' theme={artifactsTheme} contentCSS={{
       fontFamily: 'monospace',
       background: 'linear-gradient(180deg, var(--backgroundColor), var(--backgroundColorDark))',
       minHeight: '100vh',

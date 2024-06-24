@@ -15,10 +15,11 @@ import AAAAAA, { Shake } from "../art/AAAAAA"
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { BiLinkExternal } from "react-icons/bi"
 import Link from "next/link"
-import { IconButton } from "../buttons/IconButton"
-import { BsYoutube } from "react-icons/bs"
 import { Tag } from "../tag/Tag"
 import { ModeButton, modes } from "../gameui/ModeButton"
+import { SocialMedia } from "../moloch/components/SocialMedia"
+import toast from "react-hot-toast"
+import { generateInsult } from "@/hooks/useInsult"
 
 export const GameSummary = ({ game: playedGame }) => {
   const { game: currentGame, startNewGame } = useGame()
@@ -50,11 +51,11 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
       <div className='flex flex-col items-center relative'>
         <div className='flex text-2xl mt-4 font-mono font-bold'>
-          <div className='mr-4'>
+          <div className='mr-4 mt-1'>
             <IconGenerator />
           </div>
           GAME SUMMARY
-          <div className='ml-4' css={{ transform: 'scaleX(-1)' }}>
+          <div className='ml-4 mt-1' css={{ transform: 'scaleX(-1)' }}>
             <IconGenerator />
           </div>
         </div>
@@ -88,12 +89,8 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
           <div className='font-mono text-4xl mb-6 flex justify-evenly w-full'>
             <div css={{
               position: 'relative',
-              '@media (max-width: 1125px)': {
-                transform: 'scale(0.7)',
-              },
-              '@media (max-width: 600px)': {
-                transform: 'scale(0.5)',
-              }
+              '@media (max-width: 1125px)': { transform: 'scale(0.7)' },
+              '@media (max-width: 600px)': { transform: 'scale(0.5)' }
             }}>
               <AAAAAA
                 style={{
@@ -115,7 +112,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
             <Shake active>
               <div className='flex'>
                 <div className='mr-3'>NEW</div>
-                  <RainbowText text='HIGHSCORE!' />
+                <RainbowText text='HIGHSCORE!' />
               </div>
             </Shake>
             <div css={{
@@ -167,19 +164,24 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
             >
               <b>Sign Up</b>
             </GameButton>
-            to save your games, highscores, and favorite artifacts!
+            to save your games, highscores, favorite artifacts, and boost the develepor's ego.
             <div className='mt-2'>
               Join our community on{' '}
               <a href='https://discord.gg/MvkqPTdcwm' className='text-blue-300 hover:text-blue-500 hover:underline mx-1'>
                 Discord
                 <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
-              </a>{' '} for updates, feature requests, and to chat about the neat artifacts you find!
+              </a>{' '}and/or{' '}
+              <a href='https://reddit.com/r/artifactguesser' className='text-blue-300 hover:text-blue-500 hover:underline mx-1'>
+                Reddit
+                <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
+              </a>{' '}
+              for updates, feature requests, and to chat about the neat artifacts you find!
             </div>
           </div>
         )}
         
         {startNewGame && (
-          <div className='flex flex-col items-center mb-8'>
+          <div className='flex flex-col items-center mb-8 text-base'>
             <SimulatorButton
               css={{
                 margin: '8px 0 32px',
@@ -195,10 +197,72 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
               <b className='text-lg'>Start New Game</b>
             </SimulatorButton>
             or try a different mode!
-            <div className='flex flex-wrap justify-center mt-3'>
-              {Object.keys(modes).filter(m => m !== game.mode).map(mode => (
+            <div className='flex flex-wrap justify-center mt-3 mb-2'>
+              {Object.keys(modes).filter(m => m !== game.mode && !modes[m]?.type).map(mode => (
+                <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => startNewGame({ mode })} />
+              ))}
+            </div>
+            <b>Continent Modes!</b>
+            <span className='text-center'>
+              Only available to logged in users, as my ego is directly tied to the number of users I have.
+            </span>
+            <div className='flex flex-wrap justify-center mt-3 mb-2'>
+              {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Continent').map(mode => (
                 <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => {
-                  startNewGame({ mode })
+                  if (user?.isLoggedIn) startNewGame({ mode })
+                    else {
+                      setSignupOpen(true)
+                      toast.custom(
+                        <AAAAAA
+                          initialAngry
+                          initialText={(
+                            <>
+                              Sign up to play this mode,<br/>
+                              you {generateInsult('name')}!
+                            </>
+                          )}
+                          initialWidth={320}
+                          angle={5}
+                          textColor='#ffffff'
+                          style={{
+                            padding: '0 12px 12px 0'
+                          }}
+                        />,
+                        { position: 'bottom-right' }
+                      )
+                    }
+                }} />
+              ))}
+            </div>
+            <b>Era Modes!</b>
+            <span className='text-center'>
+              5 games per day if logged in, unlimited for project supporters.
+            </span>
+            <div className='flex flex-wrap justify-center mt-3 mb-2'>
+              {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Era').map(mode => (
+                <ModeButton key={mode} mode={mode} className='mb-2 mr-2 text-base' onClick={() => {
+                  if (user?.isLoggedIn) startNewGame({ mode })
+                  else {
+                    setSignupOpen(true)
+                    toast.custom(
+                      <AAAAAA
+                        initialAngry
+                        initialText={(
+                          <>
+                            Sign up to try this mode,<br/>
+                            you {generateInsult('name')}!
+                          </>
+                        )}
+                        initialWidth={320}
+                        angle={5}
+                        textColor='#ffffff'
+                        style={{
+                          padding: '0 12px 12px 0'
+                        }}
+                      />,
+                      { position: 'bottom-right' }
+                    )
+                  }
                 }} />
               ))}
             </div>
@@ -209,21 +273,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
             <div className='mr-1'>
               Created by Sam (protocodex)
             </div>
-            <div className='flex items-center'>
-              <IconButton tooltip='Follow on instagram' css={{
-                color: '#ff0000',
-                '&:hover': {
-                  filter: 'brightness(0.8)'
-                }
-              }}>
-                <img src='/instagram.svg' css={{ width: 16, height: 16 }} />
-              </IconButton>
-              <IconButton className='ml-1' tooltip='Visit Youtube Channel' css={{
-                color: '#ff0000'
-              }}>
-                <BsYoutube />
-              </IconButton>
-            </div>
+            <SocialMedia />
           </div>
           <div className='text-right'>
             Learn more about the project{' '}

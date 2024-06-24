@@ -4,6 +4,7 @@ import useSWR, { useSWRConfig } from "swr"
 import axios from "axios"
 import { delabelize } from "@/lib/utils"
 import toast from "react-hot-toast"
+import moment from "moment"
 
 // How to use:
 // const { user } = useUser({ redirectTo: "/login" })
@@ -57,6 +58,10 @@ export default function useUser({
   }
 
   const isAdmin = user?.role === 'Admin'
+
+  if (user?.subscription && moment().isBefore(moment(user?.subscription?.expiration).add(2, 'days'))) {
+    user.plan = user.subscription.plan
+  }
 
   const loading = !user?.isLoggedIn || (roles && !roles.includes(user?.role))
 

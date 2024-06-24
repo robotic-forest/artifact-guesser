@@ -12,7 +12,7 @@ const current = async (req, res) => {
 
   // If an ongoing game does not exist, create a new one
   if (!game) {
-    const artifact = await getRandomArtifact()
+    const artifact = await getRandomArtifact(user.currentMode || 'Balanced')
 
     const newGame = {
       startedAt: new Date(),

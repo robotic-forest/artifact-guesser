@@ -14,7 +14,7 @@ export const Collosi = ({ className }) => {
           marginRight: 8,
           width: 120,
           height: 120,
-          zIndex: 666
+          zIndex: 99
         }}
         // divideBy={0.8}
       />
@@ -25,7 +25,7 @@ export const Collosi = ({ className }) => {
         canvasStyle={{
           width: 120,
           height: 120,
-          zIndex: 666
+          zIndex: 99
         }}
         scale={0.3}
         // divideBy={1.8}
