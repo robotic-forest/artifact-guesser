@@ -22,7 +22,7 @@ export const useGame = () => {
 }
 
 export const GameProvider = ({ children }) => {
-  const { user, updateUser } = useUser()
+  const { user } = useUser()
   const [game, setGame] = useState()
   const [selectedDate, setSelectedDate] = useState()
   const [selectedCountry, setSelectedCountry] = useState()
