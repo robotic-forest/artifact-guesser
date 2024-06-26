@@ -29,7 +29,7 @@ export const Notes = () => {
           </div>
 
           <div>
-            What can be done to make AG something that suports r/ArtefactPorn
+            Create an image collage of artifacts to post to ArtefactPorn
           </div>
         </div>
       </div>
