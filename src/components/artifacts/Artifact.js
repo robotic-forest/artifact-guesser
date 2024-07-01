@@ -200,13 +200,27 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
                     References
                   </div>
                   <div>
-                    {a.references.slice(0, 4).map((ref, i) => (
-                      <div className='p-2 px-3 mb-1 rounded' css={{
-                        background: 'var(--backgroundColorBarelyLight)',
-                      }}>
-                        <div key={i} dangerouslySetInnerHTML={{ __html: ref }} />
-                      </div>
-                    ))}
+                    {a.references.slice(0, 4).map((ref, i) => {
+                      const regex = /<i>(.*?)<\/i>/
+                      const match = ref.match(regex)?.[1]
+
+                      return (
+                        <Link
+                          href={`https://archive.org/search?query=${encodeURIComponent(match)}`}
+                          target='_blank'
+                          className='inline-flex p-2 px-3 mb-1 rounded'
+                          css={{
+                            background: 'var(--backgroundColorBarelyLight)',
+                            '&:hover': {
+                              color: 'var(--textColor)',
+                              background: 'var(--backgroundColorSlightlyLight)',
+                            }
+                          }}
+                        >
+                          <div key={i} dangerouslySetInnerHTML={{ __html: ref }} />
+                        </Link>
+                      )
+                    })}
                   </div>
                   {a.references.length > 4 && (
                     <>
