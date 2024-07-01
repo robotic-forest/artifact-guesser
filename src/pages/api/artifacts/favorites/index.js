@@ -1,7 +1,6 @@
 import { initDB } from "@/lib/apiUtils/mongodb"
 import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
-import { buildArtifactCriteria } from "..";
-import { cleanMDB, processCriteria } from "@/lib/apiUtils/misc";
+import { cleanMDB, processCriteria } from "@/lib/apiUtils/misc"
 import { ObjectId } from "mongodb";
 
 const favorites = async (req, res) => {
@@ -31,6 +30,37 @@ const favorites = async (req, res) => {
     data: cleanMDB(dbArtifacts),
     total: await db.collection('artifacts').countDocuments(criteria)
   })
+}
+
+const buildArtifactCriteria = filter => {
+  filter.$and = []
+
+  // Time stuff!
+  if (![undefined, null].includes(filter.startDateAfter)) {
+    filter.$and.push({ 'time.start': { $gte: Number(filter.startDateAfter) } })
+    delete filter.startDateAfter
+  }
+  if (![undefined, null].includes(filter.startDateBefore)) {
+    filter.$and.push({ 'time.start': { $lte: Number(filter.startDateBefore) } })
+    delete filter.startDateBefore
+  }
+  if (![undefined, null].includes(filter.endDateAfter)) {
+    filter.$and.push({ 'time.end': { $gte: Number(filter.endDateAfter) } })
+    delete filter.endDateAfter
+  }
+  if (![undefined, null].includes(filter.endDateBefore)) {
+    filter.$and.push({ 'time.end': { $lte: Number(filter.endDateBefore) } })
+    delete filter.endDateBefore
+  }
+
+  // Exclude self from relatedARtifacts in Artifact View
+  if (![undefined, null].includes(filter.excludeId)) {
+    filter.$and.push({ '_id': { $ne: new ObjectId(filter.excludeId) } })
+    delete filter.excludeId
+  }
+
+  if (filter.$and.length === 0) delete filter.$and
+  return filter
 }
 
 export default withSessionRoute(favorites)

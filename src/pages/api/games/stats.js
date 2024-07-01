@@ -4,7 +4,7 @@ import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
 const games = async (req, res) => {
   const v = verifyAuth(req, res); if (!v) return
   const db = await initDB()
-  res.send({ data: await db.collection('games').countDocuments() })
+  res.send({ data: await db.collection('games').count() })
 }
 
 export default withSessionRoute(games)

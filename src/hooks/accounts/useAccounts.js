@@ -7,8 +7,8 @@ import useSWR from 'swr'
 export const useAccounts = args => {
   const sort = useSort(args?.sort)
 
-  let apiUrl = args?.total
-  ? `/api/accounts/total`
+  let apiUrl = args?.stats
+  ? `/api/accounts/stats`
   : `/api/accounts?filter=${JSON.stringify(args.filter)}`
 
   if (args?.sort) apiUrl += sort.url

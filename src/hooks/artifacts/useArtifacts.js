@@ -6,8 +6,8 @@ export const useArtifacts = args => {
   const { mutate: mutateAll } = useSWRConfig()
   const sort = useSort(args?.sort)
 
-  let apiUrl = args?.total
-    ? `/api/artifacts/total`
+  let apiUrl = args?.stats
+    ? `/api/artifacts/stats`
     : args?.isFavorites
       ? `/api/artifacts/favorites?filter=${JSON.stringify(args?.filter)}`
       : `/api/artifacts?filter=${JSON.stringify(args?.filter)}`

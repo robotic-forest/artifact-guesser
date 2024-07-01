@@ -7,9 +7,9 @@ import { FaUser } from "react-icons/fa"
 import { GiAbstract034, GiAmphora } from "react-icons/gi"
 import { AllAccountActions } from "@/components/dashbaord/AllAcountActions"
 import useSWR from "swr"
-import Link from "next/link"
-import { IconButton } from "@/components/buttons/IconButton"
-import { IoMdEye } from "react-icons/io"
+// import Link from "next/link"
+// import { IconButton } from "@/components/buttons/IconButton"
+// import { IoMdEye } from "react-icons/io"
 import { gamesTheme } from "@/pages/games"
 import { accountTheme } from "@/pages/accounts"
 import { artifactsTheme } from "@/pages/artifacts"
@@ -19,8 +19,8 @@ import { Notes } from "./Notes"
 import { Collosi } from "./Collosi"
 
 export const Statistics = () => {
-  const { artifacts } = useArtifacts({ total: true })
-  const { accounts } = useAccounts({ total: true })
+  const { artifacts } = useArtifacts({ stats: true })
+  const { accounts } = useAccounts({ stats: true })
   const { games } = useGames({ stats: true })
   const { data: stats } = useSWR('/api/platform/stats')
 
@@ -57,16 +57,16 @@ export const Statistics = () => {
           url='/artifacts?imageMode=true'
           theme={artifactsTheme}
           extraInfo={(
-            <div className='mt-1 text-xs'>
-              <div className='flex items-center pt-3 pb-1 px-2'>
+            <div className='text-xs'>
+              {/* <div className='flex items-center pt-3 pb-1 px-2'>
                 <span className='opacity-60 mr-2'>Problem</span> {artifacts?.problematic}
                 <Link href='/artifacts?problematic=true' className='ml-2.5'>
                   <IconButton size={20} tooltipPlace='right'>
                     <IoMdEye />
                   </IconButton>
                 </Link>
-              </div>
-              <ArtifactCountMap className='m-1' artifacts={artifacts?.byCountry} />
+              </div> */}
+              <ArtifactCountMap className='m-1 mt-0' artifacts={artifacts?.byCountry} />
             </div>
           )}
         />
