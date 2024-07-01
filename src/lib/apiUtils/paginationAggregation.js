@@ -1,8 +1,8 @@
 import { cleanMDB, processCriteria } from "./misc"
 
 export const parseQuery = q => {
-  const criteria = q.filter ? q.filter !== 'undefined' &&
-    processCriteria(JSON.parse(q.filter)) : {}
+  const criteria = (q.filter && q.filter !== 'undefined')
+    ? processCriteria(JSON.parse(q.filter)) : {}
   const count = q.count && q.count !== 'undefined' &&
     processCriteria(JSON.parse(q.count))
   const project = q.project && q.project !== 'undefined' &&
@@ -28,7 +28,7 @@ export const createMetadata = (page, perPage) => {
 }
 
 export const paginationAggregation = async ({ db, collection, query, buildCriteria }) => {
-  const { criteria, page, perPage, sort, count, project } = query?.filter ? parseQuery(query) : {}
+  const { criteria, page, perPage, sort, count, project } = query?.filter ? parseQuery(query) : query
   const match = buildCriteria ? buildCustomCriteria(criteria, buildCriteria) : criteria
 
   if (count) {
@@ -62,9 +62,10 @@ export const buildCustomCriteria = (filter, conditions)  => {
   for (const key in conditions) {
     if (![undefined, null].includes(filter[key])) {
       criteria.$and.push(conditions[key](filter[key]))
+      delete filter[key]
     }
   }
 
   if (criteria.$and.length === 0) delete criteria.$and
-  return criteria
+  return { ...criteria, ...filter }
 }
