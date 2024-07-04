@@ -9,7 +9,7 @@ import { MenuButton } from "@/components/layout/components/MobileNav"
 import { Collosi } from "@/components/dashbaord/Collosi"
 
 export default () => {
-  const { artifacts } = useArtifacts({ total: true })
+  const { artifacts } = useArtifacts({ stats: true })
 
   return (
     <Layout title='About' theme={artifactsTheme} contentCSS={{
