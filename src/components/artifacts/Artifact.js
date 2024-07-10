@@ -5,12 +5,11 @@ import { ArtifactOverview } from "./components/ArtifactOverview"
 import { IconButton } from "../buttons/IconButton"
 import { ArtifactSource } from "./components/ArtifactSource"
 import { useEffect, useState } from "react"
-import { ImmersiveDialog } from "../dialogs/ImmersiveDialog"
 import Link from "next/link"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { ArtifactImage } from "./list/components.js/ArtifactImage"
-import { BiLinkExternal, BiRefresh, BiWorld } from "react-icons/bi"
+import { BiExpand, BiLinkExternal, BiRefresh, BiWorld } from "react-icons/bi"
 import { GiAmphora } from "react-icons/gi"
 import { LoadingArtifact } from "../loading/LoadingArtifact"
 import { LuScroll } from 'react-icons/lu'
@@ -18,9 +17,10 @@ import { DetailsItemAlt } from "../info/Details"
 import { ArtifactNav } from "./components/ArtifactNav"
 import { themeCSS } from "../GlobalStyles"
 import { theme } from "@/pages/_app"
-import { MainHeader } from "../gameui/MainHeader"
-import { AuthHeader } from "../layout/AuthHeader"
 import useMeasure from "react-use-measure"
+import { Artifact3D } from "../art/Artifact3D"
+import { Immersive2D } from "./components/Immersive2D"
+import { Immersive3D } from "./components/Immersive3D"
 
 export const Artifact = ({ artifact: a, roundSummary }) => {
   const [ref, bounds] = useMeasure()
@@ -43,8 +43,8 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
 
   const [immersive, setImmersive] = useState(false)
   useEffect(() => {
-    if (value.scale > 2 && !immersive) setImmersive(true)
-    if (value.scale <= 2 && immersive) setImmersive(false)
+    if (value.scale > 2 && !(immersive === '2D')) setImmersive('2D')
+    if (value.scale <= 2 && (immersive === '2D')) setImmersive(false)
   }, [value])
 
   // Handle image loading
@@ -58,62 +58,92 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
   const centroid = centroids.find(c => c.name === a.location.country)
   const latLng = centroid && `${centroid.latitude},${centroid.longitude}`
 
-  return (
-    <>
-      {immersive && (
-        <ImmersiveDialog
-          value={value}
-          setValue={setValue}
-          visible
-          closeDialog={() => setValue(defaultMapValue)}
-          roundSummary={roundSummary && (
-            <>
-              <MainHeader />
-              <AuthHeader />
-              <div className='absolute bottom-1 right-1 z-10' css={themeCSS(theme)}>
-                {roundSummary}
-              </div>
-            </>
-          )}
-        >
-          <ImageView imgs={a.images.external} />
-        </ImmersiveDialog>
-      )}
+  // temp until 3d features are added
+  const is3D = false
+
+  return immersive ? (
+    immersive === '3D'
+      ? <Immersive3D {...{ setImmersive, roundSummary }} />
+      : <Immersive2D {...{ value, setValue, setImmersive, roundSummary, artifact: a }} />
+  ) : (
+    <div className='flex flex-col min-h-screen'>
       <div>
-        <div className='flex flex-wrap w-full h-[50vh] min-h-[500px] bg-black relative' ref={ref} css={{
-          height: immersive ? '90vh' : '60vh',
-          transition: 'height 0.15s',
-        }}>
+        <div
+          className='flex flex-wrap w-full min-h-[500px] bg-black relative'
+          css={{
+            height: is3D ? '40vh' : immersive ? '90vh' : '50vh',
+          }}
+          ref={ref}
+        >
           {!roundSummary && <ArtifactNav artifact={a} />}
 
-          {!loadingComplete && <LoadingArtifact className='absolute' />}
-
-          <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
-            <ImageView
-              imgs={a.images.external}
-              loadingComplete={loadingComplete}
-              setLoadingComplete={bounds => {
-                const h = bounds.height
-  
-                if (h) {
-                  if (h < windowHeight) {
-                    const newY = (windowHeight - h) / 2
-                    if (!loadingComplete && value.translation.y !== newY) {
-                      setValue(() => ({ scale: 1, translation: { x: 0, y: newY } }))
+          <div css={{
+            width: '100%',
+            height: '100%',
+            display: is3D ? 'grid' : 'block',
+            gridTemplateColumns: '2fr 3fr',
+            overflow: 'hidden'
+          }}>
+            {is3D && (
+              <div css={{
+                borderRight: '1px solid #ffffff55',
+                position: 'relative',
+              }}>
+                <Artifact3D
+                  url='/3D/ram-amun.glb'
+                  canvasStyle={{
+                    width: '100%',
+                    height: '100%',
+                  }}
+                  scale={1}
+                  cameraPosition={[5, 5, 5]}
+                />
+                <div className='absolute bottom-1 left-1 z-10 flex items-center'>
+                  <IconButton tooltip='View Fullscreen' onClick={() => setImmersive('3D')} css={{
+                    background: 'black',
+                    color: 'white',
+                    border: '1px solid #ffffff55',
+                    '&:hover': {
+                      background: '#343434',
+                      color: 'white'
+                    },
+                    outline: 0
+                  }}>
+                    <BiExpand />
+                  </IconButton>
+                </div>
+              </div>
+            )}
+            <div className='relative'>
+              {!loadingComplete && <LoadingArtifact className='absolute' />}
+              <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
+                <ImageView
+                  imgs={a.images.external}
+                  loadingComplete={loadingComplete}
+                  setLoadingComplete={bounds => {
+                    const h = bounds.height
+      
+                    if (h) {
+                      if (h < windowHeight) {
+                        const newY = (windowHeight - h) / 2
+                        if (!loadingComplete && value.translation.y !== newY) {
+                          setValue(() => ({ scale: 1, translation: { x: 0, y: newY } }))
+                        }
+                      } else {
+                        const newScale = windowHeight / h
+                        const newX = (windowWidth - (bounds.width * newScale)) / 2
+                        if (!loadingComplete && value.scale !== newScale) {
+                          setValue(() => ({ scale: newScale, translation: { x: newX, y: 0 } }))
+                        }
+                      }
+                      
+                      setLoadingComplete(true)
                     }
-                  } else {
-                    const newScale = windowHeight / h
-                    const newX = (windowWidth - (bounds.width * newScale)) / 2
-                    if (!loadingComplete && value.scale !== newScale) {
-                      setValue(() => ({ scale: newScale, translation: { x: newX, y: 0 } }))
-                    }
-                  }
-                  
-                  setLoadingComplete(true)
-                }
-              }}
-            />
-          </MapInteractionCSS>
+                  }}
+                />
+              </MapInteractionCSS>
+            </div>
+          </div>
 
           <div className='absolute bottom-1 right-1 z-10 flex items-center' css={{
             ...(roundSummary ? { left: 4 } : { right: 4 })
@@ -355,7 +385,6 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
             </div>
           </div>
         </div>
-
       </div>
       <div css={{
         background: 'var(--backgroundColorSlightlyDark)',
@@ -383,7 +412,7 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 }
 
@@ -412,7 +441,7 @@ export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError }
   }, [imgs, errorImgs])
 
   return (
-    <div ref={ref}>
+    <div ref={ref} css={{ padding: 32 }}>
       <MasonryLayout
         gutter={0}
         breaks={{

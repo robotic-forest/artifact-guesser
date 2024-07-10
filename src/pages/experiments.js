@@ -1,6 +1,5 @@
-import { Experiments } from "@/components/Experiments"
-
+import { ThreeD } from "@/components/experiments/ThreeD"
 
 export default () => {
-  return <Experiments />
+  return <ThreeD />
 }
