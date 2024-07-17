@@ -35,7 +35,7 @@ export const Statistics = () => {
           theme={accountTheme}
           actions={<AllAccountActions />}
         />
-        <Behistun />
+        {/* <Behistun /> */}
         <Notes />
       </div>
       <div>
