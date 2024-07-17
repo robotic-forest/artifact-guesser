@@ -20,6 +20,12 @@ import { ModeButton, modes } from "../gameui/ModeButton"
 import { SocialMedia } from "../moloch/components/SocialMedia"
 import toast from "react-hot-toast"
 import { generateInsult } from "@/hooks/useInsult"
+import { Dialog } from "../dialogs/Dialog"
+import { Moloch } from "../moloch/Moloch"
+import { molochTheme } from "@/pages/support"
+import { createStyles } from "../GlobalStyles"
+import { MolochButton } from "../buttons/MolochButton"
+import { css } from "@emotion/react"
 
 export const GameSummary = ({ game: playedGame }) => {
   const { game: currentGame, startNewGame } = useGame()
@@ -43,11 +49,23 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
   const { user } = useUser()
   const { highscore, prevHighscore, gameId } = useHighscore({ skip: isPlayed })
   const [signupOpen, setSignupOpen] = useState(false)
+  const [supportOpen, setSupportOpen] = useState(false)
 
   const newHighscore = !isPlayed && (gameId && game._id) && gameId === game._id
 
   return (
     <>
+      <Dialog
+        visible={supportOpen}
+        closeDialog={() => setSupportOpen(false)}
+        width='80vw'
+        boxStyle={css`
+        padding: 0px !important;
+        ${createStyles(molochTheme)}
+        `}
+      >
+        <Moloch isDialog />
+      </Dialog>
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
       <div className='flex flex-col items-center relative'>
         <div className='flex text-2xl mt-4 font-mono font-bold'>
@@ -176,6 +194,29 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
                 <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
               </a>{' '}
               for updates, feature requests, and to chat about the neat artifacts you find!
+            </div>
+          </div>
+        )}
+
+        {user?.isLoggedIn && !isPlayed && (
+          <div className='w-full flex justify-center p-3 text-black'>
+            <div className='my-3 p-2 pb-0 rounded w-[fit-content] inline-flex items-center flex-wrap justify-end'
+            css={{ background: '#f1d18b' }}>
+              <span className='mr-2 mb-2 pl-1'>
+                Want to help support this project?{' '}
+                All income goes toward development, server costs, and goat-treats.{' '}
+              </span>
+              <MolochButton
+                variant='outlined'
+                onClick={() => setSupportOpen(true)}
+                style={{
+                  width: 'fit-content',
+                  marginBottom: 8,
+                  color: 'black'
+                }}
+              >
+                Learn more
+              </MolochButton>
             </div>
           </div>
         )}

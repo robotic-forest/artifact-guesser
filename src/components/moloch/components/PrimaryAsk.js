@@ -3,7 +3,7 @@ import { MolochButton } from "@/components/buttons/MolochButton"
 export const PrimaryAsk = () => {
   return (
     <div className='pt-6 p-3 flex flex-wrap items-center'>
-      <div className='pr-6 max-w-[800px]'>
+      <div className='max-w-[800px]'>
         <div className='pt-3'>
           Artifact Guesser is a labor of love, and its aim is not monetary. <b>The basic game will always be free and available without login.</b>{' '}
           Its purpose is to create a fun way to learn about history that is accessible to all.

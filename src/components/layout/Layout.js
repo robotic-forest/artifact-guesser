@@ -85,9 +85,8 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
                 </MenuIconButton>
               </Link>
               <Link
-                href='https://ko-fi.com/protocodex'
+                href='/support'
                 css={{ '&:hover': { color: 'var(--textColor)'} }}
-                target='_blank'
               >
                 <MenuIconButton
                   tooltip='Support'

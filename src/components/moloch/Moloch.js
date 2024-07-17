@@ -1,13 +1,18 @@
+import { molochTheme } from "@/pages/support"
 import { IconGenerator } from "../art/IconGenerator"
 import { AboutMe } from "./components/AboutMe"
 import { FuturePlans } from "./components/FuturePlans"
 import { PlanSelector } from "./components/PlanSelector"
 import { PrimaryAsk } from "./components/PrimaryAsk"
+import { createStyles } from "@/components/GlobalStyles"
 
-export const Moloch = () => {
+export const Moloch = ({ isDialog }) => {
 
   return (
-    <div className='flex flex-col items-center min-h-screen'>
+    <div className='flex flex-col items-center' css={{
+      minHeight: isDialog ? null : '100vh',
+      ...createStyles(molochTheme)
+    }}>
       <h2 className='flex mt-3 font-bold justify-center text-center w-full' css={{
         fontSize: '1.5rem',
         '@media (max-width: 600px)': {
@@ -30,7 +35,7 @@ export const Moloch = () => {
       </h2>
 
       <div className='text-base flex flex-col w-full items-center'>
-        <PrimaryAsk />
+        <PrimaryAsk isDialog={isDialog} />
         <FuturePlans />
         <AboutMe />
       </div>

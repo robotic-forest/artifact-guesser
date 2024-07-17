@@ -230,7 +230,7 @@ const DialogComponent = ({
             maxHeight,
             centerMobile,
             noBoxBg,
-            style: boxStyle
+            css: boxStyle
           } }
         >
           {noBoxBg ? null : title
@@ -336,6 +336,7 @@ const DialogBox = styled.div`
   height: ${p => p.height};
   max-height: ${p => p.maxHeight};
   z-index: 100;
+  position: relative;
 
   @media (min-width: 500px) {
     /* animation: ${p => !p.fullScreen && !p.isMobile && 'slideDialogUp 0.2s, fadeIn 0.2s'};
@@ -389,4 +390,7 @@ const Close = styled.div`
   }
   cursor: pointer;
   margin-left: auto;
+  position: absolute;
+  top: 6px;
+  right: 6px;
 `
