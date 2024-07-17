@@ -63,7 +63,7 @@ export const Tag = ({
 const TagUI = styled.span`
   display: inline-block;
   border-radius: 5px;
-  border: ${p => p.noBorder ? 'none' : '1px solid var(--textVeryLowOpacity)'};
+  border: ${p => p.noBorder ? 'none' : '1px solid var(--textSuperLowOpacity)'};
   background: var(--primaryColorVeryLight);
   text-transform: uppercase;
   position: relative;

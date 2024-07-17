@@ -47,7 +47,7 @@ const IconButtonComponent = forwardRef(({
         <Tooltip
           id={toolTipId}
           style={{
-            backgroundColor: "#333",
+            backgroundColor: "#000",
             color: "white",
             padding: '2px 6px',
             zIndex: 1000

@@ -182,20 +182,37 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
         
         {startNewGame && (
           <div className='flex flex-col items-center mb-8 text-base'>
-            <SimulatorButton
-              css={{
-                margin: '8px 0 32px',
-                boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
-                ':hover': {
-                  boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
-                  filter: 'brightness(1.1)',
-                  transition: 'box-shadow 0.2s'
-                }
-              }}
-              onClick={startNewGame}
-            >
-              <b className='text-lg'>Start New Game</b>
-            </SimulatorButton>
+            <div className='flex items-center' css={{
+              margin: '8px 0 32px',
+            }}>
+              <SimulatorButton
+                css={{
+                  marginRight: 16,
+                  boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
+                  ':hover': {
+                    boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
+                    filter: 'brightness(1.1)',
+                    transition: 'box-shadow 0.2s'
+                  }
+                }}
+                onClick={startNewGame}
+              >
+                <b className='text-lg'>Start New Game</b>
+              </SimulatorButton>
+              <Link href='/multiplayer'>
+                <SimulatorButton css={{
+                  background: '#4f95ff',
+                  boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
+                  ':hover': {
+                    boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
+                    filter: 'brightness(1.1)',
+                    transition: 'box-shadow 0.2s'
+                  }
+                }}>
+                  <b className='text-lg'>Start Multiplayer Game</b>
+                </SimulatorButton>
+              </Link>
+            </div>
             or try a different mode!
             <div className='flex flex-wrap justify-center mt-3 mb-2'>
               {Object.keys(modes).filter(m => m !== game.mode && !modes[m]?.type).map(mode => (

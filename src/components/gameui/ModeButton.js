@@ -1,4 +1,4 @@
-export const ModeButton = ({ mode, onClick, className }) => {
+export const ModeButton = ({ mode, onClick, className, css }) => {
   const { color, description } = modes[mode]
 
   return (
@@ -10,7 +10,8 @@ export const ModeButton = ({ mode, onClick, className }) => {
         color: 'black',
         '&:hover': {
           filter: 'brightness(1.15)'
-        }
+        },
+        ...css
       }}
     >
       <b>{mode}</b>

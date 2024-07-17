@@ -6,8 +6,11 @@ import { GlobalStyles } from "@/components/GlobalStyles"
 import { PromiseDialog } from '@/components/dialogs/Dialog'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { usePreviousRoute } from '@/hooks/usePreviousRoute'
+import io from "socket.io-client"
 
 const fetcher = url => axios.get(url).then(res => res.data)
+
+export const socket = io('http://localhost:9667', { withCredentials: false })
 
 export const theme =  {
   backgroundColor: '#000000',

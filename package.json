@@ -41,6 +41,7 @@
     "react-use-file-upload": "^0.9.5",
     "react-use-measure": "^2.1.1",
     "sha1": "^1.1.1",
+    "socket.io-client": "^4.7.5",
     "stripe": "^15.10.0",
     "styled-components": "^6.1.11",
     "swr": "^2.2.5",

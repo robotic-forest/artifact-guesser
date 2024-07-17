@@ -13,7 +13,7 @@ export const Artifact3D = ({ canvasStyle, cameraPosition, ...props }) => {
     )}>
       <Canvas
         style={canvasStyle}
-        camera={{  position: cameraPosition }}
+        camera={{ position: cameraPosition }}
         onMouseOver={() => setRotate(false)}
         onMouseOut={() => setRotate(true)}
       >
@@ -23,7 +23,7 @@ export const Artifact3D = ({ canvasStyle, cameraPosition, ...props }) => {
   )
 }
 
-const Scene = ({ url, scale, rotate }) => {
+const Scene = ({ url, scale, rotate, noZoom }) => {
   
   return (
     <>
@@ -31,8 +31,8 @@ const Scene = ({ url, scale, rotate }) => {
       <ambientLight intensity={0.5} />
       <Model url={url} scale={scale} rotate={rotate} position={[0, -0.35, 0]} />
       <OrbitControls
-        enableZoom
-        enablePan
+        enableZoom={!noZoom}
+        enablePan={!noZoom}
         maxPolarAngle={Math.PI / 2}
         minPolarAngle={0}
       />
