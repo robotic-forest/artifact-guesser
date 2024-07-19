@@ -28,8 +28,13 @@ export const Notes = () => {
             </div>
           </div>
 
-          <div>
-            Create an image collage of artifacts to post to ArtefactPorn
+          <div className='mb-2'>
+            <b>Auto Accounts</b> Post 1 artifact a day
+
+            <div className='ml-6'>
+              Insta, Twitter, Tiktok<br/>
+              Auto Reels?
+            </div>
           </div>
         </div>
       </div>
