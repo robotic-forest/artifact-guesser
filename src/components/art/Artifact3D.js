@@ -57,6 +57,7 @@ const DisgustingPrimitive = ({ url, scale, position, rotate }) => {
       <primitive
         position={position}
         object={copiedScene}
+        rotation={[0, Math.PI / 2, 0]}
         scale={scale}
       />
     </group>

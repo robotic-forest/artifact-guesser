@@ -26,17 +26,33 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
   const [ref, bounds] = useMeasure()
   const { height: windowHeight, width: windowWidth } = bounds
 
+  const [relatedArtifactSettings, setRelatedArtifactSettings] = useState({
+    startDateAfter: a.time.start - 10,
+    endDateBefore: a.time.end + 10,
+  })
+
   const { artifacts: relatedArtifacts, isValidating } = useArtifacts({
     filter: {
       'excludeId': a._id,
       'location.country': { $regex: a.location.country, $options: 'i' },
-      'startDateAfter': a.time.start - 10,
-      'endDateBefore': a.time.end + 10,
+      'startDateAfter': relatedArtifactSettings.startDateAfter,
+      'endDateBefore': relatedArtifactSettings.endDateBefore,
     },
     paginate: {
       defaultPageSize: 12
     }
   })
+
+  useEffect(() => {
+    if (!isValidating && relatedArtifacts?.length === 0) {
+      console.log('No related artifacts found. Expanding search range.')
+      setRelatedArtifactSettings({
+        ...relatedArtifactSettings,
+        startDateAfter: a.time.start - 100,
+        endDateBefore: a.time.end + 100,
+      })
+    }
+  }, [isValidating, relatedArtifacts])
   
   // Image Map values
   const [value, setValue] = useState(defaultMapValue)
@@ -58,8 +74,8 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
   const centroid = centroids.find(c => c.name === a.location.country)
   const latLng = centroid && `${centroid.latitude},${centroid.longitude}`
 
-  // temp until 3d features are added
-  const is3D = false
+  // temp until 3d features are added, just to showcase the ram of Amun
+  const is3D = a._id === '66880eb60da993fab0ffff8d'
 
   return immersive ? (
     immersive === '3D'
