@@ -156,7 +156,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                         primaryColor: '#e7ba56',
                         textColor: 'black'
                       }} 
-                      url='/support'
+                      url='https://ko-fi.com/protocodex'
                     >
                       <TbPigMoney className='mr-2' />
                       Support
@@ -202,7 +202,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                         primaryColor: '#e7ba56',
                         textColor: 'black'
                       }} 
-                      url='/support'
+                      url='https://ko-fi.com/protocodex'
                     >
                       <TbPigMoney className='mr-2' />
                       Support

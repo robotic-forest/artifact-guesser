@@ -85,7 +85,7 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
                 </MenuIconButton>
               </Link>
               <Link
-                href='/support'
+                href='https://ko-fi.com/protocodex'
                 css={{ '&:hover': { color: 'var(--textColor)'} }}
               >
                 <MenuIconButton

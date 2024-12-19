@@ -206,7 +206,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
                 Want to help support this project?{' '}
                 All income goes toward development, server costs, and goat-treats.{' '}
               </span>
-              <MolochButton
+              {/* <MolochButton
                 variant='outlined'
                 onClick={() => setSupportOpen(true)}
                 style={{
@@ -216,7 +216,19 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
                 }}
               >
                 Learn more
-              </MolochButton>
+              </MolochButton> */}
+              <Link href='https://ko-fi.com/protocodex' passHref target='_blank'>
+                <MolochButton
+                  variant='outlined'
+                  style={{
+                    width: 'fit-content',
+                    marginBottom: 8,
+                    color: 'black'
+                  }}
+                >
+                  Learn more
+                </MolochButton>
+              </Link>
             </div>
           </div>
         )}
