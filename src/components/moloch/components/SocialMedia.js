@@ -1,4 +1,5 @@
 import { IconButton } from "@/components/buttons/IconButton"
+import Link from "next/link"
 import { BsYoutube } from "react-icons/bs"
 
 export const SocialMedia = ({ style }) => {
