@@ -8,8 +8,7 @@ export const AboutMe = () => {
   return (
     <div className='flex flex-col pt-4 p-3 w-full items-center' css={createStyles(dashbaordTheme)}>
       <div className='mr-4 max-w-[700px] mb-4'>
-      <b>Who you are supporting</b>: I'm Sam, or <b>protocodex</b> <SocialMedia style={{ display: 'inline-flex', position: 'relative', top: 2 }} />{' '}
-      most places online. We keep some farm animals as pets (friends, not food),{' '}
+      <b>Who you are supporting</b>: I'm Technomoloch <SocialMedia style={{ display: 'inline-flex', position: 'relative', top: 2 }} />. We keep some farm animals as pets (friends, not food),{' '}
       so funding Artifact Guesser also supports my a horde of adorable goats and chickens.{' '}
       </div>
       <div className='flex flex-wrap items-center'>

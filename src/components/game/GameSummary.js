@@ -298,7 +298,7 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
         <div className='w-full flex items-center justify-between lg:mt-0 mt-4 px-1'>
           <div className='flex flex-wrap items-center justify-start'>
             <div className='mr-1'>
-              Created by Sam (protocodex)
+              Created by the Technomoloch
             </div>
             <SocialMedia />
           </div>

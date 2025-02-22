@@ -43,7 +43,7 @@ export const AllAccountActions = () => {
                 />
                 <div className='flex justify-between'>
                   <div css={{ color: 'var(--textLowOpacity)' }}>
-                    Cheers, Sam (protocodex)
+                    Cheers, Technomoloch
                     <div>
                       Artifact Guesser Founder and Dev
                     </div>

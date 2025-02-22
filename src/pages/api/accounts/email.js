@@ -32,7 +32,7 @@ const renderHtml = (message, username) => `Hi ${username},
  
 ${message}
 
-Cheers, Sam (protocodex)
+Cheers, Technomoloch
 Artifact Guesser Founder and Dev`
 
 export default withSessionRoute(accountEmail)
