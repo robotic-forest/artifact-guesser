@@ -17,6 +17,8 @@ import { ImageView, defaultMapValue } from "../artifacts/Artifact";
 import useMeasure from "react-use-measure";
 import { modes } from "../gameui/ModeButton";
 import { formatDate, formatLocation } from "@/lib/artifactUtils"; // Import formatters
+import { MainHeader } from "../gameui/MainHeader"; // Added Header
+import { AuthHeader } from "../layout/AuthHeader"; // Added Auth Header
 
 // Adapted Round Summary Component
 const MultiplayerRoundSummary = ({ results, onProceed }) => {
@@ -124,18 +126,26 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
 
   // Handle image loading state
   const handleImageLoadComplete = (imgBounds) => {
-     if (imgBounds.height) {
-        // Adjust map view based on image dimensions (similar to Game.js)
-         if (imgBounds.height < windowHeight) {
-            const newY = (windowHeight - imgBounds.height) / 2;
-            setMapValue({ scale: 1, translation: { x: 0, y: newY } });
-         } else {
-            const newScale = windowHeight / imgBounds.height;
-            const newX = (windowWidth - (imgBounds.width * newScale)) / 2;
-            setMapValue({ scale: newScale, translation: { x: newX, y: 0 } });
-         }
-         setIsLoadingImage(false);
-     }
+    const h = imgBounds.height;
+    if (h) {
+      // Adjust map view based on image dimensions (mirroring Game.js logic)
+      if (h < windowHeight) {
+        const newY = (windowHeight - h) / 2;
+        // Check if update is needed (like in Game.js)
+        if (isLoadingImage && mapValue.translation.y !== newY) {
+          setMapValue({ scale: 1, translation: { x: 0, y: newY } });
+        }
+      } else {
+        const newScale = windowHeight / h;
+        const newX = (windowWidth - (imgBounds.width * newScale)) / 2;
+        // Check if update is needed (like in Game.js)
+        if (isLoadingImage && mapValue.scale !== newScale) {
+          setMapValue({ scale: newScale, translation: { x: newX, y: 0 } });
+        }
+      }
+      // Only set loading to false once bounds are processed
+      setIsLoadingImage(false);
+    }
   };
 
   const handleImageLoadError = () => {
@@ -167,7 +177,9 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
     const imgLength = artifact?.images?.external?.length || 0;
     return (
       <div ref={ref} className='fixed top-0 left-0 w-screen h-screen overflow-hidden bg-black'>
-        {/* TODO: Add Multiplayer Header? Show round number, scores? */}
+        {/* Added Headers */}
+        <MainHeader />
+        <AuthHeader />
 
         {(isLoadingImage) && <LoadingArtifact className='fixed' msg={`Loading Round ${round} Artifact Image${imgLength > 1 ? 's' : ''}`} />}
 
