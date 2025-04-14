@@ -10,6 +10,8 @@ export const useMultiplayerGame = (socket, lobbyId) => {
     round: 0,
     artifact: null, // Current artifact data (client-safe version)
     scores: {}, // { userId: score }
+    guesses: {}, // { userId: { date, country, timestamp } } - Added
+    players: {}, // { userId: { username, ... } } - Added
     roundResults: null, // Results from the last completed round
     finalScores: null, // Final scores when game ends
     phase: 'lobby', // 'lobby', 'guessing', 'round-summary', 'game-summary'
@@ -20,26 +22,30 @@ export const useMultiplayerGame = (socket, lobbyId) => {
   useEffect(() => {
     if (!socket || !lobbyId) {
       // Reset game state if socket disconnects or user leaves lobby
-      setGameState({ isActive: false, settings: null, round: 0, artifact: null, scores: {}, roundResults: null, finalScores: null, phase: 'lobby', error: null });
+      setGameState({ isActive: false, settings: null, round: 0, artifact: null, scores: {}, guesses: {}, players: {}, roundResults: null, finalScores: null, phase: 'lobby', error: null }); // Added reset for guesses, players
       return;
     }
 
-    const handleGameStarted = ({ settings }) => {
-      console.log('Game Started:', settings);
+    // Assume 'game-started' provides the initial player list
+    const handleGameStarted = ({ settings, players }) => {
+      console.log('Game Started:', settings, players);
       setGameState(prev => ({
         ...prev,
         isActive: true,
         settings: settings,
+        players: players || {}, // Initialize players
         phase: 'waiting-for-round', // Wait for the first 'new-round'
         round: 0, // Reset round, will be set by new-round
         scores: {}, // Reset scores
+        guesses: {}, // Reset guesses
         roundResults: null,
         finalScores: null,
         error: null,
       }));
     };
 
-    const handleNewRound = ({ round, artifact, scores }) => {
+    // Assume 'new-round' might also update players if someone joined/left between rounds
+    const handleNewRound = ({ round, artifact, scores, players }) => {
       console.log(`New Round ${round}:`, artifact);
       setGameState(prev => ({
         ...prev,
@@ -47,11 +53,22 @@ export const useMultiplayerGame = (socket, lobbyId) => {
         round: round,
         artifact: artifact, // This is the client-safe version
         scores: scores || prev.scores, // Update scores (especially for round 1)
+        players: players || prev.players, // Update players if provided
+        guesses: {}, // Reset guesses for the new round
         phase: 'guessing',
         roundResults: null, // Clear previous round results
         finalScores: null,
         error: null,
       }));
+    };
+
+    // Listen for updates to the guesses object during the round
+    const handlePlayerGuessed = ({ guesses: updatedGuesses }) => {
+        setGameState(prev => ({
+            ...prev,
+            // Only update if we are in the guessing phase
+            guesses: prev.phase === 'guessing' ? updatedGuesses : prev.guesses,
+        }));
     };
 
     const handleRoundSummary = (summary) => {
@@ -63,6 +80,7 @@ export const useMultiplayerGame = (socket, lobbyId) => {
         phase: 'round-summary',
         artifact: null, // Clear current artifact view while showing summary
         error: null,
+        // Guesses are implicitly finalized here by the summary data
       }));
       // TODO: Potentially add a timer to automatically move to next round?
     };
@@ -76,6 +94,7 @@ export const useMultiplayerGame = (socket, lobbyId) => {
         phase: 'game-summary',
         roundResults: null,
         artifact: null,
+        guesses: {}, // Clear guesses
         error: null,
       }));
       // TODO: Add button or logic to return to lobby view?
@@ -94,6 +113,7 @@ export const useMultiplayerGame = (socket, lobbyId) => {
     // Register listeners
     socket.on('game-started', handleGameStarted);
     socket.on('new-round', handleNewRound);
+    socket.on('player-guessed', handlePlayerGuessed); // Add listener for guess updates
     socket.on('round-summary', handleRoundSummary);
     socket.on('game-summary', handleGameSummary);
     socket.on('game-error', handleGameError);
@@ -102,6 +122,7 @@ export const useMultiplayerGame = (socket, lobbyId) => {
     return () => {
       socket.off('game-started', handleGameStarted);
       socket.off('new-round', handleNewRound);
+      socket.off('player-guessed', handlePlayerGuessed); // Clean up listener
       socket.off('round-summary', handleRoundSummary);
       socket.off('game-summary', handleGameSummary);
       socket.off('game-error', handleGameError);

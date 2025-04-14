@@ -34,12 +34,13 @@ const Multiplayer = () => {
     // --- Render Game View ---
     return (
       <MultiplayerGameUI
-        gameState={gameState}
-        submitGuess={submitGuess}
-        proceedAfterSummary={proceedAfterSummary}
-      />
-    );
-  }
+         gameState={gameState}
+         submitGuess={submitGuess}
+         proceedAfterSummary={proceedAfterSummary}
+         // currentUserId={_socket?.id} // Removed prop
+       />
+     );
+   }
 
   // --- Render Lobby View ---
   return (

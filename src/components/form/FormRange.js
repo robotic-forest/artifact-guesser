@@ -50,8 +50,12 @@ export const Range = forwardRef(({ width, style, inputStyle, ...props }, ref) =>
 const InputStyles = styled.div`
   position: relative;
   width: ${p => p.width};
+  // Add styles for disabled state
+  opacity: ${p => p.disabled ? 0.7 : 1};
+  cursor: ${p => p.disabled ? 'not-allowed' : 'default'};
 
   input[type=range] {
+    cursor: ${p => p.disabled ? 'not-allowed' : 'pointer'}; // Cursor for the input itself
     -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
     width: ${p => p.width}; /* Specific width is required for Firefox. */
     background: transparent; /* Otherwise white in Chrome */
@@ -104,8 +108,16 @@ const InputStyles = styled.div`
     top: 3px;
 
     &:hover {
-      background: #424242;
+      // Prevent hover effect when disabled
+      background: ${p => p.disabled ? 'var(--backgroundColor)' : '#424242'};
     }
+  }
+
+  // Style thumb when disabled
+  input[type=range]:disabled::-webkit-slider-thumb {
+    background: #aaa; // Grey out thumb
+    border-color: #888;
+    cursor: not-allowed;
   }
 
   input[type=range]::-webkit-slider-runnable-track {
@@ -128,4 +140,9 @@ const InputStyles = styled.div`
     border-color: transparent;
     color: transparent;
   }
+
+  // Style track when disabled (optional, might just rely on overall opacity)
+  // div#track {
+  //   opacity: ${p => p.disabled ? 0.5 : 1};
+  // }
 `

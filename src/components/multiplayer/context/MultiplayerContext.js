@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext, createContext } from 'react';
+import React, { useState, useEffect, useCallback, useContext, createContext, startTransition } from 'react'; // Import startTransition
 import io from 'socket.io-client';
 import useUser from '@/hooks/useUser';
 
@@ -69,13 +69,15 @@ export const MultiplayerProvider = ({ children }) => {
 
     newSocket.on('disconnect', (reason) => {
       console.log('Socket disconnected via context:', reason);
-      setIsConnected(false);
-      setIsRegistered(false); // Reset registration status
-      setCurrentLobbyId(null);
-      setLobbies([]);
-      setChatMessages([]);
-      setLobbyClients([]); // Clear clients on disconnect
-      setSocketInstance(null);
+      startTransition(() => { // Wrap state updates
+        setIsConnected(false);
+        setIsRegistered(false); // Reset registration status
+        setCurrentLobbyId(null);
+        setLobbies([]);
+        setChatMessages([]);
+        setLobbyClients([]); // Clear clients on disconnect
+        setSocketInstance(null);
+      });
     });
 
     newSocket.on('connect_error', (error) => {
@@ -89,28 +91,34 @@ export const MultiplayerProvider = ({ children }) => {
     newSocket.on('update-lobbies', (update) => {
       console.log('Received lobby update via context:', update);
       if (!update || !update.type) return;
-      setLobbies(prevLobbies => {
-        switch (update.type) {
-          case 'list': return update.lobbies || [];
-          case 'create': return (!update.lobby || prevLobbies.some(l => l._id === update.lobby._id)) ? prevLobbies : [...prevLobbies, update.lobby];
+      startTransition(() => { // Wrap setLobbies
+        setLobbies(prevLobbies => {
+          switch (update.type) {
+            case 'list': return update.lobbies || [];
+            case 'create': return (!update.lobby || prevLobbies.some(l => l._id === update.lobby._id)) ? prevLobbies : [...prevLobbies, update.lobby];
           case 'delete': return !update.lobbyId ? prevLobbies : prevLobbies.filter(l => l._id !== update.lobbyId);
           case 'update': return !update.lobby ? prevLobbies : prevLobbies.map(l => l._id === update.lobby._id ? update.lobby : l);
-          default: console.warn('Unknown lobby update type:', update.type); return prevLobbies;
-        }
+            default: console.warn('Unknown lobby update type:', update.type); return prevLobbies;
+          }
+        });
       });
        if (update.type === 'create' && update.lobby?.host?.socketId === newSocket?.id) {
           console.log(`Detected own lobby creation, setting currentLobbyId: ${update.lobby._id}`);
-          setCurrentLobbyId(update.lobby._id);
-          // Also set initial client list for the creator
-          setLobbyClients(update.lobby.clients || []);
+          startTransition(() => { // Wrap state updates
+            setCurrentLobbyId(update.lobby._id);
+            // Also set initial client list for the creator
+            setLobbyClients(update.lobby.clients || []);
+          });
        }
     });
 
     // Listen for client list updates
     newSocket.on('clients', ({ lobby, clients }) => {
       console.log(`Received client list for lobby ${lobby}:`, clients);
-      // Update client list state
-      setLobbyClients(clients || []);
+      startTransition(() => { // Wrap setLobbyClients
+        // Update client list state
+        setLobbyClients(clients || []);
+      });
     });
 
     newSocket.on('lobby-error', (error) => { console.error('Lobby Error:', error.message); });
@@ -181,8 +189,10 @@ export const MultiplayerProvider = ({ children }) => {
     if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
     console.log(`Emitting join for lobby ${lobbyId} via context`);
     socketInstance.emit('join', { lobby: lobbyId, userId: user._id, username: user.username }); // Use user._id
-    setCurrentLobbyId(lobbyId);
-    setLobbyClients([]); // Clear old client list optimistically
+    startTransition(() => { // Wrap state updates
+      setCurrentLobbyId(lobbyId);
+      setLobbyClients([]); // Clear old client list optimistically
+    });
   }, [user, socketInstance, isConnected, isRegistered]); // Add isRegistered dependency
 
   const leaveLobby = useCallback(() => {
@@ -191,9 +201,11 @@ export const MultiplayerProvider = ({ children }) => {
     if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
     console.log(`Emitting leave for lobby ${currentLobbyId} via context`);
     socketInstance.emit('leave', { lobby: currentLobbyId, userId: user._id, username: user.username }); // Use user._id
-    setCurrentLobbyId(null);
-    setChatMessages([]);
-    setLobbyClients([]); // Clear clients on leave
+    startTransition(() => { // Wrap state updates
+      setCurrentLobbyId(null);
+      setChatMessages([]);
+      setLobbyClients([]); // Clear clients on leave
+    });
   }, [currentLobbyId, user, socketInstance, isConnected]);
 
   const value = {
