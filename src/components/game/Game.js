@@ -51,7 +51,7 @@ const GameUI = () => {
     handleArtifactLoadError
   } = useGame()
   
-  const [ref, bounds] = useMeasure()
+  const [ref, bounds] = useMeasure(); // Added semicolon
   const { height: windowHeight, width: windowWidth } = bounds
   const [value, setValue] = useState(defaultMapValue)
   const [hoverCountry, setHoverCountry] = useState()

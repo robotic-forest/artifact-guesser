@@ -1,24 +1,28 @@
-import { IconButton } from "@/components/buttons/IconButton"
-import { useQuery } from "@/hooks/useQuery"
-import useUser from "@/hooks/useUser"
-import { socket } from "@/pages/_app"
-import { useForm } from "react-hook-form"
-import { BiSolidSend } from "react-icons/bi"
+import { IconButton } from "@/components/buttons/IconButton";
+import useUser from "@/hooks/useUser";
+import { useForm } from "react-hook-form";
+import { BiSolidSend } from "react-icons/bi";
 
-export const ChatInput = () => {
-  const { user } = useUser()
-  const { register, handleSubmit, reset } = useForm()
-  const { query } = useQuery()
-  const lobby = query.lobby
+// Receives socket instance and lobbyId as props
+export const ChatInput = ({ socket, lobbyId }) => {
+  const { user } = useUser();
+  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm();
 
   const onSubmit = data => {
+    if (!socket || !lobbyId || !data.message?.trim() || !user?.username) {
+      console.error("Cannot send chat message: Missing socket, lobbyId, message, or username.");
+      return;
+    }
     socket.emit('send', {
-      lobby,
-      username: user.username,
-      message: data.message
-    })
-    reset()
-  }
+      lobby: lobbyId,
+      username: user.username, // Username is included here, backend uses it
+      message: data.message.trim()
+    });
+    reset();
+  };
+
+  // Disable input if not connected or not in a lobby
+  const isDisabled = !socket || !lobbyId;
 
   return (
     <form className='mt-3 flex justify-between' onSubmit={handleSubmit(onSubmit)}>
@@ -26,9 +30,12 @@ export const ChatInput = () => {
         type='text'
         placeholder='Type Message...'
         autoComplete="off"
-        {...register('message')}
+        {...register('message', { required: true })} // Add basic validation
+        disabled={isDisabled}
         css={{
           flexGrow: 1,
+          opacity: isDisabled ? 0.6 : 1,
+          cursor: isDisabled ? 'not-allowed' : 'text',
           marginRight: 8,
           padding: '4px 8px',
           outline: 'none',
@@ -52,8 +59,11 @@ export const ChatInput = () => {
         size={32}
         tooltip='Send'
         type='submit'
+        disabled={isDisabled || isSubmitting}
         css={{
           background: 'var(--primaryColor)',
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
+          opacity: isDisabled ? 0.6 : 1,
           '&:hover': {
             background: 'var(--primaryColorLight)',
             boxShadow: 'none',

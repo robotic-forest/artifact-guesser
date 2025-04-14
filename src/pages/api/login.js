@@ -21,8 +21,18 @@ async function loginRoute(req, res) {
         })
         return
       }
-      
-      if ((!user || !bcrypt.compareSync(formPassword, user.password))) {
+
+      // Explicitly check if user exists first
+      if (!user) {
+         res.send({
+          success: false,
+          message: 'The email or password you entered is incorrect. Please try again.'
+        })
+        return; // Stop execution if user not found
+      }
+
+      // If user exists, then check password
+      if (!bcrypt.compareSync(formPassword, user.password)) {
         res.send({
           success: false,
           message: 'The email or password you entered is incorrect. Please try again.'
