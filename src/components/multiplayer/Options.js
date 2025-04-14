@@ -17,9 +17,10 @@ const RoundButton = ({ css, isActive, disabled, children, ...p }) => (
     css={{
       background: isActive ? 'var(--primaryColor)' : 'var(--backgroundColorBarelyLight)',
       cursor: disabled ? 'not-allowed' : 'pointer',
-      opacity: disabled ? 0.5 : 1,
       '&:hover': {
-        background: disabled ? (isActive ? 'var(--primaryColor)' : 'var(--backgroundColorBarelyLight)') : 'var(--backgroundColorLight)',
+        background: disabled
+          ? isActive ? 'var(--primaryColor)' : 'var(--backgroundColorBarelyLight)'
+          : isActive ? 'var(--primaryColorLight)' : 'var(--backgroundColorLight)',
         boxShadow: 'none',
       },
       border: '1px outset',

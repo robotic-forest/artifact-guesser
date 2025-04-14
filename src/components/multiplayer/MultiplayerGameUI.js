@@ -188,7 +188,17 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
       </div>
 
       {/* Use Button component for consistent styling */}
-      <Button onClick={onProceed} className="mt-4" variant='success' size='lg'>
+      <Button
+        onClick={onProceed}
+        className="mt-4"
+        size='lg'
+        css={{
+          background: 'var(--primaryColor)',
+          '&:hover': { background: 'var(--primaryColorLight)', boxShadow: 'none' },
+          border: '1px outset', borderColor: '#ffffff77 #00000077 #00000077 #ffffff77', // Keep consistent border
+          boxShadow: 'none', borderRadius: 0 // Keep consistent style
+        }}
+      >
         Return to Lobby
       </Button>
     </div>
