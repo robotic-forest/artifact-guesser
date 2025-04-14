@@ -29,17 +29,28 @@ const getPointsClass = (points) => {
   return 'text-white'; // Default
 };
 
+// Simple status component
+const MultiplayerStatus = ({ message }) => {
+  // Base styles
+  let styles = "text-white bg-black/60 p-1 px-2 rounded text-sm";
+  // Desktop: bottom-left positioning
+  styles += " hidden md:block fixed bottom-1 left-1 z-10";
+  // Mobile: will be placed manually in the layout
+
+  return <div className={styles}>{message}</div>;
+};
+
 // Adapted Round Summary Component
 const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by server timer */ }) => {
   const { round, correctArtifact, scores: overallScores, results: playerResults } = results;
-  const [countdown, setCountdown] = useState(15); // Countdown state - Updated to 15
+  const [countdown, setCountdown] = useState(10); // Countdown state - Updated to 10
 
   // Find the highest round score
   const highestRoundScore = Math.max(0, ...Object.values(playerResults || {}).map(r => r.roundScore || 0));
 
   // Countdown Timer Effect
   useEffect(() => {
-    setCountdown(15); // Reset countdown on mount/results change - Updated to 15
+    setCountdown(10); // Reset countdown on mount/results change - Updated to 10
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
@@ -134,17 +145,22 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
 };
 
 // Adapted Game Summary Component
-const MultiplayerGameSummary = ({ finalScores, settings, players, onProceed }) => { // Added players prop
+const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId, onProceed }) => { // Added players and currentUserId props
   // Sort scores descending
   const sortedScores = Object.entries(finalScores || {})
     .map(([userId, score]) => ({ userId, score })) // Keep it simple here
     .sort((a, b) => b.score - a.score);
 
+  // Determine if the current user is the winner
+  const winner = sortedScores.length > 0 ? sortedScores[0] : null;
+  const isCurrentUserWinner = winner && winner.userId === currentUserId;
+  const titleText = isCurrentUserWinner ? "You won!" : "You lose!";
+
   // TODO: Enhance styling significantly
   return (
     // Apply lobby background and text color
     <div className="p-4 min-h-screen flex flex-col items-center justify-center" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}>
-      <h2 className="text-3xl font-bold mb-6">Game Over!</h2>
+      <h2 className="text-3xl font-bold mb-6">{titleText}</h2>
 
       {/* Final Scores - Lobby Style Card */}
       <div className="mb-6 p-4 border rounded w-full max-w-md" css={{ background: 'var(--backgroundColorBarelyDark)', borderColor: 'var(--backgroundColorSlightlyDark)'}}>
@@ -178,18 +194,6 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, onProceed }) =
     </div>
   );
 };
-
-// Simple status component
-const MultiplayerStatus = ({ message }) => {
-  // Base styles
-  let styles = "text-white bg-black/60 p-1 px-2 rounded text-sm";
-  // Desktop: bottom-left positioning
-  styles += " hidden md:block fixed bottom-1 left-1 z-10";
-  // Mobile: will be placed manually in the layout
-
-  return <div className={styles}>{message}</div>;
-};
-
 
 export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary /* Removed currentUserId prop */ }) => {
   const { user } = useUser(); // Get user object
@@ -287,12 +291,12 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
     // Pass results, but not onProceed as it's handled by server timer now
     return <MultiplayerRoundSummary results={roundResults} />;
   }
-
-  if (phase === 'game-summary' && finalScores) {
-     // Pass players object to the summary component
-     return <MultiplayerGameSummary finalScores={finalScores} settings={settings} players={players} onProceed={proceedAfterSummary} />;
-  }
-
+ 
+   if (phase === 'game-summary' && finalScores) {
+      // Pass players object and current user ID to the summary component
+      return <MultiplayerGameSummary finalScores={finalScores} settings={settings} players={players} currentUserId={user?._id} onProceed={proceedAfterSummary} />;
+   }
+ 
   if (phase === 'guessing' && artifact) {
     const imgLength = artifact?.images?.external?.length || 0;
     return (
@@ -372,11 +376,10 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
                <GameButton
                  onClick={handleGuessSubmit}
                  disabled={currentUserHasGuessed} // Disable button
-                 className={`w-[82px] justify-center ${currentUserHasGuessed ? 'opacity-70 cursor-not-allowed' : ''}`}
-                 className={`w-[82px] justify-center ${currentUserHasGuessed ? 'opacity-70 cursor-not-allowed' : ''}`}
-                 css={{ background: '#7dddc3', color: '#000000', ':hover': { background: currentUserHasGuessed ? '#7dddc3' : '#40f59a' } }} // Prevent hover effect when disabled
-               >
-                 <IoMdEye className='mr-2' /> Guess
+                  className={`w-[82px] justify-center ${currentUserHasGuessed ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  css={{ background: '#7dddc3', color: '#000000', ':hover': { background: currentUserHasGuessed ? '#7dddc3' : '#40f59a' } }} // Prevent hover effect when disabled
+                >
+                  <IoMdEye className='mr-2' /> Guess
                </GameButton>
              </div>
            </div>

@@ -78,12 +78,12 @@ export const LobbyChoice = () => {
           <div css={{ color: 'var(--textLowOpacity)' }}>
             Create a new Lobby
           </div>
-          <div className='mt-2 p-0 pb-2 pr-2 flex flex-wrap'>
-             {/* Disable button if not connected OR not registered */}
-            <LobbyTypeButton theme={dashbaordTheme} onClick={() => handleCreateLobby(false)} disabled={!isConnected || !isRegistered}>
-              <div><b>Create Private Lobby</b></div>
-              <div className="text-xs opacity-80">
-                Only players with a link can join (Not Implemented)
+           <div className='mt-2 p-0 pb-2 pr-2 flex flex-wrap'>
+              {/* Disable button if not connected OR not registered */}
+             <LobbyTypeButton theme={dashbaordTheme} onClick={() => handleCreateLobby(false)} disabled={true}>
+               <div><b>Create Private Lobby</b></div>
+               <div className="text-xs opacity-80">
+                 Only players with a link can join (Not Implemented)
               </div>
             </LobbyTypeButton>
             {/* Disable button if not connected OR not registered */}
