@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 import React, { useState } from "react"
 import { useMediaQuery } from "react-responsive"
 import { v4 as uuidv4 } from 'uuid'
-import Tooltip from 'react-tooltip'
+import { Tooltip } from 'react-tooltip'
 
 export const InfoItem = ({ icon, value, list, tooltip, tooltipPlace = 'top', noIcon, tooltipId, style }) => {
   const isMobile = useMediaQuery({ maxWidth: 600 })

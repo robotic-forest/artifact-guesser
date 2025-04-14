@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { useState } from "react"
 import { useMediaQuery } from "react-responsive"
-import Tooltip from 'react-tooltip'
+import { Tooltip } from 'react-tooltip'
 import { v4 as uuidv4 } from 'uuid'
 
 const colorDefaults = {
