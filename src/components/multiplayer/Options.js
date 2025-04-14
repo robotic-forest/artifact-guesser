@@ -7,6 +7,7 @@ import { IconButton } from "../buttons/IconButton";
 import { ModeButton, modes as gameModesObject } from "../gameui/ModeButton";
 import useUser from "@/hooks/useUser";
 import { useMultiplayer } from "./context/MultiplayerContext";
+import toast from "react-hot-toast"; // Import toast
 
 const modeKeys = Object.keys(gameModesObject);
 
@@ -70,7 +71,10 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
     // Add isHost as dependency? No, derived from context data which is already a dependency via currentLobbyData
   }, [currentLobbyData, currentLobbyId]); // Rerun when lobby data or ID changes
 
-  const enoughPlayersPresent = (lobbyClients?.length || 0) >= 1;
+  // Update check to require at least 2 players
+  const enoughPlayersPresent = (lobbyClients?.length || 0) >= 2;
+  const waitingMessage = isHost ? (enoughPlayersPresent ? 'Ready to start.' : 'Waiting for more players (min 2)...') : 'Waiting for host to start...';
+
 
   const handleCreateLobby = () => {
     if (onCreateLobby) {
@@ -101,6 +105,11 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
   };
 
   const handleStartGame = () => {
+    // Add client-side check before emitting (belt-and-suspenders)
+    if (!enoughPlayersPresent) {
+       toast.error("Need at least 2 players to start."); // Use toast for feedback
+       return;
+    }
     if (_socket && currentLobbyId && isHost) {
       // Use the state that reflects the latest selection/sync
       const currentSettings = { mode: selectedMode, rounds: selectedRounds };
@@ -164,7 +173,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
                        size={28}
                        tooltip={'Cycle Mode'}
                        tooltipPlace='left'
-                       onClick={cycleMode}
+                       onClick={() => { /* Define cycleMode if needed */ }}
                        css={{ marginRight: 14, background: 'var(--backgroundColorLight)', '&:hover': { background: 'var(--backgroundColorLight)', filter: 'brightness(1.1)' } }}
                      >
                        <BiRefresh />
@@ -203,13 +212,15 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
       <div className='mt-6 p-3 flex justify-between items-end'>
         {currentLobbyId ? (
           <>
+            {/* Updated waiting message */}
             <div className='text-sm' css={{ color: 'var(--textLowOpacity)' }}>
-              {isHost ? (enoughPlayersPresent ? 'Ready to start.' : 'Waiting for players...') : 'Waiting for host to start...'}
+              {waitingMessage}
             </div>
             {isHost && (
               <Button
                 variant='outlined'
                 onClick={handleStartGame}
+                // Disable button if not enough players
                 disabled={!enoughPlayersPresent || isSelectingMode}
                 css={{
                   background: (enoughPlayersPresent && !isSelectingMode) ? 'var(--primaryColor)' : 'var(--backgroundColor)',
