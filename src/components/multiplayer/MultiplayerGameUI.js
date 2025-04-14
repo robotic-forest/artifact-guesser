@@ -20,11 +20,22 @@ import { formatDate, formatLocation } from "@/lib/artifactUtils"; // Import form
 import { MainHeader } from "../gameui/MainHeader"; // Added Header
 import { AuthHeader } from "../layout/AuthHeader"; // Added Auth Header
 import useUser from "@/hooks/useUser"; // Import useUser hook
+import { Button } from "../buttons/Button";
+
+// Helper function for styling points
+const getPointsClass = (points) => {
+  if (points === 100) return 'text-green-400 font-bold';
+  if (points >= 80) return 'text-yellow-400';
+  return 'text-white'; // Default
+};
 
 // Adapted Round Summary Component
 const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by server timer */ }) => {
   const { round, correctArtifact, scores: overallScores, results: playerResults } = results;
   const [countdown, setCountdown] = useState(15); // Countdown state - Updated to 15
+
+  // Find the highest round score
+  const highestRoundScore = Math.max(0, ...Object.values(playerResults || {}).map(r => r.roundScore || 0));
 
   // Countdown Timer Effect
   useEffect(() => {
@@ -46,18 +57,19 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
 
   // TODO: Enhance styling significantly
   return (
-    <div className="p-4 bg-gray-800 text-white min-h-screen flex flex-col items-center justify-center">
+    // Apply lobby background and text color
+    <div className="p-4 min-h-screen flex flex-col items-center justify-center" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}>
       <h2 className="text-2xl font-bold mb-4">Round {round} Results</h2>
 
-      {/* Display Correct Answer */}
-      <div className="mb-6 p-4 border border-green-500 rounded bg-gray-700 w-full max-w-md text-center">
-        <h3 className="text-lg font-semibold mb-2 text-green-300">Correct Answer</h3>
+      {/* Display Correct Answer - Lobby Style Card */}
+      <div className="mb-6 p-4 border rounded w-full max-w-md text-center" css={{ background: 'var(--backgroundColorBarelyDark)', borderColor: 'var(--backgroundColorSlightlyDark)'}}>
+        <h3 className="text-lg font-semibold mb-2" css={{ color: 'var(--textColorLowOpacity)'}}>Correct Answer</h3>
         {/* Display Image */}
         {correctArtifact?.images?.external?.[0] && (
           <img
             src={correctArtifact.images.external[0]}
             alt={correctArtifact.name || 'Correct Artifact Image'} // Use .name for alt text
-            className="max-h-48 w-auto mx-auto my-2 rounded border border-gray-500" // Added styling
+            className="max-h-48 w-auto mx-auto my-2 rounded" css={{ border: '1px solid var(--backgroundColorSlightlyDark)'}} // Use theme border
           />
         )}
         <p><b>Artifact:</b> {correctArtifact?.name || 'N/A'}</p> {/* Use .name for display */}
@@ -67,29 +79,49 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
 
       {/* Display Player Guesses & Scores */}
       <div className="w-full max-w-md mb-6">
-         <h3 className="text-lg font-semibold mb-2">Player Results</h3>
-         {Object.entries(playerResults || {}).map(([userId, result]) => (
-           <div key={userId} className="mb-3 p-3 border border-gray-600 rounded bg-gray-700">
-             {/* Use result.username directly */}
-             <p className="font-semibold">{result.username || userId /* Fallback to ID if username missing */} </p>
-             {result.guess ? (
-               <>
-                 <p>Guessed Date: {formatDate(result.guess.date)} ({result.score?.datePoints} pts)</p>
-                 <p>Guessed Location: {result.guess.country} ({result.score?.countryPoints} pts)</p>
-                 <p>Round Score: +{result.roundScore}</p>
-               </>
-             ) : (
-               <p className="text-gray-400">Did not guess.</p>
-             )}
-           </div>
-         ))}
+         <h3 className="text-lg font-semibold mb-2" css={{ color: 'var(--textColorLowOpacity)'}}>Player Results</h3>
+         {Object.entries(playerResults || {}).map(([userId, result]) => {
+           const isRoundWinner = result.roundScore === highestRoundScore && highestRoundScore > 0;
+           const datePoints = result.score?.datePoints ?? 0;
+           const countryPoints = result.score?.countryPoints ?? 0;
+           const winnerBg = 'linear-gradient(0deg, #ffc1072e, #ffeb3b1f)'; // Subtle gold gradient for winner
+
+           return (
+             // Add winner styling conditionally - Lobby Style Card
+             <div key={userId} className={`mb-3 p-3 border rounded`} css={{
+                background: isRoundWinner ? winnerBg : 'var(--backgroundColorSlightlyLight)',
+                borderColor: isRoundWinner ? '#ffc107' : 'var(--backgroundColorSlightlyDark)', // Gold border for winner
+                boxShadow: isRoundWinner ? '0 2px 10px 0px #ffc10755' : 'rgb(64 68 82 / 8%) 0px 2px 5px 0px', // Gold shadow for winner
+             }}>
+               {/* Ensure winner text color is black */}
+               <p className={`font-semibold ${isRoundWinner ? 'text-black' : ''}`}>
+                 {result.username || userId /* Fallback to ID */} {isRoundWinner ? '🏆' : ''}
+               </p>
+               {result.guess ? (
+                 <>
+                   {/* Use theme text colors */}
+                   <p className={getPointsClass(datePoints)} css={{ color: datePoints === 100 ? 'var(--successColor)' : datePoints >= 80 ? 'var(--warningColor)' : 'var(--textColor)'}}>
+                     Guessed Date: {formatDate(result.guess.date)} ({datePoints} pts)
+                   </p>
+                   <p className={getPointsClass(countryPoints)} css={{ color: countryPoints === 100 ? 'var(--successColor)' : countryPoints >= 80 ? 'var(--warningColor)' : 'var(--textColor)'}}>
+                     Guessed Location: {result.guess.country} ({countryPoints} pts)
+                   </p>
+                   <p>Round Score: +{result.roundScore}</p>
+                 </>
+               ) : (
+                 <p className="text-gray-400">Did not guess.</p>
+               )}
+             </div>
+           );
+         })}
       </div>
+      {/* Removed duplicate closing tags that caused previous error */}
 
        {/* TODO: Display overall leaderboard/scores? */}
        {/* <pre>Overall: {JSON.stringify(overallScores, null, 2)}</pre> */}
 
        {/* Countdown Display */}
-       <div className="mt-6 text-xl">
+       <div className="mt-6 text-xl" css={{ color: 'var(--textColorLowOpacity)'}}> {/* Use theme text color */}
          {countdown > 0 ? `Next round starting in ${countdown}...` : 'Starting next round...'}
        </div>
 
@@ -102,32 +134,47 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
 };
 
 // Adapted Game Summary Component
-const MultiplayerGameSummary = ({ finalScores, settings, onProceed }) => {
+const MultiplayerGameSummary = ({ finalScores, settings, players, onProceed }) => { // Added players prop
   // Sort scores descending
   const sortedScores = Object.entries(finalScores || {})
-    .map(([userId, score]) => ({ userId, score /* TODO: Need username here */ }))
+    .map(([userId, score]) => ({ userId, score })) // Keep it simple here
     .sort((a, b) => b.score - a.score);
 
   // TODO: Enhance styling significantly
   return (
-    <div className="p-4 bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center">
+    // Apply lobby background and text color
+    <div className="p-4 min-h-screen flex flex-col items-center justify-center" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}>
       <h2 className="text-3xl font-bold mb-6">Game Over!</h2>
 
-      <div className="mb-6 p-4 border border-blue-500 rounded bg-gray-800 w-full max-w-md">
-        <h3 className="text-xl font-semibold mb-3 text-center">Final Scores</h3>
-        {/* TODO: Need a way to get usernames associated with userIds */}
-        {sortedScores.map(({ userId, score }, index) => (
-          <div key={userId} className={`flex justify-between p-2 rounded mb-1 ${index === 0 ? 'bg-yellow-600 font-bold' : 'bg-gray-700'}`}>
-            <span>{index + 1}. {userId.substring(0, 8)}...</span> {/* Display truncated userId for now */}
-            <span>{score} pts</span>
-          </div>
-        ))}
-        {sortedScores.length === 0 && <p className="text-center text-gray-400">No scores recorded.</p>}
+      {/* Final Scores - Lobby Style Card */}
+      <div className="mb-6 p-4 border rounded w-full max-w-md" css={{ background: 'var(--backgroundColorBarelyDark)', borderColor: 'var(--backgroundColorSlightlyDark)'}}>
+        <h3 className="text-xl font-semibold mb-3 text-center" css={{ color: 'var(--textColorLowOpacity)'}}>Final Scores</h3>
+        {/* Use players prop to display usernames */}
+        {sortedScores.map(({ userId, score }, index) => {
+           const isWinner = index === 0 && sortedScores.length > 0;
+           const winnerBg = 'linear-gradient(0deg, #ffc1072e, #ffeb3b1f)'; // Subtle gold gradient for winner
+           const username = players?.[userId]?.username || userId.substring(0, 8) + '...'; // Get username or fallback to truncated ID
+
+           return (
+             <div key={userId} className={`flex justify-between p-2 rounded mb-1`} css={{
+                background: isWinner ? winnerBg : 'var(--backgroundColorSlightlyLight)',
+                border: `1px solid ${isWinner ? '#ffc107' : 'var(--backgroundColorSlightlyDark)'}`,
+                // Change winner text color to black
+                color: isWinner ? 'black' : 'var(--textColor)',
+                fontWeight: isWinner ? 'bold' : 'normal',
+             }}>
+               <span>{index + 1}. {username} {isWinner ? '🏆' : ''}</span> {/* Display username */}
+               <span>{score} pts</span>
+             </div>
+           );
+        })}
+        {sortedScores.length === 0 && <p className="text-center" css={{ color: 'var(--textColorLowOpacity)'}}>No scores recorded.</p>}
       </div>
 
-      <button onClick={onProceed} className="mt-4 p-3 bg-green-600 hover:bg-green-700 rounded text-lg font-semibold">
-        Return to Lobby View
-      </button>
+      {/* Use Button component for consistent styling */}
+      <Button onClick={onProceed} className="mt-4" variant='success' size='lg'>
+        Return to Lobby
+      </Button>
     </div>
   );
 };
@@ -242,7 +289,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
   }
 
   if (phase === 'game-summary' && finalScores) {
-     return <MultiplayerGameSummary finalScores={finalScores} settings={settings} onProceed={proceedAfterSummary} />;
+     // Pass players object to the summary component
+     return <MultiplayerGameSummary finalScores={finalScores} settings={settings} players={players} onProceed={proceedAfterSummary} />;
   }
 
   if (phase === 'guessing' && artifact) {
@@ -324,6 +372,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
                <GameButton
                  onClick={handleGuessSubmit}
                  disabled={currentUserHasGuessed} // Disable button
+                 className={`w-[82px] justify-center ${currentUserHasGuessed ? 'opacity-70 cursor-not-allowed' : ''}`}
                  className={`w-[82px] justify-center ${currentUserHasGuessed ? 'opacity-70 cursor-not-allowed' : ''}`}
                  css={{ background: '#7dddc3', color: '#000000', ':hover': { background: currentUserHasGuessed ? '#7dddc3' : '#40f59a' } }} // Prevent hover effect when disabled
                >

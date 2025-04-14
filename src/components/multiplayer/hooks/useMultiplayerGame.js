@@ -85,12 +85,13 @@ export const useMultiplayerGame = (socket, lobbyId) => {
       // TODO: Potentially add a timer to automatically move to next round?
     };
 
-    const handleGameSummary = (summary) => {
+    const handleGameSummary = (summary) => { // summary now includes { finalScores, settings, players }
       console.log('Game Summary:', summary);
       setGameState(prev => ({
         ...prev,
         isActive: false, // Game is no longer active
         finalScores: summary.finalScores,
+        players: summary.players || prev.players, // Store players data
         phase: 'game-summary',
         roundResults: null,
         artifact: null,
@@ -155,11 +156,20 @@ export const useMultiplayerGame = (socket, lobbyId) => {
   const proceedAfterSummary = useCallback(() => {
      if (gameState.phase === 'game-summary') {
         // Logic to return to lobby view? This might involve state outside this hook.
-        console.log("Returning to lobby view (manual action needed)");
-        // Reset state?
-         setGameState(prev => ({ ...prev, phase: 'lobby', finalScores: null }));
-     }
-     // If phase is 'round-summary', backend handles next round automatically for now.
+         console.log("Returning to lobby view");
+         // Reset game state more completely
+         setGameState(prev => ({
+           ...prev,
+           isActive: false, // Explicitly set game as inactive
+           phase: 'lobby',
+           finalScores: null,
+           roundResults: null,
+           artifact: null,
+           guesses: {}, // Clear guesses too
+           // Keep players and settings? Or reset? Let's keep them for now.
+         }));
+      }
+      // If phase is 'round-summary', backend handles next round automatically.
   }, [gameState.phase]);
 
 

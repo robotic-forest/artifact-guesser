@@ -114,7 +114,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
     }
   };
 
-  const roundsOptions = [5, 10, 15];
+  const roundsOptions = [1, 5, 10, 15]; // Added 1 round option
 
   return (
     <div css={{

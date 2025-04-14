@@ -28,7 +28,8 @@ const LobbyListItem = ({ lobby, onJoin }) => {
           Mode: {mode} | Rounds: {rounds} | Players: {playerCount}
         </div>
       </div>
-      <Button onClick={() => onJoin(lobbyId)} size='sm' css={{ padding: '4px 10px' }}>
+      {/* Explicitly center the button vertically */}
+      <Button onClick={() => onJoin(lobbyId)} size='sm' css={{ padding: '4px 10px', alignSelf: 'center' }}>
         Join
       </Button>
     </div>

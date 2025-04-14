@@ -133,10 +133,9 @@ export const LobbyChoice = () => {
                   const modeColor = modes[mode]?.color || '#cccccc'; // Fallback color
 
                   return (
-                    <div key={lobby._id} className='p-2 mb-2 rounded-[6px] flex flex-col justify-between' css={{
+                    <div key={lobby._id} className='p-2 px-4 mb-2 rounded-[6px] flex justify-between items-center' css={{
                       background: 'var(--backgroundColorBarelyLight)',
                       boxShadow: 'rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 12%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(64 68 82 / 8%) 0px 2px 5px 0px',
-                      minHeight: '100px',
                     }}>
                       <div> {/* Content div */}
                         <div className='font-bold mb-1'>{hostUsername}'s Lobby</div>
@@ -152,12 +151,12 @@ export const LobbyChoice = () => {
                         </div>
                       </div>
                       {/* Wrapper div for right alignment */}
-                      <div css={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+                      <div css={{ display: 'flex', justifyContent: 'flex-end' }}>
                          <Button
                            onClick={() => handleJoinLobby(lobby._id)}
                            size='sm'
                            // Adjust padding for smaller size, remove width: 100%
-                           css={{ padding: '4px 6px' }}
+                           css={{ padding: '4px 12px' }}
                            disabled={!isConnected || !isRegistered}
                          >
                            Join Lobby
