@@ -43,8 +43,7 @@ const DisconnectCountdownBanner = ({ countdownData }) => {
 // --- Player Status Component ---
 // Updated to use playerStatuses and show different colors
 const PlayerStatusList = ({ players, guesses, playerStatuses }) => {
-  if (!players || !playerStatuses) return null;
-
+  if (!players) return null;
   const playerIds = Object.keys(players);
 
   return (
@@ -52,7 +51,7 @@ const PlayerStatusList = ({ players, guesses, playerStatuses }) => {
     <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[60px] left-0 z-10 pointer-events-none"> {/* Adjust bottom based on chat height */}
       {playerIds.map((playerId) => {
         const player = players[playerId];
-        const status = playerStatuses[playerId] || 'active'; // Default to active if status missing
+        const status = playerStatuses?.[playerId] || player?.status || 'active'; // Default to active if status missing
         const hasGuessed = !!guesses?.[playerId];
 
         let bgColor = 'bg-black';

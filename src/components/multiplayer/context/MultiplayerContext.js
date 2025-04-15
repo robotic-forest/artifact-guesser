@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext, createContext, startTransition } from 'react'; // Import startTransition
+import React, { useState, useEffect, useCallback, useContext, createContext, startTransition, useRef } from 'react'; // Import startTransition, useRef
 import io from 'socket.io-client';
 import useUser from '@/hooks/useUser';
 
@@ -29,13 +29,41 @@ export const MultiplayerProvider = ({ children }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [socketInstance, setSocketInstance] = useState(null);
   const [lobbyClients, setLobbyClients] = useState([]); // State for clients in the current lobby
-  const [restoredGameState, setRestoredGameState] = useState(null); // State to hold game state on rejoin
+  // REMOVE restoredGameState
+  // const [restoredGameState, setRestoredGameState] = useState(null);
 
-  // Function to clear the restored state once consumed
-  const clearRestoredGameState = useCallback(() => {
-    console.log("[MultiplayerContext] Clearing restored game state.");
-    setRestoredGameState(null);
+  // ADD gameState state here
+  const [gameState, setGameState] = useState({
+    isActive: false,
+    settings: null,
+    round: 0,
+    artifact: null,
+    scores: {},
+    guesses: {},
+    players: {},
+    roundResults: null,
+    finalScores: null,
+    phase: 'lobby',
+    error: null,
+    gameHistory: [],
+    playerStatuses: {},
+    disconnectCountdown: null,
+    isForfeitWin: false,
+    gameEndedAcknowledged: false,
+  });
+  const countdownIntervalRef = useRef(null); // Move countdown ref here too
+
+  // REMOVE clearRestoredGameState
+  // const clearRestoredGameState = useCallback(() => { ... });
+
+  // Move countdown clear helper here
+  const clearCountdownInterval = useCallback(() => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
   }, []);
+
 
   const connectSocket = useCallback(() => {
     if (socketInstance && socketInstance.connected) { return; }
@@ -144,36 +172,230 @@ export const MultiplayerProvider = ({ children }) => {
     newSocket.on('game-error', (error) => { console.error('Game Error:', error.message); });
     newSocket.on('chat', (messages) => { console.log('Received chat update:', messages); setChatMessages(messages); });
 
-    // --- Listeners for Game Active State (Session Storage) ---
-    newSocket.on('game-started', () => {
-      console.log('[MultiplayerContext] Game started, setting ag_gameActive=true');
-      sessionStorage.setItem('ag_gameActive', 'true');
-    });
+    // --- Game State Listeners (Moved from useMultiplayerGame) ---
+    const handleGameStarted = ({ settings, players }) => {
+      console.log('[Context] Game Started:', settings, players);
+      const initialStatuses = {};
+      if (players) {
+        Object.keys(players).forEach(id => {
+          initialStatuses[id] = players[id].status || 'active';
+        });
+      }
+      startTransition(() => { // Wrap state update
+        setGameState(prev => ({
+          ...prev,
+          isActive: true,
+          settings: settings,
+          players: players || {},
+          playerStatuses: initialStatuses,
+          phase: 'waiting-for-round',
+          round: 0,
+          scores: {},
+          guesses: {},
+          roundResults: null,
+          finalScores: null,
+          error: null,
+          disconnectCountdown: null,
+          isForfeitWin: false,
+          gameHistory: [], // Reset history on new game
+        }));
+      });
+      clearCountdownInterval();
+      sessionStorage.setItem('ag_gameActive', 'true'); // Also update session storage
+    };
 
-    newSocket.on('game-summary', () => {
-      console.log('[MultiplayerContext] Game summary received, clearing ag_gameActive');
-      sessionStorage.removeItem('ag_gameActive');
-      // DO NOT clear lobby ID here. Let the user navigate away from summary first.
-      // sessionStorage.removeItem('ag_lobbyId');
-      // startTransition(() => {
-      //    setCurrentLobbyId(null);
-      // });
-    });
-    // --- End Game Active State Listeners ---
+    const handleNewRound = ({ round, artifact, scores, players }) => {
+      console.log(`[Context] New Round ${round}:`, artifact);
+      const updatedStatuses = {};
+       if (players) {
+         Object.keys(players).forEach(id => {
+           updatedStatuses[id] = players[id].status || 'active';
+         });
+       }
+       startTransition(() => { // Wrap state update
+         setGameState(prev => ({
+           ...prev,
+           isActive: true,
+           round: round,
+           artifact: artifact,
+           scores: scores || prev.scores,
+           players: players || prev.players,
+           playerStatuses: updatedStatuses,
+           guesses: {}, // Reset guesses
+           phase: 'guessing',
+           roundResults: null,
+           finalScores: null,
+           error: null,
+           disconnectCountdown: null,
+           isForfeitWin: false,
+         }));
+       });
+      clearCountdownInterval();
+    };
 
-    // --- Listener for Rejoin Success ---
-    // This updates the context's lobby ID, stores the restored game state, AND restores chat history
-    newSocket.on('rejoin-successful', ({ lobbyId, gameState }) => { // Destructure gameState
-      if (lobbyId && gameState) {
-        console.log(`[MultiplayerContext] Rejoin successful for lobby ${lobbyId}. Storing restored state, chat history, and updating currentLobbyId.`);
-        // Update session storage just in case it was missed (should be redundant but safe)
+    const handlePlayerGuessed = ({ guesses: updatedGuesses }) => {
+        console.log('[Context] Player Guessed:', updatedGuesses);
+        startTransition(() => { // Wrap state update
+          setGameState(prev => ({
+              ...prev,
+              // Only update guesses if still in guessing phase (safety check)
+              guesses: prev.phase === 'guessing' ? updatedGuesses : prev.guesses,
+          }));
+        });
+    };
+
+    const handleRoundSummary = (summary) => {
+      console.log(`[Context] Round ${summary.round} Summary:`, summary);
+       const updatedStatuses = { ...gameState.playerStatuses };
+       if (summary.players) {
+         Object.keys(summary.players).forEach(id => {
+           updatedStatuses[id] = summary.players[id].status || 'active';
+         });
+       }
+       startTransition(() => { // Wrap state update
+         setGameState(prev => ({
+           ...prev,
+           scores: summary.scores,
+           roundResults: summary,
+           phase: 'round-summary',
+           artifact: null, // Clear artifact during summary
+           error: null,
+           players: summary.players || prev.players,
+           playerStatuses: updatedStatuses,
+           disconnectCountdown: null,
+           // Add summary to history
+           gameHistory: [...prev.gameHistory, summary],
+         }));
+       });
+      clearCountdownInterval();
+    };
+
+    const handleGameSummary = (summary) => {
+      console.log('[Context] Game Summary:', summary);
+      const finalStatuses = {};
+       if (summary.players) {
+         Object.keys(summary.players).forEach(id => {
+           finalStatuses[id] = summary.players[id].status || 'active';
+         });
+       }
+       startTransition(() => { // Wrap state update
+         setGameState(prev => ({
+           ...prev,
+           isActive: false,
+           finalScores: summary.finalScores,
+           players: summary.players || prev.players,
+           playerStatuses: finalStatuses,
+           gameHistory: summary.gameHistory || prev.gameHistory, // Use history from summary if provided
+           phase: 'game-summary',
+           isForfeitWin: summary.forfeitWin || false,
+           roundResults: null,
+           artifact: null,
+           guesses: {},
+           error: null,
+           disconnectCountdown: null,
+           gameEndedAcknowledged: false, // Reset acknowledged flag
+         }));
+       });
+      clearCountdownInterval();
+      sessionStorage.removeItem('ag_gameActive'); // Clear session storage
+    };
+
+    const handleGameError = ({ message }) => {
+      console.error('[Context] Received Game Error:', message);
+      startTransition(() => { // Wrap state update
+        setGameState(prev => ({ ...prev, error: message }));
+      });
+    };
+
+    const handlePlayerDisconnected = ({ userId, username, countdownDuration }) => {
+      console.log(`[Context] Player disconnected: ${username} (${userId}), countdown: ${countdownDuration}s`);
+      startTransition(() => { // Wrap state update
+        setGameState(prev => ({
+          ...prev,
+          playerStatuses: { ...prev.playerStatuses, [userId]: 'disconnected' },
+          disconnectCountdown: { userId, username, remaining: countdownDuration }
+        }));
+      });
+
+      clearCountdownInterval();
+      countdownIntervalRef.current = setInterval(() => {
+        startTransition(() => { // Wrap state update inside interval
+          setGameState(prev => {
+            if (!prev.disconnectCountdown || prev.disconnectCountdown.userId !== userId) {
+              clearCountdownInterval();
+              return prev;
+            }
+            const newRemaining = prev.disconnectCountdown.remaining - 1;
+            return {
+              ...prev,
+              disconnectCountdown: { ...prev.disconnectCountdown, remaining: Math.max(0, newRemaining) }
+            };
+          });
+        });
+      }, 1000);
+    };
+
+    const handlePlayerReconnected = ({ userId }) => {
+      console.log(`[Context] Player reconnected: ${userId}`);
+      startTransition(() => { // Wrap state update
+        setGameState(prev => {
+          const newCountdown = prev.disconnectCountdown?.userId === userId ? null : prev.disconnectCountdown;
+          if (prev.disconnectCountdown?.userId === userId) {
+             clearCountdownInterval();
+          }
+          return {
+            ...prev,
+            playerStatuses: { ...prev.playerStatuses, [userId]: 'active' },
+            disconnectCountdown: newCountdown
+          };
+        });
+      });
+    };
+
+    const handlePlayerForfeited = ({ userId }) => {
+      console.log(`[Context] Player forfeited: ${userId}`);
+      startTransition(() => { // Wrap state update
+        setGameState(prev => {
+           const newCountdown = prev.disconnectCountdown?.userId === userId ? null : prev.disconnectCountdown;
+           if (prev.disconnectCountdown?.userId === userId) {
+              clearCountdownInterval();
+           }
+          return {
+            ...prev,
+            playerStatuses: { ...prev.playerStatuses, [userId]: 'forfeited' },
+            disconnectCountdown: newCountdown
+          };
+        });
+      });
+    };
+
+    // Register game listeners
+    newSocket.on('game-started', handleGameStarted);
+    newSocket.on('new-round', handleNewRound);
+    newSocket.on('player-guessed', handlePlayerGuessed);
+    newSocket.on('round-summary', handleRoundSummary);
+    newSocket.on('game-summary', handleGameSummary);
+    newSocket.on('game-error', handleGameError);
+    newSocket.on('player-disconnected', handlePlayerDisconnected);
+    newSocket.on('player-reconnected', handlePlayerReconnected);
+    newSocket.on('player-forfeited', handlePlayerForfeited);
+    // --- End Game State Listeners ---
+
+
+    // --- Listener for Rejoin Success (Modified) ---
+    newSocket.on('rejoin-successful', ({ lobbyId, gameState: receivedGameState }) => { // Rename to avoid conflict
+      if (lobbyId && receivedGameState) {
+        console.log(`[MultiplayerContext] Rejoin successful for lobby ${lobbyId}. Applying received game state directly.`);
         sessionStorage.setItem('ag_lobbyId', lobbyId);
-        sessionStorage.setItem('ag_gameActive', 'true'); // If rejoining, game must be active
+        sessionStorage.setItem('ag_gameActive', 'true');
 
-        // Restore game state and chat history
-        setRestoredGameState(gameState); // Store the received game state
-        setChatMessages(gameState.chatHistory || []); // Restore chat history from gameState
-        setCurrentLobbyId(lobbyId);     // Set the lobby ID to trigger UI switch
+        // Directly set the context's game state - REMOVE startTransition for immediate update
+        // startTransition(() => {
+        setGameState(receivedGameState); // Apply the full state
+        setChatMessages(receivedGameState.chatHistory || []); // Restore chat
+        setCurrentLobbyId(lobbyId);
+        // });
+        console.log('[MultiplayerContext] Applied received game state directly (without startTransition).');
       } else {
         console.warn('[MultiplayerContext] Received rejoin-successful event without lobbyId or gameState.');
       }
@@ -181,7 +403,7 @@ export const MultiplayerProvider = ({ children }) => {
     // --- End Rejoin Success Listener ---
 
 
-  }, [user]); // Depend on user
+  }, [user, clearCountdownInterval]); // Add clearCountdownInterval dependency
 
   useEffect(() => {
     console.log('[MultiplayerProvider useEffect] Running effect. User:', user, 'SocketInstance:', socketInstance); // Log inputs
@@ -201,8 +423,12 @@ export const MultiplayerProvider = ({ children }) => {
        // Clear any potentially stale connection state if user logs out
        if (isConnected || isRegistered || socketInstance) {
           console.log("[MultiplayerProvider useEffect] Cleaning up state due to user logout.");
-          setIsConnected(false);
-          setIsRegistered(false);
+          startTransition(() => { // Wrap state updates
+            setIsConnected(false);
+            setIsRegistered(false);
+            // Reset game state on logout too
+            setGameState({ isActive: false, settings: null, round: 0, artifact: null, scores: {}, guesses: {}, players: {}, roundResults: null, finalScores: null, phase: 'lobby', error: null, gameHistory: [], playerStatuses: {}, disconnectCountdown: null, isForfeitWin: false, gameEndedAcknowledged: false });
+          });
           socketInstance?.disconnect(); // Attempt disconnect if instance exists
           setSocketInstance(null);
        }
@@ -228,15 +454,23 @@ export const MultiplayerProvider = ({ children }) => {
         socketInstance.off('lobby-error');
         socketInstance.off('game-error');
         socketInstance.off('chat');
-        // Add cleanup for new listeners
+        // Add cleanup for game listeners
         socketInstance.off('game-started');
+        socketInstance.off('new-round');
+        socketInstance.off('player-guessed');
+        socketInstance.off('round-summary');
         socketInstance.off('game-summary');
+        socketInstance.off('player-disconnected');
+        socketInstance.off('player-reconnected');
+        socketInstance.off('player-forfeited');
         socketInstance.off('rejoin-successful'); // Cleanup rejoin listener
+        // Clear interval on cleanup
+        clearCountdownInterval();
         // DO NOT DISCONNECT HERE: socketInstance.disconnect();
         // DO NOT NULLIFY INSTANCE HERE: setSocketInstance(null);
       }
     };
-  }, [connectSocket, user, socketInstance]); // Dependencies seem correct
+  }, [connectSocket, user, socketInstance, clearCountdownInterval]); // Add clearCountdownInterval
 
   // --- Actions ---
   const createLobby = useCallback((lobbySettings) => {
@@ -288,12 +522,12 @@ export const MultiplayerProvider = ({ children }) => {
     leaveLobby,
     _socket: socketInstance,
     chatMessages,
-    // Expose restored state and clear function
-    restoredGameState,
-    clearRestoredGameState,
+    // Provide gameState directly
+    gameState,
+    // REMOVE restoredGameState and clearRestoredGameState
   };
 
-   console.log('[MultiplayerProvider] Rendering State:', { isConnected, isRegistered, currentLobbyId, hasRestoredState: !!restoredGameState, lobbiesCount: lobbies?.length ?? 'null', chatCount: chatMessages?.length ?? 'null', clientCount: lobbyClients?.length ?? 'null' });
+   console.log('[MultiplayerProvider] Rendering State:', { isConnected, isRegistered, currentLobbyId, gamePhase: gameState.phase, lobbiesCount: lobbies?.length ?? 'null', chatCount: chatMessages?.length ?? 'null', clientCount: lobbyClients?.length ?? 'null' });
 
   return (
     <MultiplayerContext.Provider value={value}>

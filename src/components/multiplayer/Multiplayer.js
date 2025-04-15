@@ -23,7 +23,7 @@ const Multiplayer = () => {
     _socket,
     chatMessages,
     lobbyClients, // Get client list from context
-    restoredGameState // Get restored state from context
+    gameState // Get gameState directly from context now
   } = useMultiplayer();
 
   // Remove the separate useClients hook call
@@ -31,8 +31,9 @@ const Multiplayer = () => {
   // Use lobbyClients from context instead
   const clients = lobbyClients;
 
-  // Get multiplayer game state
-  const { gameState, submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
+  // Get only actions from the simplified useMultiplayerGame hook
+  const { submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
+  // We now use the gameState obtained directly from useMultiplayer() above
 
   // --- Navigation Effect ---
   // Navigate back to lobby list when game is acknowledged as ended
@@ -49,10 +50,11 @@ const Multiplayer = () => {
 
   // Remove the separate cleanup effect
 
-  // Decide what to render: Show Game UI if the hook's state indicates an active game OR if the context has restored state waiting to be applied by the hook.
-  const shouldRenderGameUI = restoredGameState || gameState.isActive || gameState.phase === 'round-summary' || gameState.phase === 'game-summary';
+  // Decide what to render based solely on the gameState from the context/hook
+  const shouldRenderGameUI = gameState.phase === 'guessing' || gameState.phase === 'round-summary' || gameState.phase === 'game-summary';
+  // We rely on the context setting the correct phase upon rejoin.
 
-  console.log('[Multiplayer Render] Deciding UI:', { shouldRenderGameUI, hasRestoredState: !!restoredGameState, gameStateIsActive: gameState.isActive, gameStatePhase: gameState.phase, isNavigating });
+  console.log('[Multiplayer Render] Deciding UI:', { shouldRenderGameUI, gameStatePhase: gameState.phase, isNavigating });
 
   // Re-introduce check to prevent rendering during navigation
   if (isNavigating) {
