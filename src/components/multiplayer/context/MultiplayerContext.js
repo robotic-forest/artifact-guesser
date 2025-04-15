@@ -153,12 +153,11 @@ export const MultiplayerProvider = ({ children }) => {
     newSocket.on('game-summary', () => {
       console.log('[MultiplayerContext] Game summary received, clearing ag_gameActive');
       sessionStorage.removeItem('ag_gameActive');
-      // Also clear lobby ID as the game is over, returning to lobby list implicitly
-      sessionStorage.removeItem('ag_lobbyId');
-      // Reset currentLobbyId state as well
-      startTransition(() => {
-         setCurrentLobbyId(null);
-      });
+      // DO NOT clear lobby ID here. Let the user navigate away from summary first.
+      // sessionStorage.removeItem('ag_lobbyId');
+      // startTransition(() => {
+      //    setCurrentLobbyId(null);
+      // });
     });
     // --- End Game Active State Listeners ---
 

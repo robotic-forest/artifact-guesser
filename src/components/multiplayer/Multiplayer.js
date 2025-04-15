@@ -2,12 +2,16 @@ import { Chat } from "./chat/Chat";
 import { Lobby } from "./Lobby";
 import { Title } from "./Title";
 import { Options } from "./Options";
+import { useEffect, useState } from 'react'; // Import useEffect and useState
+import { useRouter } from 'next/router'; // Import useRouter
 // import { useClients } from "./hooks/useClients"; // Remove this import
 import { useMultiplayer } from "./context/MultiplayerContext"; // Use context hook
 import { useMultiplayerGame } from "./hooks/useMultiplayerGame";
 import { MultiplayerGameUI } from "./MultiplayerGameUI";
 
 const Multiplayer = () => {
+  const router = useRouter(); // Get router instance
+  const [isNavigating, setIsNavigating] = useState(false); // State to track navigation
   // Get state and actions from context
   const {
     lobbies,
@@ -30,11 +34,45 @@ const Multiplayer = () => {
   // Get multiplayer game state
   const { gameState, submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
 
+  // --- Navigation Effect ---
+  // Navigate back to lobby list when game is acknowledged as ended
+  useEffect(() => {
+    // Check if the flag is true and we aren't already navigating
+    if (gameState.gameEndedAcknowledged && !isNavigating) {
+      console.log("[Multiplayer] Game ended acknowledged. Setting navigating flag and navigating back to lobby list.");
+      setIsNavigating(true); // Set navigating flag
+      // Navigate to the lobby list page - DO NOT call leaveLobby here
+      router.push('/multiplayer');
+    }
+    // Only depend on the flag, router, and isNavigating state
+  }, [gameState.gameEndedAcknowledged, router, isNavigating]);
+
+  // --- Cleanup Effect ---
+  // Call leaveLobby when the component unmounts *if* we triggered the navigation
+  useEffect(() => {
+    // Store isNavigating in a ref to access the latest value in the cleanup function
+    const isNavigatingRef = { current: isNavigating };
+    isNavigatingRef.current = isNavigating;
+
+    return () => {
+      // Check the ref's value on unmount
+      if (isNavigatingRef.current) {
+        console.log("[Multiplayer] Unmounting after navigation trigger. Calling leaveLobby.");
+        leaveLobby(); // Call leaveLobby here during cleanup
+      }
+    };
+    // Add leaveLobby to dependencies here so the cleanup function has access to the correct instance
+  }, [isNavigating, leaveLobby]); // Depend on isNavigating and leaveLobby
+
   // Decide what to render: Show Game UI if the hook's state indicates an active game OR if the context has restored state waiting to be applied by the hook.
   const shouldRenderGameUI = restoredGameState || gameState.isActive || gameState.phase === 'round-summary' || gameState.phase === 'game-summary';
 
-  console.log('[Multiplayer Render] Deciding UI:', { shouldRenderGameUI, hasRestoredState: !!restoredGameState, gameStateIsActive: gameState.isActive, gameStatePhase: gameState.phase });
+  console.log('[Multiplayer Render] Deciding UI:', { shouldRenderGameUI, hasRestoredState: !!restoredGameState, gameStateIsActive: gameState.isActive, gameStatePhase: gameState.phase, isNavigating });
 
+  // If navigating, render nothing to prevent flicker/state issues
+  if (isNavigating) {
+    return null; // Or a loading spinner
+  }
 
   if (shouldRenderGameUI) {
     // --- Render Game View ---

@@ -28,6 +28,7 @@ export const useMultiplayerGame = (socket, lobbyId) => { // socket and lobbyId a
     playerStatuses: {}, // { userId: 'active' | 'disconnected' | 'forfeited' } - More explicit status tracking
     disconnectCountdown: null, // { userId, username, remaining: number } | null
     isForfeitWin: false,
+    gameEndedAcknowledged: false, // NEW: Flag to track if user clicked "Return to Lobby"
   });
 
   // Clear countdown interval helper
@@ -306,22 +307,22 @@ export const useMultiplayerGame = (socket, lobbyId) => { // socket and lobbyId a
   // This function might be needed if we add manual progression or returning to lobby.
   const proceedAfterSummary = useCallback(() => {
      if (gameState.phase === 'game-summary') {
-        // Logic to return to lobby view? This might involve state outside this hook.
-         console.log("Returning to lobby view");
-         // Reset game state more completely
+        // User acknowledged the summary. Set flag, reset scores, but keep phase.
+         console.log("Game summary acknowledged by user.");
          setGameState(prev => ({
            ...prev,
-           isActive: false, // Explicitly set game as inactive
-           phase: 'lobby',
-           finalScores: null,
-           roundResults: null,
-           artifact: null,
-           guesses: {}, // Clear guesses too
-           // Keep players and settings? Or reset? Let's keep them for now.
+           gameEndedAcknowledged: true, // Set the flag
+           // Reset transient game data, but keep phase as 'game-summary'
+           // isActive is already false from handleGameSummary
+           finalScores: null, // Clear scores after ack
+           roundResults: null, // Clear last round results
+           artifact: null, // Clear last artifact
+           guesses: {}, // Clear last guesses
+           // Keep players, settings, history, statuses, isForfeitWin for potential display until navigation
          }));
       }
-      // If phase is 'round-summary', backend handles next round automatically.
-  }, [gameState.phase]);
+      // No action needed for 'round-summary' phase, backend handles it.
+  }, [gameState.phase]); // Dependency remains gameState.phase
 
 
   return {
