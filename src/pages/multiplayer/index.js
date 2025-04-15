@@ -3,7 +3,7 @@ import { createStyles } from "@/components/GlobalStyles";
 import { artifactsTheme } from "../artifacts";
 import { LobbyChoice } from "@/components/multiplayer/LobbyChoice";
 import Multiplayer from "@/components/multiplayer/Multiplayer";
-import { MultiplayerProvider, useMultiplayer } from "@/components/multiplayer/context/MultiplayerContext"; // Import Provider and hook
+import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerContext"; // Import Provider and hook
 // Removed incorrect GlobalChatProvider import
 
 // Inner component to access context after provider is mounted

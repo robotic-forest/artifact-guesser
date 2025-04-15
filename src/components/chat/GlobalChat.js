@@ -36,7 +36,7 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
     isInGlobalChat,
     // sendGlobalMessage // We use ChatInput which calls context internally via socket prop
   } = useGlobalChat();
-  const { _socket, isConnected, isRegistered } = useMultiplayer(); // Need socket for ChatInput and connection status
+  const { _socket, isConnected, isRegistered, globalUserCount } = useMultiplayer(); // Need socket, connection status, and user count
   const router = useRouter(); // Get router instance
   const chatDisplayRef = useRef(null); // Ref for auto-scrolling
   const containerRef = useRef(null); // Ref for the main container div
@@ -137,12 +137,23 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
           {/* Show connecting state if applicable */}
           {!canChat && (
              <div className="p-1 px-2 rounded bg-black text-white text-xs italic border border-white/20">
-               Connecting...
-             </div>
-          )}
-           {/* Show message preview only if connected */}
-           {canChat && inactiveMessages.length > 0 && inactiveMessages.map((msg, index) => {
-             // Conditional styling for lobby page
+                Connecting...
+              </div>
+           )}
+            {/* Show user count in inactive view if connected */}
+            {canChat && (
+              <div className={`p-1 px-2 text-xs italic flex items-center ${
+                isLobbyPage
+                  ? 'bg-[var(--backgroundColor)]' // Lobby style
+                  : 'bg-black' // Default style
+              }`}>
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-3 mb-1"></span>
+                {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
+              </div>
+            )}
+             {/* Show message preview only if connected */}
+            {canChat && inactiveMessages.length > 0 && inactiveMessages.map((msg, index) => {
+              // Conditional styling for lobby page
              const lobbyInactiveClasses = "bg-[var(--backgroundColor)] text-black border-black/20";
              const defaultInactiveClasses = "bg-black text-white border-white/20";
              const inactiveMsgClasses = isLobbyPage ? lobbyInactiveClasses : defaultInactiveClasses;
@@ -204,9 +215,15 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
                 </button>
               </Link>
             </div>
-          )}
-          
-          {/* Chat Display Area - Render messages directly */}
+           )}
+
+           {/* User Count Display */}
+           <div className="text-xs text-black/60 mb-1 ml-1 flex items-center">
+             <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+             {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
+           </div>
+
+           {/* Chat Display Area - Render messages directly */}
           <div
             ref={chatDisplayRef}
             className="flex-grow overflow-y-auto text-sm text-black pr-1 rounded p-2 border border-black/10"

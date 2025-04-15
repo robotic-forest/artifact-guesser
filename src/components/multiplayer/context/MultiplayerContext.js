@@ -29,6 +29,7 @@ export const MultiplayerProvider = ({ children }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [socketInstance, setSocketInstance] = useState(null);
   const [lobbyClients, setLobbyClients] = useState([]); // State for clients in the current lobby
+  const [globalUserCount, setGlobalUserCount] = useState(0); // State for global user count
   // REMOVE restoredGameState
   // const [restoredGameState, setRestoredGameState] = useState(null);
 
@@ -171,6 +172,14 @@ export const MultiplayerProvider = ({ children }) => {
     newSocket.on('lobby-error', (error) => { console.error('Lobby Error:', error.message); });
     newSocket.on('game-error', (error) => { console.error('Game Error:', error.message); });
     newSocket.on('chat', (messages) => { console.log('Received chat update:', messages); setChatMessages(messages); });
+
+    // Listener for global user count updates
+    newSocket.on('global-user-count-update', (count) => {
+      console.log(`[Context] Received global user count: ${count}`);
+      startTransition(() => { // Wrap state update
+        setGlobalUserCount(count);
+      });
+    });
 
     // --- Game State Listeners (Moved from useMultiplayerGame) ---
     const handleGameStarted = ({ settings, players }) => {
@@ -522,6 +531,7 @@ export const MultiplayerProvider = ({ children }) => {
     leaveLobby,
     _socket: socketInstance,
     chatMessages,
+    globalUserCount, // Expose global user count
     // Provide gameState directly
     gameState,
     // REMOVE restoredGameState and clearRestoredGameState
