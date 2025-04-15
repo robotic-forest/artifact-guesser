@@ -21,6 +21,7 @@ import { MainHeader } from "../gameui/MainHeader"; // Added Header
 import { AuthHeader } from "../layout/AuthHeader"; // Added Auth Header
 import useUser from "@/hooks/useUser"; // Import useUser hook
 import { Button } from "../buttons/Button";
+import { FixedChat } from "./chat/FixedChat"; // Import FixedChat
 
 // Helper function for styling points
 const getPointsClass = (points) => {
@@ -31,11 +32,8 @@ const getPointsClass = (points) => {
 
 // Simple status component
 const MultiplayerStatus = ({ message }) => {
-  // Base styles
-  let styles = "text-white bg-black/60 p-1 px-2 rounded text-sm";
-  // Desktop: bottom-left positioning
-  styles += " hidden md:block fixed bottom-1 left-1 z-10";
-  // Mobile: will be placed manually in the layout
+  // Base styles for the consolidated status message
+  const styles = "text-white bg-black/60 p-1 px-2 rounded text-sm mb-1 w-full text-center"; // Now a block element above map
 
   return <div className={styles}>{message}</div>;
 };
@@ -69,7 +67,8 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
   // TODO: Enhance styling significantly
   return (
     // Apply lobby background and text color
-    <div className="p-4 min-h-screen flex flex-col items-center justify-center" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}>
+    <div className="p-4 min-h-screen flex flex-col items-center justify-center relative" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}> {/* Added relative positioning */}
+      <FixedChat /> {/* Add FixedChat here */}
       <h2 className="text-2xl font-bold mb-4">Round {round} Results</h2>
 
       {/* Display Correct Answer - Lobby Style Card */}
@@ -159,7 +158,8 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
   // TODO: Enhance styling significantly
   return (
     // Apply lobby background and text color
-    <div className="p-4 min-h-screen flex flex-col items-center justify-center" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}>
+    <div className="p-4 min-h-screen flex flex-col items-center justify-center relative" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}> {/* Added relative positioning */}
+      <FixedChat /> {/* Add FixedChat here */}
       <h2 className="text-3xl font-bold mb-6">{titleText}</h2>
 
       {/* Final Scores - Lobby Style Card */}
@@ -326,8 +326,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
           />
         </MapInteractionCSS>
 
-        {/* Status Display (Desktop) */}
-        <MultiplayerStatus message={statusMessage} />
+        {/* REMOVED Desktop Status Display - Consolidated below */}
+        {/* <MultiplayerStatus message={statusMessage} /> */}
 
         {/* Guessing UI */}
         <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ '@media (max-width: 500px)': { width: '100vw' } }}>
@@ -340,10 +340,10 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
                   <IconButton className='mr-1' onClick={() => setMapValue(v => ({ ...v, scale: v.scale * 1.2, translation: { x: v.translation.x - 50, y: v.translation.y - 50 } }))}><BiPlus /></IconButton>
                   <IconButton onClick={() => setMapValue(v => ({ ...v, scale: v.scale / 1.2, translation: { x: v.translation.x + 50, y: v.translation.y + 50 } }))}><BiMinus /></IconButton>
                </div>
-               {/* Mobile Status */}
-               <div className="text-white bg-black/60 p-1 px-2 rounded text-sm md:hidden">
+               {/* REMOVED Mobile Status - Consolidated above map */}
+               {/* <div className="text-white bg-black/60 p-1 px-2 rounded text-sm md:hidden">
                  {statusMessage}
-               </div>
+               </div> */}
              </div>
              {/* Right Side: Round Info */}
              {/* TODO: Adapt GameInfo for multiplayer scores? */}
@@ -360,6 +360,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              />
              {hoverCountry && !currentUserHasGuessed && <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] absolute bottom-1 right-1 invisible md:visible'>{hoverCountry}</div>}
            </div>
+           {/* Consolidated Status Display (All Screens) */}
+           <MultiplayerStatus message={statusMessage} />
            {/* Date/Country Input & Guess Button */}
            <div className={`w-full ${currentUserHasGuessed ? 'opacity-70' : ''}`}>
              <div className='flex items-center bg-black p-[4.5px_6px_4px] rounded-[3px] border border-white/30 text-sm h-[24px] mb-1 w-full'>
@@ -394,6 +396,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              </div>
            </div>
         </div>
+        <FixedChat /> {/* Add FixedChat here */}
       </div>
     );
   }
