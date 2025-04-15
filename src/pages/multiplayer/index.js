@@ -45,12 +45,9 @@ const MultiplayerPage = () => {
 
   // Wrap the content with the Multiplayer Provider only
   return (
-    <MultiplayerProvider>
-      {/* Removed incorrect GlobalChatProvider wrapper */}
-      <div css={createStyles(artifactsTheme)}>
-        <MultiplayerPageContent />
-      </div>
-    </MultiplayerProvider>
+    <div css={createStyles(artifactsTheme)}>
+      <MultiplayerPageContent />
+    </div>
   );
 };
 
