@@ -11,7 +11,6 @@ import { IconGenerator } from '@/components/art/IconGenerator'
 import { IconButton } from '@/components/buttons/IconButton'
 import { IoMdEye } from 'react-icons/io'
 import { Tag } from '@/components/tag/Tag';
-import { Tooltip } from '@/components/tooltips/Tooltip'; // Import Tooltip
 
 export const gamesTheme =  {
   backgroundColor: '#abb4f5',
@@ -104,11 +103,9 @@ export const GamesDataTable = ({ games, sort, pagination, excludeColumns = [], i
                     <div className='mr-4'>
                       <span className='opacity-70 mr-1'>Score</span>
                       {g.gameType === 'multiplayer' ? (
-                        <Tooltip content={g.allScoresTooltip || ''}>
-                          <span>
-                            <small className='opacity-80'>Top</small> {g.topScore ?? 'N/A'} <small className='opacity-80'>Avg</small> {g.averageScore ?? 'N/A'}
-                          </span>
-                        </Tooltip>
+                        <span title={g.allScoresTooltip || ''}>
+                          <small className='opacity-80'>Top</small> {g.topScore ?? 'N/A'} <small className='opacity-80'>Avg</small> {g.averageScore ?? 'N/A'}
+                        </span>
                       ) : (
                         <b>{g.score ?? 'N/A'}</b>
                       )}
@@ -213,17 +210,18 @@ const gameColumns = [
     selector: row => {
       if (row.gameType === 'multiplayer') {
         return (
-          <Tooltip content={row.players?.join(', ')}>
-            <span css={{ 
-              whiteSpace: 'nowrap', 
-              overflow: 'hidden', 
-              textOverflow: 'ellipsis',
-              maxWidth: '200px', // Adjust as needed
-              display: 'inline-block' 
-            }}>
-              {row.players?.join(', ')}
-            </span>
-          </Tooltip>
+          <span title={row.players?.join(', ')} css={{ 
+            whiteSpace: 'nowrap', 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis',
+            maxWidth: '200px', // Adjust as needed
+            display: 'inline-block' 
+          }}>
+            {row.players?.length > 3
+              ? `${row.players?.length} player(s)`
+              : row.players?.join(', ')
+            }
+          </span>
         );
       } else {
         // Single player
@@ -251,11 +249,9 @@ const gameColumns = [
     selector: row => {
       if (row.gameType === 'multiplayer') {
         return (
-          <Tooltip content={row.allScoresTooltip || ''}>
-            <span>
-              <small className='opacity-80'>Top</small> {row.topScore ?? 'N/A'} <small className='opacity-80'>Avg</small> {row.averageScore ?? 'N/A'}
-            </span>
-          </Tooltip>
+          <span title={row.allScoresTooltip || ''}>
+            <small className='opacity-80'>Top</small> {row.topScore ?? 'N/A'} <small className='opacity-80'>Avg</small> {row.averageScore ?? 'N/A'}
+          </span>
         );
       } else {
         // Single player

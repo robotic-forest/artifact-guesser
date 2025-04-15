@@ -144,7 +144,8 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
 };
 
 // Adapted Game Summary Component
-const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId, onProceed }) => { // Added players and currentUserId props
+// Added gameHistory prop to receive round-by-round data
+const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId, gameHistory, onProceed }) => {
   // Sort scores descending
   const sortedScores = Object.entries(finalScores || {})
     .map(([userId, score]) => ({ userId, score })) // Keep it simple here
@@ -154,6 +155,8 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
   const winner = sortedScores.length > 0 ? sortedScores[0] : null;
   const isCurrentUserWinner = winner && winner.userId === currentUserId;
   const titleText = isCurrentUserWinner ? "You won!" : "You lose!";
+
+  console.log(gameHistory);
 
   // TODO: Enhance styling significantly
   return (
@@ -186,6 +189,20 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
         })}
         {sortedScores.length === 0 && <p className="text-center" css={{ color: 'var(--textColorLowOpacity)'}}>No scores recorded.</p>}
       </div>
+
+      {/* --- Round Summaries Section --- */}
+      {gameHistory && gameHistory.length > 0 && (
+        <div className="mt-8 w-full max-w-2xl"> {/* Increased max-width */}
+          <h3 className="text-xl font-semibold mb-4 text-center" css={{ color: 'var(--textColorLowOpacity)'}}>Round Breakdown</h3>
+          <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-2"> {/* Added scroll */}
+            {gameHistory.map((roundResult) => (
+              <RoundDetail key={roundResult.round} roundData={roundResult} players={players} />
+            ))}
+          </div>
+        </div>
+      )}
+      {/* --- End Round Summaries Section --- */}
+
 
       {/* Use Button component for consistent styling */}
       <Button
@@ -303,10 +320,17 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
   }
  
    if (phase === 'game-summary' && finalScores) {
-      // Pass players object and current user ID to the summary component
-      return <MultiplayerGameSummary finalScores={finalScores} settings={settings} players={players} currentUserId={user?._id} onProceed={proceedAfterSummary} />;
+      // Pass players object, current user ID, AND gameHistory to the summary component
+      return <MultiplayerGameSummary
+        finalScores={finalScores}
+        settings={settings}
+        players={players}
+        currentUserId={user?._id}
+        gameHistory={gameState.gameHistory} // Pass the game history
+        onProceed={proceedAfterSummary}
+      />;
    }
- 
+
   if (phase === 'guessing' && artifact) {
     const imgLength = artifact?.images?.external?.length || 0;
     return (
@@ -415,4 +439,65 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
      </div>
   );
 
+};
+
+// --- Helper Component for Round Detail in Final Summary ---
+// Renders a condensed view of a single round's results
+const RoundDetail = ({ roundData, players }) => {
+  const { round, correctArtifact, results: playerResults } = roundData;
+
+  // Find the highest score for this specific round
+  const highestRoundScore = Math.max(0, ...Object.values(playerResults || {}).map(r => r.roundScore || 0));
+
+  return (
+    // Lobby Style Card for each round
+    <div className="p-3 border rounded" css={{ background: 'var(--backgroundColorBarelyDark)', borderColor: 'var(--backgroundColorSlightlyDark)'}}>
+      <h4 className="text-lg font-semibold mb-2" css={{ color: 'var(--textColorLowOpacity)'}}>Round {round}</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+        {/* Correct Answer Info */}
+        <div className="text-sm">
+          <p className="font-medium mb-1" css={{ color: 'var(--textColorLowOpacity)'}}>Correct:</p>
+          {correctArtifact?.images?.external?.[0] && (
+            <img
+              src={correctArtifact.images.external[0]}
+              alt={correctArtifact.name || 'Artifact'}
+              className="max-h-20 w-auto rounded mb-1" css={{ border: '1px solid var(--backgroundColorSlightlyDark)'}}
+            />
+          )}
+          <p><b>{correctArtifact?.name || 'N/A'}</b></p>
+          <p>{correctArtifact?.time ? formatDate(correctArtifact.time.start) : 'N/A'}{correctArtifact?.time?.end !== correctArtifact?.time?.start ? ` → ${formatDate(correctArtifact.time.end)}` : ''}</p>
+          <p>{correctArtifact?.location ? formatLocation(correctArtifact.location) : 'N/A'}</p>
+        </div>
+        {/* Player Guesses for this round */}
+        <div className="text-sm space-y-1">
+          <p className="font-medium mb-1" css={{ color: 'var(--textColorLowOpacity)'}}>Guesses:</p>
+          {Object.entries(playerResults || {}).map(([userId, result]) => {
+            const isRoundWinner = result.roundScore === highestRoundScore && highestRoundScore > 0;
+            const datePoints = result.score?.datePoints ?? 0;
+            const countryPoints = result.score?.countryPoints ?? 0;
+            const username = players?.[userId]?.username || userId.substring(0, 8) + '...';
+
+            return (
+              <div key={userId} className={`p-1 rounded text-xs ${isRoundWinner ? 'font-semibold' : ''}`} css={{ background: 'var(--backgroundColorSlightlyLight)', border: `1px solid ${isRoundWinner ? '#ffc107' : 'var(--backgroundColorSlightlyDark)'}`, color: isRoundWinner ? 'black' : 'var(--textColor)' }}>
+                <p>{username} {isRoundWinner ? '🏆' : ''} (+{result.roundScore} pts)</p>
+                {result.guess ? (
+                  <>
+                    <p css={{ color: datePoints === 100 ? 'var(--successColor)' : datePoints >= 80 ? 'var(--warningColor)' : 'inherit' }}>
+                      Date: {formatDate(result.guess.date)} ({datePoints} pts)
+                    </p>
+                    <p css={{ color: countryPoints === 100 ? 'var(--successColor)' : countryPoints >= 80 ? 'var(--warningColor)' : 'inherit' }}>
+                      Loc: {result.guess.country} ({countryPoints} pts)
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-gray-400 italic">No guess</p>
+                )}
+              </div>
+            );
+          })}
+          {Object.keys(playerResults || {}).length === 0 && <p className="text-gray-400 italic">No guesses this round.</p>}
+        </div>
+      </div>
+    </div>
+  );
 };

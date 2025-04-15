@@ -16,13 +16,14 @@ export const useMultiplayerGame = (socket, lobbyId) => {
     finalScores: null, // Final scores when game ends
     phase: 'lobby', // 'lobby', 'guessing', 'round-summary', 'game-summary'
     error: null,
+    gameHistory: [], // Initialize gameHistory in state
   });
 
   // Listen for game events
   useEffect(() => {
     if (!socket || !lobbyId) {
       // Reset game state if socket disconnects or user leaves lobby
-      setGameState({ isActive: false, settings: null, round: 0, artifact: null, scores: {}, guesses: {}, players: {}, roundResults: null, finalScores: null, phase: 'lobby', error: null }); // Added reset for guesses, players
+      setGameState({ isActive: false, settings: null, round: 0, artifact: null, scores: {}, guesses: {}, players: {}, roundResults: null, finalScores: null, phase: 'lobby', error: null, gameHistory: [] }); // Added reset for guesses, players, gameHistory
       return;
     }
 
@@ -85,13 +86,14 @@ export const useMultiplayerGame = (socket, lobbyId) => {
       // TODO: Potentially add a timer to automatically move to next round?
     };
 
-    const handleGameSummary = (summary) => { // summary now includes { finalScores, settings, players }
+    const handleGameSummary = (summary) => { // summary now includes { finalScores, settings, players, gameHistory }
       console.log('Game Summary:', summary);
       setGameState(prev => ({
         ...prev,
         isActive: false, // Game is no longer active
         finalScores: summary.finalScores,
         players: summary.players || prev.players, // Store players data
+        gameHistory: summary.gameHistory || [], // Store the received game history
         phase: 'game-summary',
         roundResults: null,
         artifact: null,
