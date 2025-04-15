@@ -147,20 +147,7 @@ const GameUI = () => {
           {/* Conditionally render Global Chat ABOVE map for single-player mobile */}
           {isSinglePlayer && (
             <div className='block md:hidden w-full mb-1'>
-              <GlobalChat notFixed multiplayerButton={(
-                <div className='flex justify-between items-center mb-4'>
-                  <b>Global Chat</b>
-                  <Link href="/multiplayer" passHref>
-                    <button
-                      className="px-3 py-1 rounded text-black text-sm shadow"
-                      style={{ backgroundColor: '#91c3cb' }}
-                      onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click
-                    >
-                      Go to Multiplayer Lobby
-                    </button>
-                  </Link>
-                </div>
-              )} />
+              <GlobalChat notFixed showHeader />
             </div>
           )}
 
@@ -262,18 +249,8 @@ const GameUI = () => {
 
       {/* Conditionally render Global Chat for single-player games (Desktop position) */}
       {isSinglePlayer && (
-        <div className='hidden md:block fixed bottom-3 left-3 z-50'> {/* Hidden on mobile, block on md+ */}
-          {/* Multiplayer Lobby Button */}
-          <Link href="/multiplayer" passHref className='mb-2 ml-1 block'>
-            <button
-              className="mt-2 px-3 py-1 rounded text-black text-sm shadow"
-              style={{ backgroundColor: '#91c3cb' }}
-              onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click
-            >
-              Go to Multiplayer Lobby
-            </button>
-          </Link>
-          <GlobalChat notFixed />
+        <div className='hidden md:block'>
+          <GlobalChat showHeader showInactiveButton />
         </div>
       )}
     </div>

@@ -8,29 +8,26 @@ import { ChatInput } from '@/components/multiplayer/chat/ChatInput'; // Reusing 
 import { createStyles } from '../GlobalStyles';
 import { artifactsTheme } from '@/pages/artifacts';
 
-// Define sand color (consistent with FixedChat)
-const sandColor = '#f4e9d8';
-
-// Basic scrollbar styling (consistent with FixedChat)
 const scrollbarCSS = {
   '&::-webkit-scrollbar': {
-    width: '8px',
+    width: 12,
+    height: 12,
   },
   '&::-webkit-scrollbar-track': {
-    background: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: '4px',
+    background: 'none',
   },
   '&::-webkit-scrollbar-thumb': {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: '4px',
+    backgroundColor: 'var(--textVeryLowOpacity)',
+    borderRadius: 25,
+    border: '5px solid var(--backgroundColorBarelyLight)',
   },
   '&::-webkit-scrollbar-thumb:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'var(--textLowOpacity)',
   }
-};
+}
 
 // Removed className and style props
-export const GlobalChat = ({ notFixed, multiplayerButton }) => {
+export const GlobalChat = ({ notFixed, showHeader, showInactiveButton }) => {
   const [isActive, setIsActive] = useState(false);
   const {
     globalChatMessages,
@@ -118,11 +115,10 @@ export const GlobalChat = ({ notFixed, multiplayerButton }) => {
 
   // Define base classes and styles like FixedChat (Desktop version assumed for GlobalChat)
   const inactiveBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} cursor-pointer`; // Positioned bottom-left
-  const activeBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} rounded-md p-4 shadow-lg flex flex-col outline-none`; // Positioned bottom-left
+  const activeBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} p-3 flex flex-col outline-none`; // Positioned bottom-left
   // Adjust width based on notFixed prop
   const activeStyle = {
-    backgroundColor: sandColor,
-    width: notFixed ? '100%' : '350px', // Full width if notFixed, else 350px
+    width: notFixed ? '100%' : '450px',
     maxHeight: '300px'
   };
 
@@ -137,6 +133,17 @@ export const GlobalChat = ({ notFixed, multiplayerButton }) => {
         onClick={() => canChat && setIsActive(true)} // Activate on click if possible
         title={!canChat ? "Connecting..." : "Click or hover to open chat"} // Tooltip
       >
+        {showInactiveButton && (
+          <Link href="/multiplayer" passHref className='block mb-2 ml-1'>
+            <button
+              className="px-3 py-1 rounded text-black text-sm shadow"
+              style={{ backgroundColor: '#91c3cb' }}
+              onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click
+            >
+              Play Multiplayer
+            </button>
+          </Link>
+        )}
         <div className="flex flex-col items-start">
           {/* Show connecting state if applicable */}
           {!canChat && (
@@ -178,43 +185,65 @@ export const GlobalChat = ({ notFixed, multiplayerButton }) => {
   } else {
     // --- Active View ---
     return (
-      <div
-        css={createStyles(artifactsTheme)}
-        ref={containerRef}
-        tabIndex={-1} // Make focusable for blur/escape
-        className={activeBaseClasses}
-        style={activeStyle}
-        onMouseEnter={handleMouseEnter} // Keep active on mouse enter
-        onMouseLeave={handleMouseLeave} // Deactivate on mouse leave (if not focused)
-        onFocus={handleFocus} // Keep active on focus
-        onBlur={handleBlur} // Deactivate on blur (if focus moves outside)
-        onKeyDown={handleKeyDown} // Handle escape key
-      >
-        {multiplayerButton}
-        
-        {/* Chat Display Area - Render messages directly */}
+      <div css={createStyles(artifactsTheme)}>
         <div
-          ref={chatDisplayRef}
-          className="flex-grow overflow-y-auto mb-2 text-sm text-black pr-1"
-          css={scrollbarCSS}
+          css={{
+            borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+            border: '1px outset',
+            background: 'var(--backgroundColor)',
+          }}
+          ref={containerRef}
+          tabIndex={-1} // Make focusable for blur/escape
+          className={activeBaseClasses}
+          style={activeStyle}
+          onMouseEnter={handleMouseEnter} // Keep active on mouse enter
+          onMouseLeave={handleMouseLeave} // Deactivate on mouse leave (if not focused)
+          onFocus={handleFocus} // Keep active on focus
+          onBlur={handleBlur} // Deactivate on blur (if focus moves outside)
+          onKeyDown={handleKeyDown} // Handle escape key
         >
-          {globalChatMessages.map((c, i) => (
-            <div key={i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }}>
-              {c.username && <b>{c.username}:</b>} {c.message}
+          {showHeader && (
+            <div className='flex justify-between items-center mb-3'>
+              <b className='ml-1'>Global Chat</b>
+              <Link href="/multiplayer" passHref>
+                <button
+                  className="px-3 py-1 rounded text-black text-sm shadow"
+                  style={{ backgroundColor: '#91c3cb' }}
+                  onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click
+                >
+                  Go to Multiplayer Lobby
+                </button>
+              </Link>
             </div>
-          ))}
-           {/* Add a small message if chat history is empty */}
-           {globalChatMessages.length === 0 && (
-             <div className="text-xs italic text-gray-500">Welcome to global chat!</div>
-           )}
+          )}
+          
+          {/* Chat Display Area - Render messages directly */}
+          <div
+            ref={chatDisplayRef}
+            className="flex-grow overflow-y-auto text-sm text-black pr-1 rounded p-2 border border-black/10"
+            css={{
+              ...scrollbarCSS,
+              backgroundColor: 'var(--backgroundColorBarelyLight)', // Use a barely dark background
+            }}
+          >
+            {globalChatMessages.map((c, i) => (
+              <div key={i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }}>
+                {c.username && <b>{c.username}:</b>} {c.message}
+              </div>
+            ))}
+            {/* Add a small message if chat history is empty */}
+            {globalChatMessages.length === 0 && (
+              <div className="text-xs italic text-gray-500">Welcome to global chat!</div>
+            )}
+          </div>
+
+          {/* Chat Input Area */}
+          {/* Pass the shared socket and "global" as lobbyId */}
+          {/* ChatInput uses the socket prop to send messages via the context */}
+          <ChatInput socket={_socket} lobbyId="global" />
+
+          {/* Note: The "Connecting..." overlay is handled in the inactive state now */}
         </div>
-
-        {/* Chat Input Area */}
-        {/* Pass the shared socket and "global" as lobbyId */}
-        {/* ChatInput uses the socket prop to send messages via the context */}
-        <ChatInput socket={_socket} lobbyId="global" />
-
-        {/* Note: The "Connecting..." overlay is handled in the inactive state now */}
       </div>
     );
   }
