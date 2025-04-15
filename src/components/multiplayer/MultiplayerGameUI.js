@@ -446,13 +446,17 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
 
         {/* Guessing UI */}
         <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ '@media (max-width: 500px)': { width: '100vw' } }}>
-          {/* Top Row: Mobile Zoom, Status (Mobile), Round Info */}
-          {/* Player Status (Mobile Only) - Moved above map */}
-          <div className="flex md:hidden flex-wrap justify-center p-1 w-full mb-1"> {/* Simple container for mobile */}
+          {/* Top Row: Mobile Chat, Player Status, Mobile Zoom, Status (Mobile), Round Info */}
+          {/* Mobile Chat (Only visible on mobile) */}
+          <div className="w-full md:hidden"> {/* Container to ensure full width on mobile */}
+             <FixedChat isMobileLayout={true} />
+          </div>
+          {/* Player Status (Mobile Only) */}
+          <div className="flex md:hidden flex-wrap justify-start w-full mb-1">
             <PlayerStatusList players={players} guesses={guesses} playerStatuses={playerStatuses} />
           </div>
            <div className='flex items-end justify-between w-full mb-1'>
-             {/* Left Side: Mobile Zoom + Mobile Status */}
+             {/* Left Side: Mobile Zoom */}
              <div className="flex items-end">
                {/* Mobile Zoom */}
                <div className='flex items-end mr-1' css={{ '@media (min-width: 600px)': { display: 'none' } }}>
@@ -469,7 +473,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
                <MultiplayerStatus message={statusMessage} /> {/* Add Status here */}
                {/* TODO: Adapt GameInfo for multiplayer scores? */}
                {/* <GameInfo /> */}
-               <div className="text-white bg-black/50 p-1 px-2 rounded text-sm">Round: {round} / {settings?.rounds}</div> {/* Adjusted padding */}
+               <div className="text-white bg-black p-1 px-2 rounded text-sm">Round: {round} / {settings?.rounds}</div> {/* Adjusted padding */}
              </div>
            </div>
            {/* Map */}
@@ -523,8 +527,9 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
         <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[0px] left-0 z-10 pointer-events-none">
           <PlayerStatusList players={players} guesses={guesses} playerStatuses={playerStatuses} />
         </div>
-        {/* Render Chat - Conditionally push down if banner is visible */}
-        <FixedChat className={disconnectCountdown ? 'mt-6' : ''} /> {/* Add margin-top if banner shown */}
+        {/* Render Fixed Chat (Desktop Only) - Conditionally push down if banner is visible */}
+        {/* Added hidden md:block */}
+        <FixedChat className={`${disconnectCountdown ? 'mt-6' : ''} hidden md:block`} />
       </div>
     );
   }
