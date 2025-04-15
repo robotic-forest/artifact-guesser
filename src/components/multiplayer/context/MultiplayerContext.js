@@ -163,18 +163,20 @@ export const MultiplayerProvider = ({ children }) => {
     // --- End Game Active State Listeners ---
 
     // --- Listener for Rejoin Success ---
-    // This updates the context's lobby ID AND stores the restored game state
+    // This updates the context's lobby ID, stores the restored game state, AND restores chat history
     newSocket.on('rejoin-successful', ({ lobbyId, gameState }) => { // Destructure gameState
       if (lobbyId && gameState) {
-        console.log(`[MultiplayerContext] Rejoin successful for lobby ${lobbyId}. Storing restored state and updating currentLobbyId.`);
+        console.log(`[MultiplayerContext] Rejoin successful for lobby ${lobbyId}. Storing restored state, chat history, and updating currentLobbyId.`);
         // Update session storage just in case it was missed (should be redundant but safe)
         sessionStorage.setItem('ag_lobbyId', lobbyId);
         sessionStorage.setItem('ag_gameActive', 'true'); // If rejoining, game must be active
-        // Remove startTransition for immediate update
+
+        // Restore game state and chat history
         setRestoredGameState(gameState); // Store the received game state
+        setChatMessages(gameState.chatHistory || []); // Restore chat history from gameState
         setCurrentLobbyId(lobbyId);     // Set the lobby ID to trigger UI switch
       } else {
-        console.warn('[MultiplayerContext] Received rejoin-successful event without lobbyId.');
+        console.warn('[MultiplayerContext] Received rejoin-successful event without lobbyId or gameState.');
       }
     });
     // --- End Rejoin Success Listener ---
