@@ -30,8 +30,10 @@ const DisconnectCountdownBanner = ({ countdownData }) => {
   const { username, remaining } = countdownData;
 
   return (
-    <div className="absolute top-0 left-0 right-0 bg-yellow-500 text-black text-center p-1 text-sm z-20">
-      {username} has disconnected. Forfeiting in {remaining}s...
+    <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-center pointer-events-none">
+      <div className="bg-yellow-500 text-black text-center p-1 text-sm">
+        {username} has disconnected. Forfeiting in {remaining}s...
+      </div>
     </div>
   );
 };
