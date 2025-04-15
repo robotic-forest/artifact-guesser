@@ -23,6 +23,36 @@ import useUser from "@/hooks/useUser"; // Import useUser hook
 import { Button } from "../buttons/Button";
 import { FixedChat } from "./chat/FixedChat"; // Import FixedChat
 
+// --- Player Status Component ---
+const PlayerStatusList = ({ players, guesses }) => {
+  if (!players) return null; // Don't render if no player data
+
+  const playerIds = Object.keys(players);
+
+  return (
+    // Hidden on mobile (screens smaller than md), flex container, wraps items, positioned below chat
+    <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[60px] left-0 z-10 pointer-events-none"> {/* Adjust bottom based on chat height */}
+      {playerIds.map((playerId) => {
+        const player = players[playerId];
+        const hasGuessed = !!guesses?.[playerId];
+        const bgColor = hasGuessed ? 'bg-green-500' : 'bg-black'; // Lighter green
+        const textColor = hasGuessed ? 'text-black' : 'text-white';
+
+        return (
+          <div
+            key={playerId}
+            className={`p-1 px-2 m-1 rounded text-xs font-medium transition-colors duration-500 ease-in-out ${bgColor} ${textColor} border border-white/20`}
+          >
+            {player?.username || 'Player'} {/* Display username */}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+// --- End Player Status Component ---
+
+
 // Helper function for styling points
 const getPointsClass = (points) => {
   if (points === 100) return 'text-green-400 font-bold';
@@ -423,6 +453,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              </div>
            </div>
         </div>
+        {/* Render Player Status below Chat */}
+        <PlayerStatusList players={players} guesses={guesses} />
         <FixedChat /> {/* Add FixedChat here */}
       </div>
     );
