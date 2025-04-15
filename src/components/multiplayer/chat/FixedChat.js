@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'; // Import useRef
 import { useMultiplayer } from '../context/MultiplayerContext';
-// No longer importing ChatDisplay as we'll replicate its core logic
-// import { ChatDisplay } from './ChatDisplay';
 import { ChatInput } from './ChatInput';
 
 // Define sand color (adjust as needed, maybe use a CSS variable if available)
@@ -25,10 +23,11 @@ const scrollbarCSS = {
   }
 };
 
-export const FixedChat = () => {
+export const FixedChat = ({ lightContext = false }) => { // Add lightContext prop, default to false
   const [isActive, setIsActive] = useState(false);
   const { chatMessages, _socket, currentLobbyId } = useMultiplayer();
   const chatDisplayRef = useRef(null); // Ref for auto-scrolling
+  const containerRef = useRef(null); // Ref for the main container div
 
   // Auto-scroll effect for the active chat display
   useEffect(() => {
@@ -42,8 +41,31 @@ export const FixedChat = () => {
 
   // --- Handlers for Active/Inactive State ---
   const handleMouseEnter = () => setIsActive(true);
-  const handleMouseLeave = () => setIsActive(false);
-  // Consider adding onFocus/onBlur for the container/input if needed for accessibility
+  // Only set inactive on mouse leave if the container or its children DON'T have focus
+  const handleMouseLeave = () => {
+    if (containerRef.current && !containerRef.current.contains(document.activeElement)) {
+      setIsActive(false);
+    }
+  };
+
+  // Handle Escape key press to deactivate chat
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      setIsActive(false);
+      // Optionally blur the active element if it's inside the chat
+      if (containerRef.current && containerRef.current.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+    }
+  };
+  const handleFocus = () => setIsActive(true);
+  // Set inactive on blur ONLY if the newly focused element is OUTSIDE the chat container
+  const handleBlur = (event) => {
+    // Check if the relatedTarget (where focus is going) is outside the container
+    if (containerRef.current && !containerRef.current.contains(event.relatedTarget)) {
+      setIsActive(false);
+    }
+  };
 
   // --- Render Logic ---
   if (!currentLobbyId) {
@@ -51,23 +73,35 @@ export const FixedChat = () => {
     return null;
   }
 
+  // --- Separate Views (No Transitions) ---
   if (!isActive) {
     // --- Inactive View ---
     return (
       <div
-        className="fixed bottom-4 left-4 z-50 hidden md:block cursor-pointer" // Changed right-4 to left-4
+        ref={containerRef} // Keep ref for focus checks if needed, though less critical now
+        className="fixed bottom-4 left-4 z-50 hidden md:block cursor-pointer"
         onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave} // Keep leave handler here too
+        // onMouseLeave handled by blur now if focus is primary trigger
       >
-        <div className="flex flex-col items-start"> {/* Changed items-end to items-start */}
+        <div className="flex flex-col items-start">
           {inactiveMessages.map((msg, index) => (
-            <div key={index} className="p-1 bg-black text-white max-w-xs truncate"> {/* Basic styling, max-width, truncate */}
-              {/* Don't show username in inactive view? Or keep it? Let's keep it for now */}
+            <div
+              key={index}
+              className={`p-1 max-w-xs truncate ${ // Conditional styling
+                lightContext
+                  ? 'bg-transparent text-black' // Light context: transparent bg, black text
+                  : 'bg-black text-white' // Dark context: black bg, white text
+              }`}
+            >
               {msg.username && <b>{msg.username}:</b>} {msg.message}
             </div>
           ))}
           {inactiveMessages.length === 0 && (
-             <div className="p-1 bg-black text-white/70 text-xs italic">No recent messages</div>
+             <div className={`p-1 text-xs italic ${ // Conditional styling for 'no messages' text
+                lightContext
+                  ? 'bg-transparent text-black/70'
+                  : 'bg-black text-white/70'
+             }`}>No recent messages</div>
           )}
         </div>
       </div>
@@ -76,10 +110,15 @@ export const FixedChat = () => {
     // --- Active View ---
     return (
       <div
-        className="fixed bottom-6 left-6 z-50 rounded-md p-4 shadow-lg flex flex-col" // Base active styles
+        ref={containerRef} // Add ref to the container
+        tabIndex={-1} // Make container focusable for blur/escape handling
+        className="fixed bottom-6 left-6 z-50 rounded-md p-4 shadow-lg flex flex-col outline-none" // Base active styles, added outline-none
         style={{ backgroundColor: sandColor, width: '350px', height: '300px' }} // Use defined sand color, set dimensions
         onMouseEnter={handleMouseEnter} // Keep hover state active while mouse is inside
         onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus} // Keep focus handler
+        onBlur={handleBlur} // Keep blur handler
+        onKeyDown={handleKeyDown} // Add keydown handler
       >
         {/* Custom Chat Display Area */}
         <div
@@ -96,6 +135,7 @@ export const FixedChat = () => {
         </div>
 
         {/* Chat Input */}
+        {/* Render input directly, focus/blur handled by container */}
         <ChatInput socket={_socket} lobbyId={currentLobbyId} />
       </div>
     );

@@ -30,10 +30,10 @@ const getPointsClass = (points) => {
   return 'text-white'; // Default
 };
 
-// Simple status component
+// Simple status component - Styled to sit next to round indicator
 const MultiplayerStatus = ({ message }) => {
-  // Base styles for the consolidated status message
-  const styles = "text-white bg-black/60 p-1 px-2 rounded text-sm mb-1 w-full text-center"; // Now a block element above map
+  // Inline-block, padding, background, rounded text
+  const styles = "inline-block text-white bg-black p-1 px-2 rounded text-sm mr-2"; // Changed bg-black/60 to bg-black
 
   return <div className={styles}>{message}</div>;
 };
@@ -68,7 +68,7 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
   return (
     // Apply lobby background and text color
     <div className="p-4 min-h-screen flex flex-col items-center justify-center relative" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}> {/* Added relative positioning */}
-      <FixedChat /> {/* Add FixedChat here */}
+      <FixedChat lightContext={true} /> {/* Pass lightContext prop */}
       <h2 className="text-2xl font-bold mb-4">Round {round} Results</h2>
 
       {/* Display Correct Answer - Lobby Style Card */}
@@ -159,7 +159,7 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
   return (
     // Apply lobby background and text color
     <div className="p-4 min-h-screen flex flex-col items-center justify-center relative" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}> {/* Added relative positioning */}
-      <FixedChat /> {/* Add FixedChat here */}
+      <FixedChat lightContext={true} /> {/* Pass lightContext prop */}
       <h2 className="text-3xl font-bold mb-6">{titleText}</h2>
 
       {/* Final Scores - Lobby Style Card */}
@@ -326,7 +326,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
           />
         </MapInteractionCSS>
 
-        {/* REMOVED Desktop Status Display - Consolidated below */}
+        {/* REMOVED Status Display from Top-Left */}
         {/* <MultiplayerStatus message={statusMessage} /> */}
 
         {/* Guessing UI */}
@@ -345,13 +345,16 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
                  {statusMessage}
                </div> */}
              </div>
-             {/* Right Side: Round Info */}
-             {/* TODO: Adapt GameInfo for multiplayer scores? */}
-             {/* <GameInfo /> */}
-             <div className="text-white bg-black/50 p-1 rounded">Round: {round} / {settings?.rounds}</div>
+             {/* Right Side: Status + Round Info */}
+             <div className="flex items-center"> {/* Wrap Status and Round in a flex container */}
+               <MultiplayerStatus message={statusMessage} /> {/* Add Status here */}
+               {/* TODO: Adapt GameInfo for multiplayer scores? */}
+               {/* <GameInfo /> */}
+               <div className="text-white bg-black/50 p-1 px-2 rounded text-sm">Round: {round} / {settings?.rounds}</div> {/* Adjusted padding */}
+             </div>
            </div>
            {/* Map */}
-           <div className={`bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full ${currentUserHasGuessed ? 'opacity-70 cursor-not-allowed' : ''}`} css={{ height: 200, '@media (max-width: 500px)': { height: 150 } }}>
+           <div className={`bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full ${currentUserHasGuessed ? 'filter brightness-75 cursor-not-allowed' : ''}`} css={{ height: 200, '@media (max-width: 500px)': { height: 150 } }}> {/* Replaced opacity-70 */}
              <Map
                setHover={setHoverCountry}
                // Disable map clicks if user has guessed
@@ -360,11 +363,11 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              />
              {hoverCountry && !currentUserHasGuessed && <div className='bg-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] absolute bottom-1 right-1 invisible md:visible'>{hoverCountry}</div>}
            </div>
-           {/* Consolidated Status Display (All Screens) */}
-           <MultiplayerStatus message={statusMessage} />
+           {/* REMOVED Status Display from here - Moved above */}
+           {/* <MultiplayerStatus message={statusMessage} /> */}
            {/* Date/Country Input & Guess Button */}
-           <div className={`w-full ${currentUserHasGuessed ? 'opacity-70' : ''}`}>
-             <div className='flex items-center bg-black p-[4.5px_6px_4px] rounded-[3px] border border-white/30 text-sm h-[24px] mb-1 w-full'>
+           <div className={`w-full ${currentUserHasGuessed ? 'filter brightness-75' : ''}`}> {/* Replaced opacity-70 */}
+             <div className={`flex items-center bg-black p-[4.5px_6px_4px] rounded-[3px] border border-white/30 text-sm h-[24px] mb-1 w-full ${currentUserHasGuessed ? 'cursor-not-allowed' : ''}`}> {/* Added cursor-not-allowed here */}
                <Range
                  min={modeInfo?.type === 'Era' ? modeInfo.start : -3000}
                  max={modeInfo?.type === 'Era' ? modeInfo.end : new Date().getFullYear()}
@@ -375,20 +378,20 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
                  // onKeyDown={/* Multiplayer doesn't use nextStepKey */}
                />
              </div>
-             <div className='flex'>
-               <div className={`bg-[#69aacb] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] mr-1 ${currentUserHasGuessed ? 'cursor-not-allowed' : ''}`} css={{ flexGrow: 1 }}>
+             <div className={`flex ${currentUserHasGuessed ? 'cursor-not-allowed' : ''}`}> {/* Added cursor-not-allowed here */}
+               <div className={`bg-[#69aacb] text-black p-[2px_8px_4px] rounded-[3px] text-sm h-[24px] mr-1`} css={{ flexGrow: 1 }}> {/* Removed conditional class */}
                  {selectedCountry ? <b>{selectedCountry}</b> : <span className='text-black/60'>No country selected</span>}
                </div>
                <EditableDate
                  value={selectedDate}
                  onChange={setSelectedDate}
                  disabled={currentUserHasGuessed} // Disable date input
-                 className={`mr-1 bg-[#90d6f8] text-black rounded-[3px] ${currentUserHasGuessed ? 'cursor-not-allowed opacity-70' : ''}`}
+                 className={`mr-1 bg-[#90d6f8] text-black rounded-[3px] ${currentUserHasGuessed ? 'cursor-not-allowed' : ''}`} // Removed opacity-70
                />
                <GameButton
                  onClick={handleGuessSubmit}
                  disabled={currentUserHasGuessed} // Disable button
-                  className={`w-[82px] justify-center ${currentUserHasGuessed ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`w-[82px] justify-center ${currentUserHasGuessed ? 'cursor-not-allowed' : ''}`} // Removed opacity-70
                   css={{ background: '#7dddc3', color: '#000000', ':hover': { background: currentUserHasGuessed ? '#7dddc3' : '#40f59a' } }} // Prevent hover effect when disabled
                 >
                   <IoMdEye className='mr-2' /> Guess
