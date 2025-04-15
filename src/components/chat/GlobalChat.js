@@ -30,7 +30,7 @@ const scrollbarCSS = {
 };
 
 // Removed className and style props
-export const GlobalChat = ({ notFixed }) => {
+export const GlobalChat = ({ notFixed, multiplayerButton }) => {
   const [isActive, setIsActive] = useState(false);
   const {
     globalChatMessages,
@@ -117,9 +117,14 @@ export const GlobalChat = ({ notFixed }) => {
   const isLobbyPage = router.pathname === '/multiplayer';
 
   // Define base classes and styles like FixedChat (Desktop version assumed for GlobalChat)
-  const inactiveBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} hidden md:block cursor-pointer`; // Positioned bottom-left
+  const inactiveBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} cursor-pointer`; // Positioned bottom-left
   const activeBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} rounded-md p-4 shadow-lg flex flex-col outline-none`; // Positioned bottom-left
-  const activeStyle = { backgroundColor: sandColor, width: '350px', maxHeight: '300px' };
+  // Adjust width based on notFixed prop
+  const activeStyle = {
+    backgroundColor: sandColor,
+    width: notFixed ? '100%' : '350px', // Full width if notFixed, else 350px
+    maxHeight: '300px'
+  };
 
   // --- Active/Inactive Toggle ---
   if (!isActive) {
@@ -185,6 +190,8 @@ export const GlobalChat = ({ notFixed }) => {
         onBlur={handleBlur} // Deactivate on blur (if focus moves outside)
         onKeyDown={handleKeyDown} // Handle escape key
       >
+        {multiplayerButton}
+        
         {/* Chat Display Area - Render messages directly */}
         <div
           ref={chatDisplayRef}

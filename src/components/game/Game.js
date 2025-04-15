@@ -144,6 +144,26 @@ const GameUI = () => {
         <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
           '@media (max-width: 500px)': { width: '100vw' }
         }}>
+          {/* Conditionally render Global Chat ABOVE map for single-player mobile */}
+          {isSinglePlayer && (
+            <div className='block md:hidden w-full mb-1'>
+              <GlobalChat notFixed multiplayerButton={(
+                <div className='flex justify-between items-center mb-4'>
+                  <b>Global Chat</b>
+                  <Link href="/multiplayer" passHref>
+                    <button
+                      className="px-3 py-1 rounded text-black text-sm shadow"
+                      style={{ backgroundColor: '#91c3cb' }}
+                      onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click
+                    >
+                      Go to Multiplayer Lobby
+                    </button>
+                  </Link>
+                </div>
+              )} />
+            </div>
+          )}
+
           <div className='flex items-end mb-1'>
             <div
               className='flex items-end'
@@ -180,6 +200,7 @@ const GameUI = () => {
             </div>
             <GameInfo />
           </div>
+
           <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full' css={{
             height: 200,
             '@media (max-width: 500px)': { height: 150 }
@@ -239,9 +260,9 @@ const GameUI = () => {
         </div>
       )}
 
-      {/* Conditionally render Global Chat for single-player games */}
+      {/* Conditionally render Global Chat for single-player games (Desktop position) */}
       {isSinglePlayer && (
-        <div className='fixed bottom-3 left-3 z-50'>
+        <div className='hidden md:block fixed bottom-3 left-3 z-50'> {/* Hidden on mobile, block on md+ */}
           {/* Multiplayer Lobby Button */}
           <Link href="/multiplayer" passHref className='mb-2 ml-1 block'>
             <button
