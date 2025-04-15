@@ -48,7 +48,7 @@ const PlayerStatusList = ({ players, guesses, playerStatuses }) => {
 
   return (
     // Hidden on mobile (screens smaller than md), flex container, wraps items, positioned below chat
-    <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[60px] left-0 z-10 pointer-events-none"> {/* Adjust bottom based on chat height */}
+    <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[0px] left-0 z-10 pointer-events-none"> {/* Adjust bottom based on chat height */}
       {playerIds.map((playerId) => {
         const player = players[playerId];
         const status = playerStatuses?.[playerId] || player?.status || 'active'; // Default to active if status missing
