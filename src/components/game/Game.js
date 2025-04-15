@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"; // Keep useEffect
 import { MapInteractionCSS } from 'react-map-interaction'
 import { AuthHeader } from "@/components/layout/AuthHeader"
 import { IoMdEye } from "react-icons/io"
@@ -21,6 +21,8 @@ import { MainHeader } from "../gameui/MainHeader"
 import { ImageView, defaultMapValue } from "../artifacts/Artifact"
 import useMeasure from "react-use-measure"
 import { modes } from "../gameui/ModeButton"
+import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
+import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -50,8 +52,10 @@ const GameUI = () => {
     nextStepKey,
     handleArtifactLoadError
   } = useGame()
-  
-  const [ref, bounds] = useMeasure(); // Added semicolon
+  // Use Global Chat hook
+  const { joinGlobalChat, leaveGlobalChat } = useGlobalChat();
+
+  const [ref, bounds] = useMeasure();
   const { height: windowHeight, width: windowWidth } = bounds
   const [value, setValue] = useState(defaultMapValue)
   const [hoverCountry, setHoverCountry] = useState()
@@ -62,6 +66,26 @@ const GameUI = () => {
 
     return () => document.body.style.position = "static"
   }, [isViewingSummary, guessed])
+
+  // Determine if it's a single-player game
+  const isSinglePlayer = game?.gameType !== 'multiplayer';
+
+  // Join/Leave global chat room based on single-player status
+  useEffect(() => {
+    if (isSinglePlayer) {
+      console.log('[GameUI] Joining global chat (single-player)...');
+      joinGlobalChat();
+      return () => {
+        console.log('[GameUI] Leaving global chat (single-player)...');
+        leaveGlobalChat();
+      };
+    }
+    // If not single player, ensure we leave (e.g., if game type changes unexpectedly)
+    // This might be redundant if leaveGlobalChat is called elsewhere, but safe.
+    // else {
+    //   leaveGlobalChat();
+    // }
+  }, [isSinglePlayer, joinGlobalChat, leaveGlobalChat]);
 
   const modeInfo = game?.mode ? modes[game.mode] : null
 
@@ -212,6 +236,15 @@ const GameUI = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Conditionally render Global Chat for single-player games */}
+      {isSinglePlayer && (
+        <GlobalChat
+          className="fixed bottom-6 left-6 z-50" // Removed 'hidden md:block'
+          // Adjust style if needed for game view
+          // style={{ width: '300px', height: '250px' }}
+        />
       )}
     </div>
   )

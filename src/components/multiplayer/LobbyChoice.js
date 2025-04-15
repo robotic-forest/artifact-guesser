@@ -5,8 +5,11 @@ import { gamesTheme } from "@/pages/games";
 import { PulseLoader } from "react-spinners";
 import { Tag } from "../tag/Tag";
 import { modes } from "../gameui/ModeButton";
+import { useEffect } from "react"; // Import useEffect
 import { MasonryLayout } from "../layout/MasonryLayout";
 import { useMultiplayer } from "./context/MultiplayerContext"; // Import the context hook
+import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
+import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
 import { Button } from "../buttons/Button";
 
 // Reusable button component for selecting lobby type
@@ -36,6 +39,19 @@ const LobbyTypeButton = ({ className, theme, disabled, ...p }) => {
 export const LobbyChoice = () => {
   // Use the useMultiplayer context hook
   const { lobbies, createLobby, joinLobby, isConnected, isRegistered } = useMultiplayer();
+  // Use the useGlobalChat context hook
+  const { joinGlobalChat, leaveGlobalChat } = useGlobalChat();
+
+  // Join/Leave global chat room when this component mounts/unmounts
+  useEffect(() => {
+    console.log('[LobbyChoice] Joining global chat...');
+    joinGlobalChat();
+    // Cleanup function to leave when component unmounts
+    return () => {
+      console.log('[LobbyChoice] Leaving global chat...');
+      leaveGlobalChat();
+    };
+  }, [joinGlobalChat, leaveGlobalChat]); // Dependencies
 
   // Default settings for creating a lobby from this view
   // TODO: Allow user to configure these before creating?
@@ -170,6 +186,12 @@ export const LobbyChoice = () => {
           </div>
         </div>
       </div>
+      {/* Render Global Chat fixed in bottom-left */}
+      <GlobalChat
+        className="fixed bottom-6 left-6 z-50 hidden md:block" // Use similar positioning as FixedChat (desktop only for now)
+        // Add any specific style overrides if needed
+        // style={{ width: '300px', height: '250px' }}
+      />
     </div>
   );
 };

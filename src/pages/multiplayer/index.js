@@ -4,6 +4,7 @@ import { artifactsTheme } from "../artifacts";
 import { LobbyChoice } from "@/components/multiplayer/LobbyChoice";
 import Multiplayer from "@/components/multiplayer/Multiplayer";
 import { MultiplayerProvider, useMultiplayer } from "@/components/multiplayer/context/MultiplayerContext"; // Import Provider and hook
+// Removed incorrect GlobalChatProvider import
 
 // Inner component to access context after provider is mounted
 const MultiplayerPageContent = () => {
@@ -42,9 +43,10 @@ const MultiplayerPageContent = () => {
 const MultiplayerPage = () => {
   useTheme(artifactsTheme);
 
-  // Wrap the content with the Provider
+  // Wrap the content with the Multiplayer Provider only
   return (
     <MultiplayerProvider>
+      {/* Removed incorrect GlobalChatProvider wrapper */}
       <div css={createStyles(artifactsTheme)}>
         <MultiplayerPageContent />
       </div>
