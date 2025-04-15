@@ -27,7 +27,7 @@ const scrollbarCSS = {
 }
 
 // Removed className and style props
-export const GlobalChat = ({ notFixed, showHeader, showInactiveButton }) => {
+export const GlobalChat = ({ notFixed, showHeader }) => {
   const [isActive, setIsActive] = useState(false);
   const {
     globalChatMessages,
@@ -133,17 +133,6 @@ export const GlobalChat = ({ notFixed, showHeader, showInactiveButton }) => {
         onClick={() => canChat && setIsActive(true)} // Activate on click if possible
         title={!canChat ? "Connecting..." : "Click or hover to open chat"} // Tooltip
       >
-        {showInactiveButton && (
-          <Link href="/multiplayer" passHref className='block mb-2 ml-1'>
-            <button
-              className="px-3 py-1 rounded text-black text-sm shadow"
-              style={{ backgroundColor: '#91c3cb' }}
-              onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click
-            >
-              Play Multiplayer
-            </button>
-          </Link>
-        )}
         <div className="flex flex-col items-start">
           {/* Show connecting state if applicable */}
           {!canChat && (

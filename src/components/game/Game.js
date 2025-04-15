@@ -250,7 +250,7 @@ const GameUI = () => {
       {/* Conditionally render Global Chat for single-player games (Desktop position) */}
       {isSinglePlayer && (
         <div className='hidden md:block'>
-          <GlobalChat showHeader showInactiveButton />
+          <GlobalChat showHeader />
         </div>
       )}
     </div>
