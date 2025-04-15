@@ -36,6 +36,26 @@ export const FixedChat = ({ lightContext = false }) => { // Add lightContext pro
     }
   }, [chatMessages, isActive]); // Scroll when messages change or chat becomes active
 
+  // Effect to handle clicks outside the component
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // If chat is active and the click is outside the container ref
+      if (isActive && containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsActive(false);
+      }
+    };
+
+    // Add listener if chat is active
+    if (isActive) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup: remove listener when component unmounts or isActive becomes false
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isActive]); // Re-run this effect when isActive changes
+
   // Filter messages for inactive view (last 3 user messages)
   const inactiveMessages = chatMessages.filter(msg => msg.username).slice(-3);
 

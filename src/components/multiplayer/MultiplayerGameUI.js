@@ -337,8 +337,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              <div className="flex items-end">
                {/* Mobile Zoom */}
                <div className='flex items-end mr-1' css={{ '@media (min-width: 600px)': { display: 'none' } }}>
-                  <IconButton className='mr-1' onClick={() => setMapValue(v => ({ ...v, scale: v.scale * 1.2, translation: { x: v.translation.x - 50, y: v.translation.y - 50 } }))}><BiPlus /></IconButton>
-                  <IconButton onClick={() => setMapValue(v => ({ ...v, scale: v.scale / 1.2, translation: { x: v.translation.x + 50, y: v.translation.y + 50 } }))}><BiMinus /></IconButton>
+                  <IconButton className='mr-1 bg-[#000000_!important] text-[#ffffff_!important]' onClick={() => setMapValue(v => ({ ...v, scale: v.scale * 1.2, translation: { x: v.translation.x - 50, y: v.translation.y - 50 } }))}><BiPlus /></IconButton>
+                  <IconButton className='bg-[#000000_!important] text-[#ffffff_!important]' onClick={() => setMapValue(v => ({ ...v, scale: v.scale / 1.2, translation: { x: v.translation.x + 50, y: v.translation.y + 50 } }))}><BiMinus /></IconButton>
                </div>
                {/* REMOVED Mobile Status - Consolidated above map */}
                {/* <div className="text-white bg-black/60 p-1 px-2 rounded text-sm md:hidden">

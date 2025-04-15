@@ -80,7 +80,7 @@ const InputStyles = styled.div`
       height: 7px;
       width: 7px;
       border-radius: 50%;
-      background: var(--textColor);
+      background: white;
     }
 
     &::before {
@@ -98,8 +98,8 @@ const InputStyles = styled.div`
     height: 15px;
     width: 15px;
     border-radius: 50px;
-    background: var(--backgroundColor);
-    border: 1px solid var(--textColor);
+    background: black;
+    border: 1px solid white;
     cursor: pointer;
     box-shadow: 0 0 0 1px transparent;
     margin: 0 0px 0 1px;
