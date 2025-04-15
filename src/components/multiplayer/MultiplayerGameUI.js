@@ -357,33 +357,6 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
     // Reset status message potentially if needed when round changes?
   }, [artifact, phase, modeInfo, user?._id]); // Depend on user._id
 
-  // --- Leave Confirmation Effect ---
-  useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      if (isActive) { // Check if game is active using state from hook
-        event.preventDefault(); // Standard practice
-        event.returnValue = 'Are you sure you want to leave? You will forfeit the game.'; // Message shown by browser
-        return event.returnValue; // For some older browsers
-      }
-    };
-
-    if (isActive) {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-      console.log("Added beforeunload listener for active game.");
-    } else {
-      // Ensure listener is removed if game becomes inactive while component is mounted
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      console.log("Removed beforeunload listener (game inactive or cleanup).");
-    }
-
-    // Cleanup listener on component unmount or when isActive changes
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      console.log("Cleaned up beforeunload listener.");
-    };
-  }, [isActive]); // Re-run effect if game active state changes
-  // --- End Leave Confirmation Effect ---
-
 
   // Handle image loading state
   const handleImageLoadComplete = (imgBounds) => {
