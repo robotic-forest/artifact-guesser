@@ -23,6 +23,7 @@ import useMeasure from "react-use-measure"
 import { modes } from "../gameui/ModeButton"
 import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
 import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
+import Link from "next/link";
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -240,11 +241,19 @@ const GameUI = () => {
 
       {/* Conditionally render Global Chat for single-player games */}
       {isSinglePlayer && (
-        <GlobalChat
-          className="fixed bottom-6 left-6 z-50" // Removed 'hidden md:block'
-          // Adjust style if needed for game view
-          // style={{ width: '300px', height: '250px' }}
-        />
+        <div className='fixed bottom-3 left-3 z-50'>
+          {/* Multiplayer Lobby Button */}
+          <Link href="/multiplayer" passHref className='mb-2 ml-1 block'>
+            <button
+              className="mt-2 px-3 py-1 rounded text-black text-sm shadow"
+              style={{ backgroundColor: '#91c3cb' }}
+              onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click
+            >
+              Go to Multiplayer Lobby
+            </button>
+          </Link>
+          <GlobalChat notFixed />
+        </div>
       )}
     </div>
   )

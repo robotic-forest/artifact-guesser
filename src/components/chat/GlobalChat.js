@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'; // Import hooks
 import { useRouter } from 'next/router'; // Import useRouter
+import Link from 'next/link'; // Import Link
 import { useGlobalChat } from '@/contexts/GlobalChatContext';
 import { useMultiplayer } from '@/components/multiplayer/context/MultiplayerContext';
 // ChatDisplay is not directly used anymore, rendering messages directly
@@ -29,7 +30,7 @@ const scrollbarCSS = {
 };
 
 // Removed className and style props
-export const GlobalChat = () => {
+export const GlobalChat = ({ notFixed }) => {
   const [isActive, setIsActive] = useState(false);
   const {
     globalChatMessages,
@@ -116,8 +117,8 @@ export const GlobalChat = () => {
   const isLobbyPage = router.pathname === '/multiplayer';
 
   // Define base classes and styles like FixedChat (Desktop version assumed for GlobalChat)
-  const inactiveBaseClasses = "fixed bottom-3 left-3 z-50 hidden md:block cursor-pointer"; // Positioned bottom-left
-  const activeBaseClasses = "fixed bottom-3 left-3 z-50 rounded-md p-4 shadow-lg flex flex-col outline-none"; // Positioned bottom-left
+  const inactiveBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} hidden md:block cursor-pointer`; // Positioned bottom-left
+  const activeBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} rounded-md p-4 shadow-lg flex flex-col outline-none`; // Positioned bottom-left
   const activeStyle = { backgroundColor: sandColor, width: '350px', maxHeight: '300px' };
 
   // --- Active/Inactive Toggle ---
@@ -149,7 +150,7 @@ export const GlobalChat = () => {
                <div
                  key={index}
                  // Apply conditional styles
-                 className={`p-1 px-2 max-w-xs truncate text-sm rounded mb-1 ${inactiveMsgClasses}`}
+                 className={`p-1 px-2 text-sm ${inactiveMsgClasses}`}
                >
                  {msg.username && <b>{msg.username}:</b>} {msg.message}
                </div>
@@ -165,6 +166,7 @@ export const GlobalChat = () => {
                 No recent messages
               </div>
           )}
+          
         </div>
       </div>
     );
