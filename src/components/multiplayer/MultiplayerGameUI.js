@@ -156,8 +156,6 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
   const isCurrentUserWinner = winner && winner.userId === currentUserId;
   const titleText = isCurrentUserWinner ? "You won!" : "You lose!";
 
-  console.log(gameHistory);
-
   // TODO: Enhance styling significantly
   return (
     // Apply lobby background and text color
@@ -190,6 +188,23 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
         {sortedScores.length === 0 && <p className="text-center" css={{ color: 'var(--textColorLowOpacity)'}}>No scores recorded.</p>}
       </div>
 
+      {/* --- Return to Lobby Button (Moved Up) --- */}
+      <Button
+        onClick={onProceed}
+        className="mt-4 mb-6" // Added margin-bottom
+        size='lg'
+        css={{
+          background: 'var(--primaryColor)',
+          '&:hover': { background: 'var(--primaryColorLight)', boxShadow: 'none' },
+          border: '1px outset', borderColor: '#ffffff77 #00000077 #00000077 #ffffff77', // Keep consistent border
+          boxShadow: 'none', borderRadius: 0 // Keep consistent style
+        }}
+      >
+        Return to Lobby
+      </Button>
+      {/* --- End Return to Lobby Button --- */}
+
+
       {/* --- Round Summaries Section --- */}
       {gameHistory && gameHistory.length > 0 && (
         <div className="mt-8 w-full max-w-2xl"> {/* Increased max-width */}
@@ -203,21 +218,6 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
       )}
       {/* --- End Round Summaries Section --- */}
 
-
-      {/* Use Button component for consistent styling */}
-      <Button
-        onClick={onProceed}
-        className="mt-4"
-        size='lg'
-        css={{
-          background: 'var(--primaryColor)',
-          '&:hover': { background: 'var(--primaryColorLight)', boxShadow: 'none' },
-          border: '1px outset', borderColor: '#ffffff77 #00000077 #00000077 #ffffff77', // Keep consistent border
-          boxShadow: 'none', borderRadius: 0 // Keep consistent style
-        }}
-      >
-        Return to Lobby
-      </Button>
     </div>
   );
 };
