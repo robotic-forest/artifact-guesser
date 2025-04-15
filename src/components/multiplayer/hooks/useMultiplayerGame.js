@@ -307,18 +307,12 @@ export const useMultiplayerGame = (socket, lobbyId) => { // socket and lobbyId a
   // This function might be needed if we add manual progression or returning to lobby.
   const proceedAfterSummary = useCallback(() => {
      if (gameState.phase === 'game-summary') {
-        // User acknowledged the summary. Set flag, reset scores, but keep phase.
-         console.log("Game summary acknowledged by user.");
+        // User acknowledged the summary. Only set the flag. Keep phase and scores.
+         console.log("Game summary acknowledged by user. Setting flag.");
          setGameState(prev => ({
            ...prev,
            gameEndedAcknowledged: true, // Set the flag
-           // Reset transient game data, but keep phase as 'game-summary'
-           // isActive is already false from handleGameSummary
-           finalScores: null, // Clear scores after ack
-           roundResults: null, // Clear last round results
-           artifact: null, // Clear last artifact
-           guesses: {}, // Clear last guesses
-           // Keep players, settings, history, statuses, isForfeitWin for potential display until navigation
+           // DO NOT clear finalScores or other state here. Let navigation handle unmounting.
          }));
       }
       // No action needed for 'round-summary' phase, backend handles it.
