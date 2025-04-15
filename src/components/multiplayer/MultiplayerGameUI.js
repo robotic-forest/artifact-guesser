@@ -47,8 +47,7 @@ const PlayerStatusList = ({ players, guesses, playerStatuses }) => {
   const playerIds = Object.keys(players);
 
   return (
-    // Hidden on mobile (screens smaller than md), flex container, wraps items, positioned below chat
-    <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[0px] left-0 z-10 pointer-events-none"> {/* Adjust bottom based on chat height */}
+    <>
       {playerIds.map((playerId) => {
         const player = players[playerId];
         const status = playerStatuses?.[playerId] || player?.status || 'active'; // Default to active if status missing
@@ -80,7 +79,7 @@ const PlayerStatusList = ({ players, guesses, playerStatuses }) => {
           </div>
         );
       })}
-    </div>
+    </>
   );
 };
 // --- End Player Status Component ---
@@ -448,6 +447,10 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
         {/* Guessing UI */}
         <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ '@media (max-width: 500px)': { width: '100vw' } }}>
           {/* Top Row: Mobile Zoom, Status (Mobile), Round Info */}
+          {/* Player Status (Mobile Only) - Moved above map */}
+          <div className="flex md:hidden flex-wrap justify-center p-1 w-full mb-1"> {/* Simple container for mobile */}
+            <PlayerStatusList players={players} guesses={guesses} playerStatuses={playerStatuses} />
+          </div>
            <div className='flex items-end justify-between w-full mb-1'>
              {/* Left Side: Mobile Zoom + Mobile Status */}
              <div className="flex items-end">
@@ -515,8 +518,11 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              </div>
            </div>
         </div>
-        {/* Render Player Status below Chat - Pass playerStatuses */}
-        <PlayerStatusList players={players} guesses={guesses} playerStatuses={playerStatuses} />
+        {/* Render Player Status below Chat (Desktop Only) - Pass playerStatuses */}
+        {/* This instance remains absolutely positioned at the bottom but is hidden on mobile */}
+        <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[0px] left-0 z-10 pointer-events-none">
+          <PlayerStatusList players={players} guesses={guesses} playerStatuses={playerStatuses} />
+        </div>
         {/* Render Chat - Conditionally push down if banner is visible */}
         <FixedChat className={disconnectCountdown ? 'mt-6' : ''} /> {/* Add margin-top if banner shown */}
       </div>
