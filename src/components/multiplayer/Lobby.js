@@ -1,6 +1,7 @@
 import { IconGenerator } from "../art/IconGenerator";
 import { Button } from "../buttons/Button";
 import { BiExit } from "react-icons/bi";
+import { GlobalChat } from "../chat/GlobalChat";
 
 // Helper to capitalize strings
 const capitalize = s => (s && typeof s === 'string' ? s[0].toUpperCase() + s.slice(1) : '');
@@ -75,6 +76,10 @@ export const Lobby = ({ clients, lobbies, currentLobbyId, joinLobby, leaveLobby 
           {(!clients || clients.length === 0) && (
              <div className='p-2 text-xs' css={{ color: 'var(--textLowOpacity)' }}>Waiting for players...</div>
           )}
+        </div>
+        {/* Add Global Chat below the player list */}
+        <div className="mt-4"> {/* Add some margin */}
+          <GlobalChat />
         </div>
       </div>
     );
