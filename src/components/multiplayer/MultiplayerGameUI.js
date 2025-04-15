@@ -23,9 +23,25 @@ import useUser from "@/hooks/useUser"; // Import useUser hook
 import { Button } from "../buttons/Button";
 import { FixedChat } from "./chat/FixedChat"; // Import FixedChat
 
+// --- Disconnect Countdown Banner ---
+const DisconnectCountdownBanner = ({ countdownData }) => {
+  if (!countdownData) return null;
+
+  const { username, remaining } = countdownData;
+
+  return (
+    <div className="absolute top-0 left-0 right-0 bg-yellow-500 text-black text-center p-1 text-sm z-20">
+      {username} has disconnected. Forfeiting in {remaining}s...
+    </div>
+  );
+};
+// --- End Disconnect Countdown Banner ---
+
+
 // --- Player Status Component ---
-const PlayerStatusList = ({ players, guesses }) => {
-  if (!players) return null; // Don't render if no player data
+// Updated to use playerStatuses and show different colors
+const PlayerStatusList = ({ players, guesses, playerStatuses }) => {
+  if (!players || !playerStatuses) return null;
 
   const playerIds = Object.keys(players);
 
@@ -34,16 +50,32 @@ const PlayerStatusList = ({ players, guesses }) => {
     <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[60px] left-0 z-10 pointer-events-none"> {/* Adjust bottom based on chat height */}
       {playerIds.map((playerId) => {
         const player = players[playerId];
+        const status = playerStatuses[playerId] || 'active'; // Default to active if status missing
         const hasGuessed = !!guesses?.[playerId];
-        const bgColor = hasGuessed ? 'bg-green-500' : 'bg-black'; // Lighter green
-        const textColor = hasGuessed ? 'text-black' : 'text-white';
+
+        let bgColor = 'bg-black';
+        let textColor = 'text-white';
+
+        if (status === 'disconnected') {
+          bgColor = 'bg-yellow-500';
+          textColor = 'text-black';
+        } else if (status === 'forfeited') {
+          bgColor = 'bg-red-600';
+          textColor = 'text-white';
+        } else if (hasGuessed) { // Only check guess if active
+          bgColor = 'bg-green-500';
+          textColor = 'text-black';
+        }
+        // Default (active, not guessed) remains bg-black, text-white
 
         return (
           <div
             key={playerId}
-            className={`p-1 px-2 m-1 rounded text-xs font-medium transition-colors duration-500 ease-in-out ${bgColor} ${textColor} border border-white/20`}
+            className={`p-1 px-2 m-1 rounded text-xs font-medium transition-colors duration-300 ease-in-out ${bgColor} ${textColor} border border-white/20`}
           >
-            {player?.username || 'Player'} {/* Display username */}
+            {player?.username || 'Player'}
+            {status === 'disconnected' && ' (Disconnected)'}
+            {status === 'forfeited' && ' (Forfeited)'}
           </div>
         );
       })}
@@ -174,17 +206,24 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
 };
 
 // Adapted Game Summary Component
-// Added gameHistory prop to receive round-by-round data
-const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId, gameHistory, onProceed }) => {
+// Added gameHistory, isForfeitWin, playerStatuses props
+const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId, gameHistory, isForfeitWin, playerStatuses, onProceed }) => {
   // Sort scores descending
   const sortedScores = Object.entries(finalScores || {})
     .map(([userId, score]) => ({ userId, score })) // Keep it simple here
     .sort((a, b) => b.score - a.score);
 
-  // Determine if the current user is the winner
+  // Determine winner and title text, considering forfeits
   const winner = sortedScores.length > 0 ? sortedScores[0] : null;
   const isCurrentUserWinner = winner && winner.userId === currentUserId;
-  const titleText = isCurrentUserWinner ? "You won!" : "You lose!";
+
+  let titleText = "Game Over"; // Default
+  if (isForfeitWin) {
+    titleText = isCurrentUserWinner ? "You Win! Opponent Forfeited." : "Opponent Forfeited.";
+  } else {
+    titleText = isCurrentUserWinner ? "You Won!" : "You Lose!";
+  }
+
 
   // TODO: Enhance styling significantly
   return (
@@ -197,13 +236,24 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
       <div className="mb-6 p-4 border rounded w-full max-w-md" css={{ background: 'var(--backgroundColorBarelyDark)', borderColor: 'var(--backgroundColorSlightlyDark)'}}>
         <h3 className="text-xl font-semibold mb-3 text-center" css={{ color: 'var(--textColorLowOpacity)'}}>Final Scores</h3>
         {/* Use players prop to display usernames */}
-        {sortedScores.map(({ userId, score }, index) => {
-           const isWinner = index === 0 && sortedScores.length > 0;
+         {sortedScores.map(({ userId, score }, index) => {
+           const isWinner = index === 0 && sortedScores.length > 0 && !isForfeitWin; // Don't highlight winner if it was a forfeit win for visual clarity
+           const playerStatus = playerStatuses?.[userId] || 'active'; // Get status
+           const isForfeited = playerStatus === 'forfeited';
            const winnerBg = 'linear-gradient(0deg, #ffc1072e, #ffeb3b1f)'; // Subtle gold gradient for winner
            const username = players?.[userId]?.username || userId.substring(0, 8) + '...'; // Get username or fallback to truncated ID
 
+           // Apply forfeited styling
+           const forfeitedClasses = isForfeited ? 'opacity-50 line-through' : '';
+           const rowBg = isWinner ? winnerBg : (isForfeited ? 'var(--backgroundColorDark)' : 'var(--backgroundColorSlightlyLight)'); // Darker bg for forfeited
+           const rowBorder = isWinner ? '#ffc107' : (isForfeited ? 'var(--backgroundColorDark)' : 'var(--backgroundColorSlightlyDark)');
+           const rowColor = isWinner ? 'black' : (isForfeited ? 'var(--textColorLowOpacity)' : 'var(--textColor)');
+
            return (
-             <div key={userId} className={`flex justify-between p-2 rounded mb-1`} css={{
+             <div key={userId} className={`flex justify-between p-2 rounded mb-1 ${forfeitedClasses}`} css={{
+                background: rowBg,
+                border: `1px solid ${rowBorder}`,
+                color: rowColor,
                 background: isWinner ? winnerBg : 'var(--backgroundColorSlightlyLight)',
                 border: `1px solid ${isWinner ? '#ffc107' : 'var(--backgroundColorSlightlyDark)'}`,
                 // Change winner text color to black
@@ -254,7 +304,11 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
 
 export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary /* Removed currentUserId prop */ }) => {
   const { user } = useUser(); // Get user object
-  const { phase, round, artifact, players, guesses, settings, roundResults, finalScores, error } = gameState; // Added players, guesses
+  // Destructure new state variables
+  const {
+    phase, round, artifact, players, guesses, settings, roundResults, finalScores, error,
+    playerStatuses, disconnectCountdown, isForfeitWin, isActive // Added playerStatuses, disconnectCountdown, isForfeitWin, isActive
+  } = gameState;
 
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedCountry, setSelectedCountry] = useState(null);
@@ -303,6 +357,34 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
     // Reset status message potentially if needed when round changes?
   }, [artifact, phase, modeInfo, user?._id]); // Depend on user._id
 
+  // --- Leave Confirmation Effect ---
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (isActive) { // Check if game is active using state from hook
+        event.preventDefault(); // Standard practice
+        event.returnValue = 'Are you sure you want to leave? You will forfeit the game.'; // Message shown by browser
+        return event.returnValue; // For some older browsers
+      }
+    };
+
+    if (isActive) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      console.log("Added beforeunload listener for active game.");
+    } else {
+      // Ensure listener is removed if game becomes inactive while component is mounted
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      console.log("Removed beforeunload listener (game inactive or cleanup).");
+    }
+
+    // Cleanup listener on component unmount or when isActive changes
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      console.log("Cleaned up beforeunload listener.");
+    };
+  }, [isActive]); // Re-run effect if game active state changes
+  // --- End Leave Confirmation Effect ---
+
+
   // Handle image loading state
   const handleImageLoadComplete = (imgBounds) => {
     const h = imgBounds.height;
@@ -350,13 +432,15 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
   }
  
    if (phase === 'game-summary' && finalScores) {
-      // Pass players object, current user ID, AND gameHistory to the summary component
+      // Pass players, statuses, user ID, history, and forfeit flag
       return <MultiplayerGameSummary
         finalScores={finalScores}
         settings={settings}
-        players={players}
+        players={players} // Pass the players object containing usernames etc.
+        playerStatuses={playerStatuses} // Pass the statuses
         currentUserId={user?._id}
-        gameHistory={gameState.gameHistory} // Pass the game history
+        gameHistory={gameState.gameHistory}
+        isForfeitWin={isForfeitWin} // Pass the forfeit flag
         onProceed={proceedAfterSummary}
       />;
    }
@@ -364,7 +448,11 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
   if (phase === 'guessing' && artifact) {
     const imgLength = artifact?.images?.external?.length || 0;
     return (
-      <div ref={ref} className='fixed top-0 left-0 w-screen h-screen overflow-hidden bg-black'>
+      // Added relative positioning to allow absolute positioning of banner
+      <div ref={ref} className='relative fixed top-0 left-0 w-screen h-screen overflow-hidden bg-black'>
+        {/* Render Disconnect Banner Conditionally */}
+        <DisconnectCountdownBanner countdownData={disconnectCountdown} />
+
         {/* Added Headers */}
         <MainHeader />
         <AuthHeader />
@@ -453,9 +541,10 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              </div>
            </div>
         </div>
-        {/* Render Player Status below Chat */}
-        <PlayerStatusList players={players} guesses={guesses} />
-        <FixedChat /> {/* Add FixedChat here */}
+        {/* Render Player Status below Chat - Pass playerStatuses */}
+        <PlayerStatusList players={players} guesses={guesses} playerStatuses={playerStatuses} />
+        {/* Render Chat - Conditionally push down if banner is visible */}
+        <FixedChat className={disconnectCountdown ? 'mt-6' : ''} /> {/* Add margin-top if banner shown */}
       </div>
     );
   }

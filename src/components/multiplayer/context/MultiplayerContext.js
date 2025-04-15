@@ -17,12 +17,25 @@ export const useMultiplayer = () => {
 export const MultiplayerProvider = ({ children }) => {
   const { user } = useUser();
   const [lobbies, setLobbies] = useState([]);
-  const [currentLobbyId, setCurrentLobbyId] = useState(null);
+  // Initialize currentLobbyId from session storage on mount
+  const [currentLobbyId, setCurrentLobbyId] = useState(() => {
+    if (typeof window !== 'undefined') { // Ensure sessionStorage is available
+      return sessionStorage.getItem('ag_lobbyId');
+    }
+    return null;
+  });
   const [isConnected, setIsConnected] = useState(false); // Start as false
   const [isRegistered, setIsRegistered] = useState(false); // New state for registration status
   const [chatMessages, setChatMessages] = useState([]);
   const [socketInstance, setSocketInstance] = useState(null);
   const [lobbyClients, setLobbyClients] = useState([]); // State for clients in the current lobby
+  const [restoredGameState, setRestoredGameState] = useState(null); // State to hold game state on rejoin
+
+  // Function to clear the restored state once consumed
+  const clearRestoredGameState = useCallback(() => {
+    console.log("[MultiplayerContext] Clearing restored game state.");
+    setRestoredGameState(null);
+  }, []);
 
   const connectSocket = useCallback(() => {
     if (socketInstance && socketInstance.connected) { return; }
@@ -69,6 +82,9 @@ export const MultiplayerProvider = ({ children }) => {
 
     newSocket.on('disconnect', (reason) => {
       console.log('Socket disconnected via context:', reason);
+      // Clear session storage on disconnect
+      sessionStorage.removeItem('ag_lobbyId');
+      sessionStorage.removeItem('ag_gameActive');
       startTransition(() => { // Wrap state updates
         setIsConnected(false);
         setIsRegistered(false); // Reset registration status
@@ -103,9 +119,12 @@ export const MultiplayerProvider = ({ children }) => {
         });
       });
        if (update.type === 'create' && update.lobby?.host?.socketId === newSocket?.id) {
-          console.log(`Detected own lobby creation, setting currentLobbyId: ${update.lobby._id}`);
+          const newLobbyId = update.lobby._id;
+          console.log(`Detected own lobby creation, setting currentLobbyId: ${newLobbyId}`);
+          // Store lobby ID in session storage on creation confirmation
+          sessionStorage.setItem('ag_lobbyId', newLobbyId);
           startTransition(() => { // Wrap state updates
-            setCurrentLobbyId(update.lobby._id);
+            setCurrentLobbyId(newLobbyId);
             // Also set initial client list for the creator
             setLobbyClients(update.lobby.clients || []);
           });
@@ -125,6 +144,42 @@ export const MultiplayerProvider = ({ children }) => {
     newSocket.on('game-error', (error) => { console.error('Game Error:', error.message); });
     newSocket.on('chat', (messages) => { console.log('Received chat update:', messages); setChatMessages(messages); });
 
+    // --- Listeners for Game Active State (Session Storage) ---
+    newSocket.on('game-started', () => {
+      console.log('[MultiplayerContext] Game started, setting ag_gameActive=true');
+      sessionStorage.setItem('ag_gameActive', 'true');
+    });
+
+    newSocket.on('game-summary', () => {
+      console.log('[MultiplayerContext] Game summary received, clearing ag_gameActive');
+      sessionStorage.removeItem('ag_gameActive');
+      // Also clear lobby ID as the game is over, returning to lobby list implicitly
+      sessionStorage.removeItem('ag_lobbyId');
+      // Reset currentLobbyId state as well
+      startTransition(() => {
+         setCurrentLobbyId(null);
+      });
+    });
+    // --- End Game Active State Listeners ---
+
+    // --- Listener for Rejoin Success ---
+    // This updates the context's lobby ID AND stores the restored game state
+    newSocket.on('rejoin-successful', ({ lobbyId, gameState }) => { // Destructure gameState
+      if (lobbyId && gameState) {
+        console.log(`[MultiplayerContext] Rejoin successful for lobby ${lobbyId}. Storing restored state and updating currentLobbyId.`);
+        // Update session storage just in case it was missed (should be redundant but safe)
+        sessionStorage.setItem('ag_lobbyId', lobbyId);
+        sessionStorage.setItem('ag_gameActive', 'true'); // If rejoining, game must be active
+        // Remove startTransition for immediate update
+        setRestoredGameState(gameState); // Store the received game state
+        setCurrentLobbyId(lobbyId);     // Set the lobby ID to trigger UI switch
+      } else {
+        console.warn('[MultiplayerContext] Received rejoin-successful event without lobbyId.');
+      }
+    });
+    // --- End Rejoin Success Listener ---
+
+
   }, [user]); // Depend on user
 
   useEffect(() => {
@@ -132,7 +187,11 @@ export const MultiplayerProvider = ({ children }) => {
     // Only attempt connection if user is loaded AND logged in, and not already connected
     // Use user._id here as well
     if (user?.isLoggedIn && user._id && user.username && !socketInstance) {
+      // Check session storage *before* connecting
+      const potentialLobbyId = sessionStorage.getItem('ag_lobbyId');
+      console.log(`[MultiplayerProvider useEffect] Checking session storage: ag_lobbyId=${potentialLobbyId}`);
       console.log("[MultiplayerProvider useEffect] Condition met: User logged in, has _id, no socket instance. Calling connectSocket().");
+      // No need to pass lobbyId here, backend handles rejoin on 'register-client'
       connectSocket();
     } else if (!user) {
        console.log("[MultiplayerProvider useEffect] Condition NOT met: User data not yet loaded.");
@@ -168,6 +227,10 @@ export const MultiplayerProvider = ({ children }) => {
         socketInstance.off('lobby-error');
         socketInstance.off('game-error');
         socketInstance.off('chat');
+        // Add cleanup for new listeners
+        socketInstance.off('game-started');
+        socketInstance.off('game-summary');
+        socketInstance.off('rejoin-successful'); // Cleanup rejoin listener
         // DO NOT DISCONNECT HERE: socketInstance.disconnect();
         // DO NOT NULLIFY INSTANCE HERE: setSocketInstance(null);
       }
@@ -188,6 +251,8 @@ export const MultiplayerProvider = ({ children }) => {
     if (!socketInstance || !isConnected || !isRegistered) { console.error('Socket not connected or client not registered.'); return; }
     if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
     console.log(`Emitting join for lobby ${lobbyId} via context`);
+    // Store lobby ID in session storage on join
+    sessionStorage.setItem('ag_lobbyId', lobbyId);
     socketInstance.emit('join', { lobby: lobbyId, userId: user._id, username: user.username }); // Use user._id
     startTransition(() => { // Wrap state updates
       setCurrentLobbyId(lobbyId);
@@ -200,6 +265,9 @@ export const MultiplayerProvider = ({ children }) => {
     if (!socketInstance || !isConnected || !currentLobbyId) { console.error('Not connected or not in a lobby.'); return; }
     if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
     console.log(`Emitting leave for lobby ${currentLobbyId} via context`);
+    // Clear session storage on leave
+    sessionStorage.removeItem('ag_lobbyId');
+    sessionStorage.removeItem('ag_gameActive');
     socketInstance.emit('leave', { lobby: currentLobbyId, userId: user._id, username: user.username }); // Use user._id
     startTransition(() => { // Wrap state updates
       setCurrentLobbyId(null);
@@ -219,9 +287,12 @@ export const MultiplayerProvider = ({ children }) => {
     leaveLobby,
     _socket: socketInstance,
     chatMessages,
+    // Expose restored state and clear function
+    restoredGameState,
+    clearRestoredGameState,
   };
 
-   console.log('[MultiplayerProvider] Rendering State:', { isConnected, isRegistered, currentLobbyId, lobbiesCount: lobbies?.length ?? 'null', chatCount: chatMessages?.length ?? 'null', clientCount: lobbyClients?.length ?? 'null' });
+   console.log('[MultiplayerProvider] Rendering State:', { isConnected, isRegistered, currentLobbyId, hasRestoredState: !!restoredGameState, lobbiesCount: lobbies?.length ?? 'null', chatCount: chatMessages?.length ?? 'null', clientCount: lobbyClients?.length ?? 'null' });
 
   return (
     <MultiplayerContext.Provider value={value}>

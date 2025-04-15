@@ -18,7 +18,8 @@ const Multiplayer = () => {
     leaveLobby,
     _socket,
     chatMessages,
-    lobbyClients // Get client list from context
+    lobbyClients, // Get client list from context
+    restoredGameState // Get restored state from context
   } = useMultiplayer();
 
   // Remove the separate useClients hook call
@@ -29,9 +30,15 @@ const Multiplayer = () => {
   // Get multiplayer game state
   const { gameState, submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
 
-  // Decide what to render based on game state
-  if (gameState.isActive || gameState.phase === 'round-summary' || gameState.phase === 'game-summary') {
+  // Decide what to render: Show Game UI if the hook's state indicates an active game OR if the context has restored state waiting to be applied by the hook.
+  const shouldRenderGameUI = restoredGameState || gameState.isActive || gameState.phase === 'round-summary' || gameState.phase === 'game-summary';
+
+  console.log('[Multiplayer Render] Deciding UI:', { shouldRenderGameUI, hasRestoredState: !!restoredGameState, gameStateIsActive: gameState.isActive, gameStatePhase: gameState.phase });
+
+
+  if (shouldRenderGameUI) {
     // --- Render Game View ---
+    // The useMultiplayerGame hook handles initializing from restoredGameState via useEffect
     return (
       <MultiplayerGameUI
          gameState={gameState}

@@ -1,137 +1,286 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import useUser from '@/hooks/useUser';
+import { useMultiplayer } from '../context/MultiplayerContext'; // Import context hook
 
 // Hook to manage multiplayer game state based on socket events
-export const useMultiplayerGame = (socket, lobbyId) => {
+export const useMultiplayerGame = (socket, lobbyId) => { // socket and lobbyId are passed from Multiplayer component
   const { user } = useUser();
+  // Get restored state and clear function from context
+  const { restoredGameState, clearRestoredGameState } = useMultiplayer(); // Get clear function
+  const countdownIntervalRef = useRef(null);
+  const appliedRestoredStateRef = useRef(false); // Flag to ensure restore happens only once
+
+  // Initialize state with default values ALWAYS.
   const [gameState, setGameState] = useState({
     isActive: false, // Is a game currently running in this lobby?
     settings: null, // { mode, rounds }
     round: 0,
     artifact: null, // Current artifact data (client-safe version)
     scores: {}, // { userId: score }
-    guesses: {}, // { userId: { date, country, timestamp } } - Added
-    players: {}, // { userId: { username, ... } } - Added
+    guesses: {}, // { userId: { date, country, timestamp } }
+    players: {}, // { userId: { username, status } } - Now includes status
     roundResults: null, // Results from the last completed round
     finalScores: null, // Final scores when game ends
-    phase: 'lobby', // 'lobby', 'guessing', 'round-summary', 'game-summary'
+    phase: 'lobby', // 'lobby', 'waiting-for-round', 'guessing', 'round-summary', 'game-summary'
     error: null,
-    gameHistory: [], // Initialize gameHistory in state
+    gameHistory: [],
+    // New state for disconnect/forfeit
+    playerStatuses: {}, // { userId: 'active' | 'disconnected' | 'forfeited' } - More explicit status tracking
+    disconnectCountdown: null, // { userId, username, remaining: number } | null
+    isForfeitWin: false,
   });
 
-  // Listen for game events
+  // Clear countdown interval helper
+  const clearCountdownInterval = useCallback(() => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  }, []);
+
+  // Effect to apply restoredGameState from context ONLY ONCE if available on mount/initialization
+  useEffect(() => {
+    // Check if restoredGameState exists, we haven't applied it yet, AND it pertains to the current user
+    if (restoredGameState && !appliedRestoredStateRef.current && user?._id && restoredGameState.players?.[user._id]) {
+      console.log(`[useMultiplayerGame] Applying restored game state for user ${user._id}:`, restoredGameState);
+      // Apply the restored state to this hook's state
+      setGameState(restoredGameState);
+      // Mark that we've applied it for this instance
+      appliedRestoredStateRef.current = true;
+      // Immediately clear the restored state from the context
+      clearRestoredGameState();
+      console.log("[useMultiplayerGame] Cleared restored game state from context.");
+    } else if (restoredGameState && !appliedRestoredStateRef.current) {
+      // Log if the state exists but doesn't seem to be for this user
+      console.log(`[useMultiplayerGame] Ignoring restored game state as it doesn't appear to be for user ${user?._id}. State players:`, restoredGameState.players);
+    }
+    // Dependencies ensure effect runs if state/clear function/user become available later,
+    // but the ref and user check prevent incorrect application.
+  }, [restoredGameState, clearRestoredGameState, user]); // Add user dependency
+
+  // Listen for live game events from socket
   useEffect(() => {
     if (!socket || !lobbyId) {
       // Reset game state if socket disconnects or user leaves lobby
-      setGameState({ isActive: false, settings: null, round: 0, artifact: null, scores: {}, guesses: {}, players: {}, roundResults: null, finalScores: null, phase: 'lobby', error: null, gameHistory: [] }); // Added reset for guesses, players, gameHistory
+      setGameState({ isActive: false, settings: null, round: 0, artifact: null, scores: {}, guesses: {}, players: {}, roundResults: null, finalScores: null, phase: 'lobby', error: null, gameHistory: [], playerStatuses: {}, disconnectCountdown: null, isForfeitWin: false });
+      clearCountdownInterval(); // Clear interval on disconnect/leave
       return;
     }
 
-    // Assume 'game-started' provides the initial player list
+    // --- Event Handlers ---
+
     const handleGameStarted = ({ settings, players }) => {
       console.log('Game Started:', settings, players);
+      const initialStatuses = {};
+      if (players) {
+        Object.keys(players).forEach(id => {
+          initialStatuses[id] = players[id].status || 'active'; // Initialize status from backend data
+        });
+      }
       setGameState(prev => ({
         ...prev,
         isActive: true,
         settings: settings,
-        players: players || {}, // Initialize players
-        phase: 'waiting-for-round', // Wait for the first 'new-round'
-        round: 0, // Reset round, will be set by new-round
-        scores: {}, // Reset scores
-        guesses: {}, // Reset guesses
+        players: players || {},
+        playerStatuses: initialStatuses, // Initialize statuses
+        phase: 'waiting-for-round',
+        round: 0,
+        scores: {},
+        guesses: {},
         roundResults: null,
         finalScores: null,
         error: null,
+        disconnectCountdown: null, // Reset countdown
+        isForfeitWin: false,
       }));
+      clearCountdownInterval(); // Clear any lingering interval
     };
 
-    // Assume 'new-round' might also update players if someone joined/left between rounds
     const handleNewRound = ({ round, artifact, scores, players }) => {
       console.log(`New Round ${round}:`, artifact);
+      const updatedStatuses = {};
+       if (players) {
+         Object.keys(players).forEach(id => {
+           updatedStatuses[id] = players[id].status || 'active'; // Update status from backend data
+         });
+       }
       setGameState(prev => ({
         ...prev,
-        isActive: true, // Ensure active
+        isActive: true,
         round: round,
-        artifact: artifact, // This is the client-safe version
-        scores: scores || prev.scores, // Update scores (especially for round 1)
-        players: players || prev.players, // Update players if provided
-        guesses: {}, // Reset guesses for the new round
+        artifact: artifact,
+        scores: scores || prev.scores,
+        players: players || prev.players, // Update players object
+        playerStatuses: updatedStatuses, // Update statuses
+        guesses: {},
         phase: 'guessing',
-        roundResults: null, // Clear previous round results
+        roundResults: null,
         finalScores: null,
         error: null,
+        disconnectCountdown: null, // Reset countdown on new round
+        isForfeitWin: false, // Reset forfeit win flag
       }));
+      clearCountdownInterval(); // Clear interval on new round
     };
 
-    // Listen for updates to the guesses object during the round
     const handlePlayerGuessed = ({ guesses: updatedGuesses }) => {
         setGameState(prev => ({
             ...prev,
-            // Only update if we are in the guessing phase
             guesses: prev.phase === 'guessing' ? updatedGuesses : prev.guesses,
         }));
     };
 
     const handleRoundSummary = (summary) => {
       console.log(`Round ${summary.round} Summary:`, summary);
+       // Update statuses based on the players object in the summary if available
+       const updatedStatuses = { ...gameState.playerStatuses }; // Start with existing
+       if (summary.players) {
+         Object.keys(summary.players).forEach(id => {
+           updatedStatuses[id] = summary.players[id].status || 'active';
+         });
+       }
       setGameState(prev => ({
         ...prev,
-        scores: summary.scores, // Update with latest scores
-        roundResults: summary, // Store { round, correctArtifact, results, scores }
+        scores: summary.scores,
+        roundResults: summary,
         phase: 'round-summary',
-        artifact: null, // Clear current artifact view while showing summary
+        artifact: null,
         error: null,
-        // Guesses are implicitly finalized here by the summary data
+        players: summary.players || prev.players, // Update players if included
+        playerStatuses: updatedStatuses, // Update statuses
+        disconnectCountdown: null, // Clear countdown when summary appears
       }));
-      // TODO: Potentially add a timer to automatically move to next round?
+      clearCountdownInterval(); // Clear interval
     };
 
-    const handleGameSummary = (summary) => { // summary now includes { finalScores, settings, players, gameHistory }
+    const handleGameSummary = (summary) => { // summary includes { finalScores, settings, players, gameHistory, forfeitWin, winnerId }
       console.log('Game Summary:', summary);
+      const finalStatuses = {};
+       if (summary.players) {
+         Object.keys(summary.players).forEach(id => {
+           finalStatuses[id] = summary.players[id].status || 'active'; // Get final status
+         });
+       }
       setGameState(prev => ({
         ...prev,
-        isActive: false, // Game is no longer active
+        isActive: false,
         finalScores: summary.finalScores,
-        players: summary.players || prev.players, // Store players data
-        gameHistory: summary.gameHistory || [], // Store the received game history
+        players: summary.players || prev.players,
+        playerStatuses: finalStatuses, // Set final statuses
+        gameHistory: summary.gameHistory || [],
         phase: 'game-summary',
+        isForfeitWin: summary.forfeitWin || false, // Set forfeit win flag
         roundResults: null,
         artifact: null,
-        guesses: {}, // Clear guesses
+        guesses: {},
         error: null,
+        disconnectCountdown: null, // Clear countdown
       }));
-      // TODO: Add button or logic to return to lobby view?
+      clearCountdownInterval(); // Clear interval
     };
 
     const handleGameError = ({ message }) => {
       console.error('Received Game Error:', message);
+      setGameState(prev => ({ ...prev, error: message }));
+      // Potentially clear countdown on error?
+      // clearCountdownInterval();
+      // setGameState(prev => ({ ...prev, disconnectCountdown: null }));
+    };
+
+    // --- New Event Handlers for Disconnect/Reconnect ---
+
+    const handlePlayerDisconnected = ({ userId, username, countdownDuration }) => {
+      console.log(`Player disconnected: ${username} (${userId}), countdown: ${countdownDuration}s`);
       setGameState(prev => ({
         ...prev,
-        error: message,
-        // Potentially reset phase or isActive depending on error type
+        playerStatuses: { ...prev.playerStatuses, [userId]: 'disconnected' },
+        disconnectCountdown: { userId, username, remaining: countdownDuration }
       }));
-      // TODO: Show error to user (toast?)
+
+      // Start local interval timer for visual countdown
+      clearCountdownInterval(); // Clear previous interval if any
+      countdownIntervalRef.current = setInterval(() => {
+        setGameState(prev => {
+          if (!prev.disconnectCountdown || prev.disconnectCountdown.userId !== userId) {
+            // Countdown target changed or cleared, stop interval
+            clearCountdownInterval();
+            return prev;
+          }
+          const newRemaining = prev.disconnectCountdown.remaining - 1;
+          // Only update remaining time. Do not clear interval or state here.
+          // Backend events ('player-reconnected', 'player-forfeited') will handle clearing.
+          // Ensure remaining doesn't go below 0 visually.
+          return {
+            ...prev,
+            disconnectCountdown: { ...prev.disconnectCountdown, remaining: Math.max(0, newRemaining) }
+          };
+        });
+      }, 1000);
     };
+
+    const handlePlayerReconnected = ({ userId }) => {
+      console.log(`Player reconnected: ${userId}`);
+      setGameState(prev => {
+        // Clear countdown only if it was for this user
+        const newCountdown = prev.disconnectCountdown?.userId === userId ? null : prev.disconnectCountdown;
+        if (prev.disconnectCountdown?.userId === userId) {
+           clearCountdownInterval(); // Clear interval if it was for this user
+        }
+        return {
+          ...prev,
+          playerStatuses: { ...prev.playerStatuses, [userId]: 'active' },
+          disconnectCountdown: newCountdown
+        };
+      });
+    };
+
+    const handlePlayerForfeited = ({ userId }) => {
+      console.log(`Player forfeited: ${userId}`);
+      setGameState(prev => {
+         // Clear countdown only if it was for this user
+         const newCountdown = prev.disconnectCountdown?.userId === userId ? null : prev.disconnectCountdown;
+         if (prev.disconnectCountdown?.userId === userId) {
+            clearCountdownInterval(); // Clear interval if it was for this user
+         }
+        return {
+          ...prev,
+          playerStatuses: { ...prev.playerStatuses, [userId]: 'forfeited' },
+          disconnectCountdown: newCountdown
+        };
+      }); // Add missing closing brace and parenthesis for setGameState
+    }; // Add missing closing brace for handlePlayerForfeited
 
     // Register listeners
     socket.on('game-started', handleGameStarted);
     socket.on('new-round', handleNewRound);
-    socket.on('player-guessed', handlePlayerGuessed); // Add listener for guess updates
+    socket.on('player-guessed', handlePlayerGuessed);
     socket.on('round-summary', handleRoundSummary);
     socket.on('game-summary', handleGameSummary);
     socket.on('game-error', handleGameError);
+    // New listeners
+    socket.on('player-disconnected', handlePlayerDisconnected);
+    socket.on('player-reconnected', handlePlayerReconnected);
+    socket.on('player-forfeited', handlePlayerForfeited);
+    // Note: 'rejoin-successful' is handled by the context now to set initial state
 
     // Cleanup listeners
     return () => {
       socket.off('game-started', handleGameStarted);
       socket.off('new-round', handleNewRound);
-      socket.off('player-guessed', handlePlayerGuessed); // Clean up listener
+      socket.off('player-guessed', handlePlayerGuessed);
       socket.off('round-summary', handleRoundSummary);
       socket.off('game-summary', handleGameSummary);
       socket.off('game-error', handleGameError);
+      // New listeners cleanup
+      socket.off('player-disconnected', handlePlayerDisconnected);
+      socket.off('player-reconnected', handlePlayerReconnected);
+      socket.off('player-forfeited', handlePlayerForfeited);
+      // No need to cleanup 'rejoin-successful' here anymore
+      // Clear interval on cleanup
+      clearCountdownInterval();
     };
-
-  }, [socket, lobbyId]);
+  // Only depend on socket, lobbyId, and clear function for setting up listeners
+  }, [socket, lobbyId, clearCountdownInterval]);
 
   // Action to submit a guess
   const submitGuess = useCallback((guess) => { // guess = { date, country }

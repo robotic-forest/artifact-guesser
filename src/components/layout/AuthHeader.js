@@ -75,7 +75,23 @@ export const AuthHeader = () => {
             </Link>
             <IconButton
               iconSize={10}
-              onClick={() => logout()}
+              onClick={() => {
+                // Check session storage if a game is active
+                const isGameActive = sessionStorage.getItem('ag_gameActive') === 'true';
+                if (isGameActive) {
+                  // Show confirmation dialog
+                  if (window.confirm('Are you sure you want to log out? This will forfeit your current game.')) {
+                    // User confirmed, proceed with logout
+                    logout();
+                  } else {
+                    // User cancelled, do nothing
+                    console.log('Logout cancelled by user.');
+                  }
+                } else {
+                  // No active game, logout directly
+                  logout();
+                }
+              }}
               css={{
                 '&:hover': { background: 'var(--backgroundColorLight2)' },
                 border: '1px solid #ffffff66'
