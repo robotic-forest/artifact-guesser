@@ -14,7 +14,7 @@ const MultiplayerPageContent = () => {
   // 1. Handle initial connection/registration phase
   if (!isConnected || !isRegistered) {
     console.log('[MultiplayerPageContent Render] Rendering Connecting state (initial)');
-    return <div className="relative"><div className="flex items-center justify-center h-screen text-white">Connecting...</div></div>;
+    return <div className="relative"><div className="flex items-center justify-center h-screen text-black">Connecting...</div></div>;
   }
 
   // 2. Handle the rejoin scenario after refresh OR normal lobby entry when game is active
