@@ -41,22 +41,8 @@ const LobbyTypeButton = ({ className, theme, disabled, ...p }) => {
 };
 
 export const LobbyChoice = () => {
-  // Use the useMultiplayer context hook
-  const { lobbies, createLobby, joinLobby, isConnected, isRegistered } = useMultiplayer();
+  const { lobbies, createLobby, joinLobby, isConnected, isRegistered } = useMultiplayer()
   const { user } = useUser(); // Get user state
-  // Use the useGlobalChat context hook
-  const { joinGlobalChat, leaveGlobalChat } = useGlobalChat();
-
-  // Join/Leave global chat room when this component mounts/unmounts
-  useEffect(() => {
-    console.log('[LobbyChoice] Joining global chat...');
-    joinGlobalChat();
-    // Cleanup function to leave when component unmounts
-    return () => {
-      console.log('[LobbyChoice] Leaving global chat...');
-      leaveGlobalChat();
-    };
-  }, [joinGlobalChat, leaveGlobalChat]); // Dependencies
 
   // Default settings for creating a lobby from this view
   // TODO: Allow user to configure these before creating?
@@ -123,7 +109,8 @@ export const LobbyChoice = () => {
                        )}
                        initialWidth={320}
                        angle={-3}
-                       textColor='#ffffff'
+                       backgroundColor='transparent'
+                       textColor='#000000'
                        style={{ padding: '0 12px 12px 0' }}
                      />,
                      { position: 'bottom-center' }
@@ -207,12 +194,13 @@ export const LobbyChoice = () => {
                                     initialText={(
                                       <>
                                         Sign up to join a lobby,<br/>
-                                        you {generateInsult('noun')}!
+                                        you {generateInsult('name')}!
                                       </>
                                     )}
                                     initialWidth={300}
                                     angle={4}
-                                    textColor='#ffffff'
+                                    backgroundColor='transparent'
+                                    textColor='#000000'
                                     style={{ padding: '0 12px 12px 0' }}
                                   />,
                                   { position: 'bottom-center' }

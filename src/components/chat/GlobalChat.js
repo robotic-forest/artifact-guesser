@@ -279,7 +279,8 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
           }}>
             {/* Pass the shared socket and "global" as lobbyId */}
             {/* ChatInput uses the socket prop to send messages via the context */}
-            <ChatInput socket={_socket} lobbyId="global" disabled={!user?.isLoggedIn} />
+            {/* Use readOnly instead of disabled to allow click event for toast */}
+            <ChatInput socket={_socket} lobbyId="global" readOnly={!user?.isLoggedIn} />
           </div>
 
           {/* Note: The "Connecting..." overlay is handled in the inactive state now */}

@@ -3,8 +3,8 @@ import useUser from "@/hooks/useUser";
 import { useForm } from "react-hook-form";
 import { BiSolidSend } from "react-icons/bi";
 
-// Receives socket instance and lobbyId as props
-export const ChatInput = ({ socket, lobbyId }) => {
+// Receives socket instance, lobbyId, and optional readOnly prop
+export const ChatInput = ({ socket, lobbyId, readOnly }) => {
   const { user } = useUser();
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm();
 
@@ -21,8 +21,10 @@ export const ChatInput = ({ socket, lobbyId }) => {
     reset();
   };
 
-  // Disable input if not connected or not in a lobby
-  const isDisabled = !socket || !lobbyId;
+  // Determine base disabled state (connection/lobby)
+  const isConnectionDisabled = !socket || !lobbyId;
+  // Determine effective disabled state (includes readOnly) for styling and button
+  const isEffectivelyDisabled = isConnectionDisabled || readOnly;
 
   return (
     <form className='mt-3 flex justify-between' onSubmit={handleSubmit(onSubmit)}>
@@ -31,15 +33,15 @@ export const ChatInput = ({ socket, lobbyId }) => {
         placeholder='Type Message...'
         autoComplete="off"
         {...register('message', { required: true })} // Add basic validation
-        disabled={isDisabled}
+        readOnly={readOnly} // Use readOnly to prevent typing but allow clicks
         css={{
           flexGrow: 1,
-          opacity: isDisabled ? 0.6 : 1,
-          cursor: isDisabled ? 'not-allowed' : 'text',
+          opacity: isEffectivelyDisabled ? 0.6 : 1, // Style based on effective disabled state
+          cursor: isEffectivelyDisabled ? 'not-allowed' : 'text', // Style based on effective disabled state
+          background: isEffectivelyDisabled ? 'var(--backgroundColorDark)' : 'var(--backgroundColorSlightlyLight)', // Style based on effective disabled state
           marginRight: 8,
           padding: '4px 8px',
           outline: 'none',
-          background: 'var(--backgroundColorSlightlyLight)',
           borderRadius: 5,
           transition: 'all 0.2s ease-in-out',
           '&:focus': {
@@ -59,13 +61,13 @@ export const ChatInput = ({ socket, lobbyId }) => {
         size={32}
         tooltip='Send'
         type='submit'
-        disabled={isDisabled || isSubmitting}
+        disabled={isEffectivelyDisabled || isSubmitting} // Disable button based on effective state
         css={{
-          background: 'var(--primaryColor)',
-          cursor: isDisabled ? 'not-allowed' : 'pointer',
-          opacity: isDisabled ? 0.6 : 1,
+          background: isEffectivelyDisabled ? 'var(--backgroundColorDark)' : 'var(--primaryColor)', // Style based on effective disabled state
+          cursor: isEffectivelyDisabled ? 'not-allowed' : 'pointer', // Style based on effective disabled state
+          opacity: isEffectivelyDisabled ? 0.6 : 1, // Style based on effective disabled state
           '&:hover': {
-            background: 'var(--primaryColorLight)',
+            background: isEffectivelyDisabled ? 'var(--backgroundColorDark)' : 'var(--primaryColorLight)', // Style based on effective disabled state
             boxShadow: 'none',
           }
         }}

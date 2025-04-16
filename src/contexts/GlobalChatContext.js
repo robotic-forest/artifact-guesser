@@ -18,6 +18,8 @@ export const GlobalChatProvider = ({ children }) => {
   const [globalChatMessages, setGlobalChatMessages] = useState([]);
   const [isInGlobalChat, setIsInGlobalChat] = useState(false); // Track if currently joined
 
+  console.log(globalChatMessages)
+
   // Listener for incoming chat messages (filters for global)
   const handleChatMessage = useCallback((messages) => {
     // Ensure messages is an array before filtering

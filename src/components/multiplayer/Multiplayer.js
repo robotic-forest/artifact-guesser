@@ -74,6 +74,8 @@ const Multiplayer = () => {
      );
    }
 
+  console.log(lobbies, currentLobbyId, chatMessages)
+
   // --- Render Lobby View ---
   return (
     // Add background color here

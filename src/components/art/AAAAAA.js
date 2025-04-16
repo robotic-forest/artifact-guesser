@@ -18,7 +18,8 @@ export default function AAAAAA({
   excited,
   style,
   angle,
-  textColor
+  textColor,
+  backgroundColor
 }) {
   const container = useRef(null)
   const [refHeight, setRefHeight] = useState(0)
@@ -54,7 +55,7 @@ export default function AAAAAA({
                 minWidth: 30,
                 width: !staticWidth ? 'max-content' : 'auto',
                 paddingRight: !staticWidth ? 15 : 8,
-                backgroundColor: 'var(--backgroundColor)'
+                backgroundColor: backgroundColor || 'var(--backgroundColor)'
               }}
             >
               <p
