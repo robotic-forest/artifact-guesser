@@ -182,6 +182,7 @@ export const LobbyChoice = () => {
                   const rounds = lobby?.settings?.rounds || '?';
                   const playerCount = lobby?.playerCount || lobby?.clients?.length || 0; // Use playerCount if provided by backend
                   const modeColor = modes[mode]?.color || '#cccccc'; // Fallback color
+                  const isInProgress = lobby?.inProgress || false; // Check if the game is in progress
 
                   return (
                     <div key={lobby._id} className='p-2 px-4 mb-2 rounded-[6px] flex justify-between items-center' css={{
@@ -197,15 +198,23 @@ export const LobbyChoice = () => {
                              <span className='mr-1'>Mode:</span>
                              <Tag className='' bold color={modeColor} css={{padding: '1px 4px'}}>
                                {mode}
-                             </Tag>
-                           </div>
-                        </div>
-                      </div>
-                      {/* Wrapper div for right alignment */}
-                       <div css={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <Button
-                            onClick={() => {
-                              if (!user?.isLoggedIn) {
+                              </Tag>
+                            </div>
+                            {/* Add indicator if game is in progress */}
+                            {isInProgress && (
+                              <span className='text-xs font-semibold' css={{ color: 'var(--warningColor)' }}>
+                                (In Progress)
+                              </span>
+                            )}
+                         </div>
+                       </div>
+                       {/* Wrapper div for right alignment */}
+                        <div css={{ display: 'flex', justifyContent: 'flex-end' }}>
+                           <Button
+                             onClick={() => {
+                               // Prevent joining if game is in progress
+                               if (isInProgress) return;
+                               if (!user?.isLoggedIn) {
                                 toast.custom(
                                   <AAAAAA
                                     initialAngry
@@ -228,12 +237,13 @@ export const LobbyChoice = () => {
                               }
                             }}
                             size='sm'
-                            // Adjust padding for smaller size, remove width: 100%
-                            css={{ padding: '4px 12px' }}
-                            disabled={!isConnected || !isRegistered} // Keep visual disable for connection/registration status
-                          >
-                            Join Lobby
-                          </Button>
+                             // Adjust padding for smaller size, remove width: 100%
+                             css={{ padding: '4px 12px' }}
+                             // Disable if not connected/registered OR if game is in progress
+                             disabled={!isConnected || !isRegistered || isInProgress}
+                           >
+                             {isInProgress ? 'In Progress' : 'Join Lobby'}
+                           </Button>
                       </div>
                     </div>
                   );

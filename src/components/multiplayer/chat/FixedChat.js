@@ -123,7 +123,7 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
         >
           {inactiveMessages.length > 0 ? (
              // Show last message preview
-             <div className="truncate max-w-xs"> {/* Added max-w-xs like desktop */}
+             <div className="max-w-xs">
                {inactiveMessages[inactiveMessages.length - 1].username && <b>{inactiveMessages[inactiveMessages.length - 1].username}:</b>} {inactiveMessages[inactiveMessages.length - 1].message}
              </div>
            ) : (
@@ -144,9 +144,8 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
             {inactiveMessages.map((msg, index) => (
               <div
                 key={index}
-                className={`p-1 max-w-xs truncate ${
-                  lightContext ? 'bg-transparent text-black' : 'bg-black text-white'
-                }`}
+                className={`p-1 max-w-xs truncate ${lightContext ? 'text-black' : 'text-white'}`}
+                css={{ background: 'var(--backgroundColor)' }}
               >
                 {msg.username && <b>{msg.username}:</b>} {msg.message}
               </div>

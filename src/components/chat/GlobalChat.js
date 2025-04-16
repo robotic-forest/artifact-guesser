@@ -161,7 +161,7 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
              {/* Show message preview only if connected */}
             {canChat && inactiveMessages.length > 0 && inactiveMessages.map((msg, index) => {
               // Conditional styling for lobby page
-             const lobbyInactiveClasses = "bg-[var(--backgroundColor)] text-black border-black/20";
+             const lobbyInactiveClasses = "text-black border-black/20";
              const defaultInactiveClasses = "bg-black text-white border-white/20";
              const inactiveMsgClasses = isLobbyPage ? lobbyInactiveClasses : defaultInactiveClasses;
 
@@ -170,6 +170,9 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
                  key={index}
                  // Apply conditional styles
                  className={`p-1 px-2 text-sm ${inactiveMsgClasses}`}
+                 css={{
+                   background: 'var(--backgroundColor)'
+                 }}
                >
                  {msg.username && <b>{msg.username}:</b>} {msg.message}
                </div>

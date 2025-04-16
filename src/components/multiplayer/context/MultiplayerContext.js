@@ -159,11 +159,23 @@ export const MultiplayerProvider = ({ children }) => {
       startTransition(() => { // Wrap setLobbies
         setLobbies(prevLobbies => {
           switch (update.type) {
-            case 'list': return update.lobbies || [];
-            case 'create': return (!update.lobby || prevLobbies.some(l => l._id === update.lobby._id)) ? prevLobbies : [...prevLobbies, update.lobby];
-          case 'delete': return !update.lobbyId ? prevLobbies : prevLobbies.filter(l => l._id !== update.lobbyId);
-          case 'update': return !update.lobby ? prevLobbies : prevLobbies.map(l => l._id === update.lobby._id ? update.lobby : l);
-            default: console.warn('Unknown lobby update type:', update.type); return prevLobbies;
+            // Ensure 'list' maps the inProgress field
+            case 'list':
+              return Array.isArray(update.lobbies) ? update.lobbies.map(lobby => ({
+                ...lobby,
+                inProgress: lobby.inProgress || false // Explicitly include and default to false
+              })) : [];
+            case 'create':
+              // Ensure the new lobby object includes inProgress (should come from backend)
+              return (!update.lobby || prevLobbies.some(l => l._id === update.lobby._id)) ? prevLobbies : [...prevLobbies, { ...update.lobby, inProgress: update.lobby.inProgress || false }];
+            case 'delete':
+              return !update.lobbyId ? prevLobbies : prevLobbies.filter(l => l._id !== update.lobbyId);
+            case 'update':
+              // Ensure the updated lobby object includes inProgress (should come from backend)
+              return !update.lobby ? prevLobbies : prevLobbies.map(l => l._id === update.lobby._id ? { ...update.lobby, inProgress: update.lobby.inProgress || false } : l);
+            default:
+              console.warn('Unknown lobby update type:', update.type);
+              return prevLobbies;
           }
         });
       });
@@ -431,6 +443,21 @@ export const MultiplayerProvider = ({ children }) => {
     });
     // --- End Rejoin Success Listener ---
 
+    // --- Listener for Join Success ---
+    newSocket.on('join-successful', ({ lobbyId }) => {
+      if (lobbyId) {
+        console.log(`[MultiplayerContext] Join successful confirmation received for lobby ${lobbyId}.`);
+        // Store lobby ID in session storage on successful join confirmation
+        sessionStorage.setItem('ag_lobbyId', lobbyId);
+        startTransition(() => { // Wrap state updates
+          setCurrentLobbyId(lobbyId);
+          setLobbyClients([]); // Clear old client list optimistically (will be updated by 'clients' event)
+        });
+      } else {
+        console.warn('[MultiplayerContext] Received join-successful event without lobbyId.');
+      }
+    });
+    // --- End Join Success Listener ---
 
   }, [user, clearCountdownInterval]); // Add clearCountdownInterval dependency
 
@@ -505,13 +532,14 @@ export const MultiplayerProvider = ({ children }) => {
         socketInstance.off('player-disconnected');
         socketInstance.off('player-reconnected');
         socketInstance.off('player-forfeited');
-        socketInstance.off('rejoin-successful'); // Cleanup rejoin listener
-        // Clear interval on cleanup
-        clearCountdownInterval();
-        // DO NOT DISCONNECT HERE: socketInstance.disconnect();
-        // DO NOT NULLIFY INSTANCE HERE: setSocketInstance(null);
-      }
-    };
+    socketInstance.off('rejoin-successful'); // Cleanup rejoin listener
+    socketInstance.off('join-successful'); // Cleanup join listener
+    // Clear interval on cleanup
+    clearCountdownInterval();
+    // DO NOT DISCONNECT HERE: socketInstance.disconnect();
+    // DO NOT NULLIFY INSTANCE HERE: setSocketInstance(null);
+  }
+};
   }, [connectSocket, user, socketInstance, clearCountdownInterval]); // Add clearCountdownInterval
 
   // --- Actions ---
@@ -528,13 +556,12 @@ export const MultiplayerProvider = ({ children }) => {
     if (!socketInstance || !isConnected || !isRegistered) { console.error('Socket not connected or client not registered.'); return; }
     if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
     console.log(`Emitting join for lobby ${lobbyId} via context`);
-    // Store lobby ID in session storage on join
-    sessionStorage.setItem('ag_lobbyId', lobbyId);
+    // DO NOT set currentLobbyId or session storage here optimistically. Wait for 'join-successful' event.
     socketInstance.emit('join', { lobby: lobbyId, userId: user._id, username: user.username }); // Use user._id
-    startTransition(() => { // Wrap state updates
-      setCurrentLobbyId(lobbyId);
-      setLobbyClients([]); // Clear old client list optimistically
-    });
+    // Optimistically clear clients? Maybe not necessary as 'clients' event will update.
+    // startTransition(() => {
+    //   setLobbyClients([]);
+    // });
   }, [user, socketInstance, isConnected, isRegistered]); // Add isRegistered dependency
 
   const leaveLobby = useCallback(() => {
