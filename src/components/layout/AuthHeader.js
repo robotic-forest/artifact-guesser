@@ -1,9 +1,9 @@
-import { useState } from "react"
+import { useState, useContext } from "react" // Import useContext
 import { useRouter } from "next/router" // Import useRouter
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
 import useUser from "@/hooks/useUser"
 import { SignupDialog } from "@/components/dialogs/SignupDialog"
-import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerContext" // Import useMultiplayer
+import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerContext"
 import { FaHeart } from "react-icons/fa"
 import { IconButton } from "@/components/buttons/IconButton"
 import { GrLogout } from "react-icons/gr"
@@ -18,7 +18,7 @@ import { gamesTheme } from "@/pages/games"
 export const AuthHeader = ({ loginCss, signupCss }) => {
   const { user, isAdmin, logout } = useUser()
   const router = useRouter() // Get router object
-  const { leaveLobby, currentLobbyId } = useMultiplayer() // Get multiplayer context functions/state
+  const { leaveLobby, currentLobbyId, _socket: socket } = useMultiplayer() // Get multiplayer context functions/state
   const [loginOpen, setLoginOpen] = useState(false)
   const [signupOpen, setSignupOpen] = useState(false)
 
@@ -84,6 +84,14 @@ export const AuthHeader = ({ loginCss, signupCss }) => {
               iconSize={10}
               onClick={() => {
                 const handleLogout = () => {
+                  // Emit the logout event to the server *before* leaving/logging out
+                  if (socket) {
+                    console.log('Emitting handle-logout to server...');
+                    socket.emit('handle-logout');
+                  } else {
+                    console.warn('Socket not available when trying to emit handle-logout.');
+                  }
+
                   const isOnLobbyPage = router.pathname.startsWith('/multiplayer/') && router.query.lobbyid;
                   const isInThisLobby = currentLobbyId === router.query.lobbyid;
 
@@ -109,7 +117,8 @@ export const AuthHeader = ({ loginCss, signupCss }) => {
                     console.log('Logout cancelled by user.');
                   }
                 } else {
-                  // No active game, logout directly using the new logic
+                  // No active game, logout directly using the handleLogout logic
+                  // (which will still emit if socket is available, though less critical here)
                   handleLogout();
                 }
               }}

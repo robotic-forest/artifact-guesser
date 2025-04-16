@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react"; // Import useContext
 import { MapInteractionCSS } from 'react-map-interaction';
 import { IoMdEye } from "react-icons/io";
 import { Range } from "@/components/form/FormRange";
@@ -25,6 +25,8 @@ import { FixedChat } from "./chat/FixedChat"; // Import FixedChat
 import { theme, useTheme } from "@/pages/_app";
 import { createStyles } from "../GlobalStyles";
 import { IconGenerator } from "../art/IconGenerator";
+import { useMultiplayer } from "./context/MultiplayerContext"
+import { useRouter } from "next/router";
 
 // --- Disconnect Countdown Banner ---
 const DisconnectCountdownBanner = ({ countdownData }) => {
@@ -313,8 +315,10 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
 };
 
 export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary }) => {
+  const router = useRouter()
   useTheme()
   const { user } = useUser(); // Get user object
+  const { _socket: socket } = useMultiplayer() // Get socket from context
   // Destructure new state variables
   const {
     phase, round, artifact, players, guesses, settings, roundResults, finalScores, error,
@@ -408,6 +412,21 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
     // Optionally disable input here until next round or summary
   };
 
+  const handleManualForfeit = () => {
+    if (window.confirm('Are you sure you want to forfeit the game? This cannot be undone.')) {
+      if (socket) {
+        console.log('Emitting manual-forfeit to server...');
+        socket.emit('manual-forfeit');
+        router.push('/multiplayer'); // Redirect to multiplayer index after forfeit
+        // Optionally, disable further actions immediately on the client-side?
+        // The server will eventually update the player status.
+      } else {
+        console.error('Socket not available to emit manual-forfeit.');
+        toast.error('Could not connect to server to forfeit.');
+      }
+    }
+  };
+
   // --- Render based on phase ---
 
   if (phase === 'round-summary' && roundResults) {
@@ -483,11 +502,25 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              <div className="flex items-center"> {/* Wrap Status and Round in a flex container */}
                <MultiplayerStatus message={statusMessage} /> {/* Add Status here */}
                {/* TODO: Adapt GameInfo for multiplayer scores? */}
-               {/* <GameInfo /> */}
-               <div className="text-white bg-black p-1 px-2 rounded text-sm">Round: {round} / {settings?.rounds}</div> {/* Adjusted padding */}
-             </div>
-           </div>
-           {/* Map */}
+                {/* <GameInfo /> */}
+                <div className="text-white bg-black p-1 px-2 rounded text-sm mr-1">Round: {round} / {settings?.rounds}</div> {/* Adjusted padding & added margin */}
+                {/* Add Forfeit Button */}
+                <GameButton
+                  onClick={handleManualForfeit}
+                  disabled={playerStatuses?.[user?._id] === 'forfeited' || currentUserHasGuessed} // Disable if forfeited or already guessed
+                  className="text-xs !p-[1px_6px] !min-h-[22px]" // Smaller padding and height
+                  css={{
+                    background: '#ff000', // Red background
+                    color: 'white',
+                    '&:hover': { background: '#ff000' }, // Lighter red on hover
+                    '&:disabled': { background: '#555', cursor: 'not-allowed', opacity: 0.6 } // Disabled style
+                  }}
+                >
+                  Forfeit
+                </GameButton>
+              </div>
+            </div>
+            {/* Map */}
            <div className={`bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full ${currentUserHasGuessed ? 'filter brightness-75 cursor-not-allowed' : ''}`} css={{ height: 200, '@media (max-width: 500px)': { height: 150 } }}> {/* Replaced opacity-70 */}
              <Map
                setHover={setHoverCountry}
