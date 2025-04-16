@@ -1,7 +1,7 @@
 import { GiGreekSphinx } from "react-icons/gi";
 import { Artifact3D } from "../art/Artifact3D";
 import { GrReturn } from "react-icons/gr";
-import { FiLink } from "react-icons/fi"; // Import Invite icon
+import { FiShare2 } from "react-icons/fi"; // Import Share icon
 import { Dropdown } from "../dropdown/Dropdown";
 import toast from 'react-hot-toast';
 import { useMultiplayer } from "./context/MultiplayerContext";
@@ -73,10 +73,11 @@ export const Title = () => {
             Leave
           </MolochButton>
           <Dropdown
+            top={34}
             closeAfterClick={true}
             button={
               <MolochButton className="bg-blue-600 hover:bg-blue-700">
-                 <FiLink className="mr-2" /> {/* Add Invite icon */}
+                 <FiShare2 className="mr-2" /> {/* Use Share icon */}
                 Invite
               </MolochButton>
             }
