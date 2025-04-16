@@ -11,6 +11,7 @@ import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
 import { ChatInput } from '@/components/multiplayer/chat/ChatInput';
 import { createStyles } from '../GlobalStyles';
 import { artifactsTheme } from '@/pages/artifacts';
+import { useMediaQuery } from 'react-responsive';
 
 const scrollbarCSS = {
   '&::-webkit-scrollbar': {
@@ -46,6 +47,7 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
   const router = useRouter(); // Get router instance
   const chatDisplayRef = useRef(null); // Ref for auto-scrolling
   const containerRef = useRef(null); // Ref for the main container div
+  const isMobile = useMediaQuery({ query: '(max-width: 568px)' }); // Check if mobile
 
   // Determine if chat should be functional
   const canChat = _socket && isConnected && isRegistered;
@@ -87,7 +89,7 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
   }, [isActive]); // Re-run this effect when isActive changes
 
   // Filter messages for inactive view (last 3 user messages)
-  const inactiveMessages = globalChatMessages.filter(msg => msg.username).slice(-3);
+  const inactiveMessages = globalChatMessages.filter(msg => msg.username).slice(-5);
 
   // --- Handlers for Active/Inactive State (adapted from FixedChat) ---
   const handleMouseEnter = () => {
@@ -122,7 +124,7 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
   const activeBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} p-3 flex flex-col outline-none`; // Positioned bottom-left
   // Adjust width based on notFixed prop
   const activeStyle = {
-    width: notFixed ? '100%' : '450px',
+    minWidth: isMobile ? '100%' : '350px',
     maxHeight: '300px'
   };
 
@@ -133,11 +135,15 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
       <div
         ref={containerRef}
         className={inactiveBaseClasses}
-        onMouseEnter={handleMouseEnter} // Activate on hover
-        onClick={() => canChat && setIsActive(true)} // Activate on click if possible
+        // onMouseEnter moved to inner div
+        // onClick moved to inner div
         title={!canChat ? "Connecting..." : "Click or hover to open chat"} // Tooltip
       >
-        <div className="flex flex-col items-start">
+        <div
+          className="flex flex-col items-start"
+          onMouseEnter={handleMouseEnter} // Activate on hover over content
+          onClick={() => canChat && setIsActive(true)} // Activate on click over content
+        >
           {/* Show connecting state if applicable */}
           {!canChat && (
              <div className="p-1 px-2 rounded bg-black text-white text-xs italic border border-white/20">

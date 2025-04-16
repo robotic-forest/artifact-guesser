@@ -94,10 +94,9 @@ const LobbyPage = () => {
             <div css={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
               <AuthHeader />
             </div>
-            <div className='p-6 w-screen grid grid-cols-2 gap-6 max-w-[1200px]' css={{
+            <div className='p-6 pb-[180px] w-screen grid grid-cols-2 gap-6 max-w-[1200px]' css={{
               '@media (max-width: 800px)': {
-                gridTemplateColumns: '1fr',
-                marginBottom: 128
+                gridTemplateColumns: '1fr'
               }
             }}>
               <div className='flex flex-col' css={{

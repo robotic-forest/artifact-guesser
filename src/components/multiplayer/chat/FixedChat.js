@@ -58,7 +58,7 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
   }, [isActive]); // Re-run this effect when isActive changes
 
   // Filter messages for inactive view (last 3 user messages)
-  const inactiveMessages = chatMessages.filter(msg => msg.username).slice(-3);
+  const inactiveMessages = chatMessages.filter(msg => msg.username).slice(-5);
 
   // --- Handlers for Active/Inactive State ---
   const handleMouseEnter = () => setIsActive(true);

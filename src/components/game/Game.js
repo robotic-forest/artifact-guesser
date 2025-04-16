@@ -250,7 +250,7 @@ const GameUI = () => {
 
       {/* Conditionally render Global Chat and Lobby Browser for single-player games (Desktop position) */}
       {isSinglePlayer && (
-        <div className='hidden md:block fixed bottom-2 left-2 z-50 w-[450px]'> {/* Added positioning and width */}
+        <div className='hidden md:block fixed bottom-2 left-2 z-50 max-w-[450px]'> {/* Added positioning and width */}
           <GlobalChat showHeader notFixed />
           <LobbyBrowser /> {/* Add Lobby Browser below Global Chat */}
         </div>

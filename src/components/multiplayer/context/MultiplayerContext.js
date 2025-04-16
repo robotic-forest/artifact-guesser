@@ -224,8 +224,27 @@ export const MultiplayerProvider = ({ children }) => {
         setLobbyClients(clients || []);
       });
     });
-
-    newSocket.on('lobby-error', (error) => { console.error('Lobby Error:', error.message); });
+ 
+    newSocket.on('lobby-error', (error) => {
+      console.error('Lobby Error:', error.message);
+      // Check for the specific duplicate join error message
+      if (error?.message?.includes('already connected to this lobby')) {
+        console.log('Duplicate join detected, redirecting to /multiplayer...');
+        // Clear potentially stale lobby ID from storage
+        sessionStorage.removeItem('ag_lobbyId');
+        sessionStorage.removeItem('ag_gameActive');
+        // Reset state (optional, but good practice)
+        startTransition(() => {
+          setCurrentLobbyId(null);
+          setChatMessages([]);
+          setLobbyClients([]);
+          // Reset game state if needed
+          setGameState(prev => ({ ...prev, isActive: false, phase: 'lobby', error: null }));
+        });
+        // Redirect
+        router.push('/multiplayer');
+      }
+    });
     newSocket.on('game-error', (error) => { console.error('Game Error:', error.message); });
     // Modified chat listener to filter for current lobby
     newSocket.on('chat', (payload) => {
