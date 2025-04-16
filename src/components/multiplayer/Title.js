@@ -25,7 +25,6 @@ export const Title = () => {
     // Format message as Markdown link using the game mode
     const message = `[Join my ${gameMode} lobby!](${window.location.href})`;
     sendGlobalMessage(message);
-    toast.success('Lobby link broadcasted to global chat!'); // Re-add toast
   };
 
   const handleCopyLink = () => {
