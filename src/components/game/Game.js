@@ -23,6 +23,7 @@ import useMeasure from "react-use-measure"
 import { modes } from "../gameui/ModeButton"
 import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
 import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
+import { LobbyBrowser } from "../multiplayer/LobbyBrowser"; // Import Lobby Browser component
 import Link from "next/link";
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
@@ -247,10 +248,11 @@ const GameUI = () => {
         </div>
       )}
 
-      {/* Conditionally render Global Chat for single-player games (Desktop position) */}
+      {/* Conditionally render Global Chat and Lobby Browser for single-player games (Desktop position) */}
       {isSinglePlayer && (
-        <div className='hidden md:block'>
-          <GlobalChat showHeader />
+        <div className='hidden md:block fixed bottom-2 left-2 z-50 w-[450px]'> {/* Added positioning and width */}
+          <GlobalChat showHeader notFixed />
+          <LobbyBrowser /> {/* Add Lobby Browser below Global Chat */}
         </div>
       )}
     </div>

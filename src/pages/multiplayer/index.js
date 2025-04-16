@@ -1,3 +1,4 @@
+import { useEffect } from 'react'; // Import useEffect
 import { useTheme } from "@emotion/react";
 import { createStyles } from "@/components/GlobalStyles";
 import { artifactsTheme } from "../artifacts";
@@ -8,8 +9,16 @@ import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerCont
 
 // Inner component to access context after provider is mounted
 const MultiplayerPageContent = () => {
-  const { currentLobbyId, isConnected, isRegistered } = useMultiplayer();
-  console.log({ currentLobbyId, isConnected, isRegistered })
+  const { currentLobbyId, isConnected, isRegistered, isLeaving, setIsLeaving } = useMultiplayer(); // Get isLeaving and setIsLeaving
+  console.log({ currentLobbyId, isConnected, isRegistered, isLeaving })
+
+  // Reset the isLeaving flag when landing on this page
+  useEffect(() => {
+    if (isLeaving) {
+      console.log("[MultiplayerPageContent] Resetting isLeaving flag.");
+      setIsLeaving(false);
+    }
+  }, [isLeaving, setIsLeaving]); // Add dependencies
 
   // 1. Handle initial connection/registration phase
   if (!isConnected || !isRegistered) {
@@ -25,8 +34,11 @@ const MultiplayerPageContent = () => {
     return <div className="relative"><Multiplayer /></div>;
   }
 
+  // 3. Handle being in a lobby normally (game not started, or joined after game ended)
   if (currentLobbyId) {
-    return <div className="relative"><div className="flex items-center justify-center h-screen text-black">Entering lobby...</div></div>;
+    // Render Multiplayer which shows lobby details/start button.
+    // The redirect to [lobbyid].js will happen after creation, but this shows the lobby state immediately.
+    return <div className="relative"><Multiplayer /></div>;
   }
 
   // 4. Default: Connected and registered, but not in any lobby

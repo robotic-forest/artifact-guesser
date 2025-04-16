@@ -32,6 +32,7 @@ export const MultiplayerProvider = ({ children }) => {
   const [socketInstance, setSocketInstance] = useState(null);
   const [lobbyClients, setLobbyClients] = useState([]); // State for clients in the current lobby
   const [globalUserCount, setGlobalUserCount] = useState(0); // State for global user count
+  const [isLeaving, setIsLeaving] = useState(false); // Add state to track leave process
   const prevIsLoggedInRef = useRef(user?.isLoggedIn); // Ref to track previous login state
   const currentLobbyIdRef = useRef(currentLobbyId); // Ref to track current lobby ID for socket listener
 
@@ -610,6 +611,11 @@ export const MultiplayerProvider = ({ children }) => {
   }, [user, socketInstance, isConnected, isRegistered]); // Add isRegistered dependency
 
   const joinLobby = useCallback((lobbyId) => {
+    // Prevent joining if currently leaving
+    if (isLeaving) {
+      console.warn(`[joinLobby] Attempted to join lobby ${lobbyId} while leaving flag is set. Aborting.`);
+      return;
+    }
     // Check for registration
     if (!socketInstance || !isConnected || !isRegistered) { console.error('Socket not connected or client not registered.'); return; }
     if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
@@ -617,12 +623,11 @@ export const MultiplayerProvider = ({ children }) => {
 
     // Optimistic Update: Set state and storage immediately
     sessionStorage.setItem('ag_lobbyId', lobbyId);
-    startTransition(() => {
-      setCurrentLobbyId(lobbyId);
-      // Clear potentially stale data from previous lobby immediately
-      setChatMessages([]);
-      setLobbyClients([]);
-    });
+    // Remove startTransition for immediate state update before redirect
+    setCurrentLobbyId(lobbyId);
+    // Clear potentially stale data from previous lobby immediately
+    setChatMessages([]);
+    setLobbyClients([]);
 
     // Redirect immediately
     router.push(`/multiplayer/${lobbyId}`);
@@ -630,26 +635,46 @@ export const MultiplayerProvider = ({ children }) => {
     // Emit event to server
     console.log(`Emitting join event for lobby ${lobbyId} via context`);
     socketInstance.emit('join', { lobby: lobbyId, userId: user._id, username: user.username }); // Use user._id
-  }, [user, socketInstance, isConnected, isRegistered, router]); // Add router dependency
+  }, [user, socketInstance, isConnected, isRegistered, router, isLeaving]); // Add isLeaving dependency
 
   const leaveLobby = useCallback(() => {
-    // Registration check might not be strictly needed for leave, but connection is
-    if (!socketInstance || !isConnected || !currentLobbyId) { console.error('Not connected or not in a lobby.'); return; }
-    if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
-    console.log(`Emitting leave for lobby ${currentLobbyId} via context`);
-    // Clear session storage on leave
+    // Checks
+    if (!socketInstance || !isConnected || !currentLobbyId) {
+      console.error('Not connected or not in a lobby.');
+      return;
+    }
+    if (!user?.isLoggedIn) {
+      console.error('User not logged in.');
+      return;
+    }
+
+    console.log(`Initiating leave for lobby ${currentLobbyId} via context`);
+    setIsLeaving(true); // Set leaving flag immediately
+
+    // Emit leave event BEFORE clearing state/navigating
+    console.log(`Emitting leave event for ${currentLobbyId}`);
+    socketInstance.emit('leave', { lobby: currentLobbyId, userId: user._id, username: user.username });
+
+    // Clear local state and storage
     sessionStorage.removeItem('ag_lobbyId');
     sessionStorage.removeItem('ag_gameActive');
-    socketInstance.emit('leave', { lobby: currentLobbyId, userId: user._id, username: user.username }); // Use user._id
-    startTransition(() => { // Wrap state updates
-      setCurrentLobbyId(null);
-      setChatMessages([]);
-      setLobbyClients([]); // Clear clients on leave
+    setCurrentLobbyId(null);
+    setChatMessages([]);
+    setLobbyClients([]);
+
+    // Start navigation
+    console.log('Redirecting back to /multiplayer...');
+    router.push('/multiplayer').then(() => {
+      // After navigation promise resolves, the flag will be reset by the destination page.
+      console.log(`Navigation to /multiplayer complete. Flag will be reset by destination page.`);
+      // No need to setIsLeaving(false) here anymore, but keep catch block
+    }).catch(err => {
+      // Handle navigation errors if necessary
+      console.error("Navigation failed after trying to leave lobby:", err);
+      setIsLeaving(false); // Reset flag on navigation error just in case
     });
-    // Redirect back to the main multiplayer page
-    console.log('Redirecting back to /multiplayer after leaving lobby.');
-    router.push('/multiplayer');
-  }, [currentLobbyId, user, socketInstance, isConnected, router]); // Add router dependency
+
+  }, [currentLobbyId, user, socketInstance, isConnected, router, setIsLeaving]); // Keep setIsLeaving dependency
 
   // Action to acknowledge the game summary and return to lobby phase
   const acknowledgeGameSummary = useCallback(() => {
@@ -668,6 +693,8 @@ export const MultiplayerProvider = ({ children }) => {
     currentLobbyId,
     isConnected,
     isRegistered, // Expose registration status
+    isLeaving, // Expose leaving status
+    setIsLeaving, // Expose setter for the leaving status reset on destination page
     lobbyClients, // Expose client list
     createLobby,
     joinLobby,

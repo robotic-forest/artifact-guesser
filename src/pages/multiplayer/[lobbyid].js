@@ -11,6 +11,7 @@ import { Options } from '@/components/multiplayer/Options';
 import { Title } from '@/components/multiplayer/Title';
 import { AuthHeader } from '@/components/layout/AuthHeader';
 import { useMultiplayerGame } from '@/components/multiplayer/hooks/useMultiplayerGame'; // Assuming this is needed for game actions
+import { SuperKaballah } from '@/components/art/Kaballah';
 
 const LobbyPage = () => {
   useTheme(artifactsTheme); // Apply the theme
@@ -27,6 +28,7 @@ const LobbyPage = () => {
     chatMessages,
     lobbyClients,
     gameState,
+    isLeaving, // Get the new leaving flag
     // Add any other necessary state/actions from context
   } = useMultiplayer();
 
@@ -34,8 +36,9 @@ const LobbyPage = () => {
   const { submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
 
   useEffect(() => {
-    // Join the lobby when the component mounts, lobbyid is available, and socket is connected
-    if (lobbyid && typeof lobbyid === 'string' && isConnected && currentLobbyId !== lobbyid) {
+    // Join the lobby when the component mounts, lobbyid is available, socket is connected,
+    // we are not currently leaving, and the current lobby ID doesn't match the URL ID.
+    if (lobbyid && typeof lobbyid === 'string' && isConnected && !isLeaving && currentLobbyId !== lobbyid) {
       console.log(`Attempting to join lobby: ${lobbyid}`);
       joinLobby(lobbyid);
     }
@@ -48,7 +51,7 @@ const LobbyPage = () => {
     //     leaveLobby(); // Consider if this is the desired behavior on component unmount
     //   }
     // };
-  }, [lobbyid, isConnected, joinLobby, currentLobbyId, leaveLobby]); // Added leaveLobby to dependencies if uncommented
+  }, [lobbyid, isConnected, joinLobby, currentLobbyId, leaveLobby, isLeaving]); // Add isLeaving to dependencies
 
   // --- Loading / Error States ---
   // Wrap the entire return in the themed div
@@ -57,12 +60,14 @@ const LobbyPage = () => {
       {!isConnected && <div className="flex items-center justify-center min-h-screen">Connecting...</div>}
       {isConnected && (!lobbyid || typeof lobbyid !== 'string') && (
         // Wait for router query to be populated
-        <div className="flex items-center justify-center min-h-screen">Loading lobby information...</div>
+        <div className="flex items-center justify-center min-h-screen"><SuperKaballah speed={500} color={'#000000'} /></div>
       )}
       {isConnected && lobbyid && typeof lobbyid === 'string' && currentLobbyId !== lobbyid && (
         // Check if we are actually in the lobby specified by the URL
         // Show loading state while joining
-        <div className="flex items-center justify-center min-h-screen">Joining lobby {lobbyid}...</div>
+        <div className="flex items-center justify-center min-h-screen">
+          <SuperKaballah speed={500} color={'#000000'} />
+        </div>
       )}
       {isConnected && lobbyid && typeof lobbyid === 'string' && currentLobbyId === lobbyid && (() => {
         // --- Decide what to render based on gameState ---

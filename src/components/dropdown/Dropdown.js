@@ -19,7 +19,8 @@ export const Dropdown = ({
   disableCloseOutside,
   childrenBelowButtons,
   hideButtonIfDisabled,
-  onHover
+  onHover,
+  onClick
 }) => {
   const [boundsRef, bounds] = useMeasure()
   const [showDropDown, setShowDropdown] = useState(false)
@@ -42,7 +43,7 @@ export const Dropdown = ({
     <div ref={ref} css={{ ...containerStyle, position: 'relative' }}>
       {React.cloneElement(button, {
         ref: boundsRef,
-        onClick: openDropdown,
+        onClick: onClick || openDropdown,
         disable: button.props.disable || MenuIconButtons?.every(item => item.disabled),
         disabled: button.props.disabled || MenuIconButtons?.every(item => item.disabled),
         onMouseEnter: () => onHover && openDropdown(),
