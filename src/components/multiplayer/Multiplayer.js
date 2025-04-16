@@ -85,7 +85,10 @@ const Multiplayer = () => {
         <AuthHeader />
       </div>
       <div className='p-6 w-screen grid grid-cols-2 gap-6 max-w-[1200px]' css={{
-        '@media (max-width: 800px)': { gridTemplateColumns: '1fr' }
+        '@media (max-width: 800px)': {
+          gridTemplateColumns: '1fr',
+          marginBottom: 128
+        }
       }}>
         <div className='flex flex-col' css={{
           '@media (max-width: 800px)': { alignItems: 'center' }
