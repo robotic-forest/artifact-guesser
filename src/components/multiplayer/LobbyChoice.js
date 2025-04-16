@@ -6,6 +6,10 @@ import { PulseLoader } from "react-spinners";
 import { Tag } from "../tag/Tag";
 import { modes } from "../gameui/ModeButton";
 import { useEffect } from "react"; // Import useEffect
+import useUser from "@/hooks/useUser"; // Import useUser
+import toast from 'react-hot-toast'; // Import toast
+import AAAAAA from '../art/AAAAAA'; // Import AAAAAA
+import { generateInsult } from '@/hooks/useInsult'; // Import generateInsult
 import { MasonryLayout } from "../layout/MasonryLayout";
 import { useMultiplayer } from "./context/MultiplayerContext"; // Import the context hook
 import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
@@ -39,6 +43,7 @@ const LobbyTypeButton = ({ className, theme, disabled, ...p }) => {
 export const LobbyChoice = () => {
   // Use the useMultiplayer context hook
   const { lobbies, createLobby, joinLobby, isConnected, isRegistered } = useMultiplayer();
+  const { user } = useUser(); // Get user state
   // Use the useGlobalChat context hook
   const { joinGlobalChat, leaveGlobalChat } = useGlobalChat();
 
@@ -101,12 +106,37 @@ export const LobbyChoice = () => {
                <div className="text-xs opacity-80">
                  Only players with a link can join (Not Implemented)
               </div>
-            </LobbyTypeButton>
-            {/* Disable button if not connected OR not registered */}
-            <LobbyTypeButton theme={gamesTheme} onClick={() => handleCreateLobby(true)} disabled={!isConnected || !isRegistered}>
-              <div><b>Create Public Lobby</b></div>
-              <div className="text-xs opacity-80">
-                Anyone can join
+             </LobbyTypeButton>
+             {/* Disable button if not connected OR not registered, add toast for anonymous */}
+             <LobbyTypeButton
+               theme={gamesTheme}
+               onClick={() => {
+                 if (!user?.isLoggedIn) {
+                   toast.custom(
+                     <AAAAAA
+                       initialAngry
+                       initialText={(
+                         <>
+                           Sign up to create a lobby,<br/>
+                           you {generateInsult('adjective')} {generateInsult('name')}!
+                         </>
+                       )}
+                       initialWidth={320}
+                       angle={-3}
+                       textColor='#ffffff'
+                       style={{ padding: '0 12px 12px 0' }}
+                     />,
+                     { position: 'bottom-center' }
+                   );
+                 } else if (isConnected && isRegistered) {
+                   handleCreateLobby(true);
+                 }
+               }}
+               disabled={!isConnected || !isRegistered} // Keep visual disable for connection/registration status
+             >
+               <div><b>Create Public Lobby</b></div>
+               <div className="text-xs opacity-80">
+                 Anyone can join
               </div>
             </LobbyTypeButton>
           </div>
@@ -167,16 +197,37 @@ export const LobbyChoice = () => {
                         </div>
                       </div>
                       {/* Wrapper div for right alignment */}
-                      <div css={{ display: 'flex', justifyContent: 'flex-end' }}>
-                         <Button
-                           onClick={() => handleJoinLobby(lobby._id)}
-                           size='sm'
-                           // Adjust padding for smaller size, remove width: 100%
-                           css={{ padding: '4px 12px' }}
-                           disabled={!isConnected || !isRegistered}
-                         >
-                           Join Lobby
-                         </Button>
+                       <div css={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            onClick={() => {
+                              if (!user?.isLoggedIn) {
+                                toast.custom(
+                                  <AAAAAA
+                                    initialAngry
+                                    initialText={(
+                                      <>
+                                        Sign up to join a lobby,<br/>
+                                        you {generateInsult('noun')}!
+                                      </>
+                                    )}
+                                    initialWidth={300}
+                                    angle={4}
+                                    textColor='#ffffff'
+                                    style={{ padding: '0 12px 12px 0' }}
+                                  />,
+                                  { position: 'bottom-center' }
+                                );
+                              } else if (isConnected && isRegistered) {
+                                handleJoinLobby(lobby._id);
+                              }
+                            }}
+                            size='sm'
+                            // Adjust padding for smaller size, remove width: 100%
+                            css={{ padding: '4px 12px' }}
+                            disabled={!isConnected || !isRegistered} // Keep visual disable for connection/registration status
+                          >
+                            Join Lobby
+                          </Button>
                       </div>
                     </div>
                   );

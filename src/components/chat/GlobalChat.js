@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'; // Import hooks
 import { useRouter } from 'next/router'; // Import useRouter
 import Link from 'next/link'; // Import Link
+import useUser from '@/hooks/useUser'; // Import useUser
+import toast from 'react-hot-toast'; // Import toast
+import AAAAAA from '../art/AAAAAA'; // Import AAAAAA
+import { generateInsult } from '@/hooks/useInsult'; // Import generateInsult
 import { useGlobalChat } from '@/contexts/GlobalChatContext';
 import { useMultiplayer } from '@/components/multiplayer/context/MultiplayerContext';
 // ChatDisplay is not directly used anymore, rendering messages directly
@@ -37,6 +41,8 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
     // sendGlobalMessage // We use ChatInput which calls context internally via socket prop
   } = useGlobalChat();
   const { _socket, isConnected, isRegistered, globalUserCount } = useMultiplayer(); // Need socket, connection status, and user count
+  const { user } = useUser(); // Get user state
+  // Removed signupOpen state
   const router = useRouter(); // Get router instance
   const chatDisplayRef = useRef(null); // Ref for auto-scrolling
   const containerRef = useRef(null); // Ref for the main container div
@@ -64,6 +70,7 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
   // Effect to handle clicks outside the component
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Removed signupOpen check as dialog is no longer used
       if (isActive && containerRef.current && !containerRef.current.contains(event.target)) {
         setIsActive(false);
         // Consider if leaveGlobalChat should be called here?
@@ -209,7 +216,7 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
                 <button
                   className="px-3 py-1 rounded text-black text-sm shadow"
                   style={{ backgroundColor: '#91c3cb' }}
-                  onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click
+                  onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click, allow Link navigation
                 >
                   Go to Multiplayer Lobby
                 </button>
@@ -243,13 +250,41 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
             )}
           </div>
 
-          {/* Chat Input Area */}
-          {/* Pass the shared socket and "global" as lobbyId */}
-          {/* ChatInput uses the socket prop to send messages via the context */}
-          <ChatInput socket={_socket} lobbyId="global" />
+          {/* Chat Input Area Wrapper */}
+          <div onClick={(e) => {
+            if (!user?.isLoggedIn) {
+              e.preventDefault(); // Prevent input focus
+              e.stopPropagation();
+              // Show toast instead of dialog
+              toast.custom(
+                <AAAAAA
+                  initialAngry
+                  initialText={(
+                    <>
+                      Sign up to chat,<br/>
+                      you {generateInsult('name')}!
+                    </>
+                  )}
+                  initialWidth={280}
+                  angle={5}
+                  textColor='#ffffff'
+                  style={{
+                    padding: '0 12px 12px 0'
+                  }}
+                />,
+                { position: 'bottom-center' }
+              );
+            }
+            // Otherwise, allow click to propagate to ChatInput (if not disabled)
+          }}>
+            {/* Pass the shared socket and "global" as lobbyId */}
+            {/* ChatInput uses the socket prop to send messages via the context */}
+            <ChatInput socket={_socket} lobbyId="global" disabled={!user?.isLoggedIn} />
+          </div>
 
           {/* Note: The "Connecting..." overlay is handled in the inactive state now */}
         </div>
+        {/* Removed Signup Dialog */}
       </div>
     );
   }

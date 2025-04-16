@@ -30,6 +30,7 @@ export const MultiplayerProvider = ({ children }) => {
   const [socketInstance, setSocketInstance] = useState(null);
   const [lobbyClients, setLobbyClients] = useState([]); // State for clients in the current lobby
   const [globalUserCount, setGlobalUserCount] = useState(0); // State for global user count
+  const prevIsLoggedInRef = useRef(user?.isLoggedIn); // Ref to track previous login state
   // REMOVE restoredGameState
   // const [restoredGameState, setRestoredGameState] = useState(null);
 
@@ -83,8 +84,15 @@ export const MultiplayerProvider = ({ children }) => {
         console.log(`Emitting register-client for ${user.username}`);
         newSocket.emit('register-client', { userId: user._id, username: user.username });
       } else {
-         console.warn("User not logged in or missing info (_id or username), cannot register client.");
-         setIsRegistered(false);
+         // Handle anonymous user registration
+         let anonymousId = sessionStorage.getItem('ag_anonymousUserId');
+         if (!anonymousId) {
+           anonymousId = `anonymous_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+           sessionStorage.setItem('ag_anonymousUserId', anonymousId);
+         }
+         console.warn("Registering anonymous client with ID:", anonymousId);
+         newSocket.emit('register-client', { userId: anonymousId, username: anonymousId });
+         // Note: isRegistered will be set to true in the 'client-registered' handler
       }
     });
 
@@ -92,18 +100,30 @@ export const MultiplayerProvider = ({ children }) => {
     newSocket.on('client-registered', (data) => {
        console.log('Received client-registered event:', data); // Log received data
        const { socketId, userId: registeredUserId } = data || {}; // Safely destructure
-       const currentUserId = user?._id; // Use user._id
+       const currentUserId = user?._id;
+       const anonymousId = sessionStorage.getItem('ag_anonymousUserId'); // Get anonymous ID
        const currentSocketId = newSocket.id; // Capture socket ID
-       console.log(`Comparing: Event[socketId=${socketId}, userId=${registeredUserId}] vs Client[socketId=${currentSocketId}, userId=${currentUserId}]`);
+
+       console.log(`Comparing: Event[socketId=${socketId}, userId=${registeredUserId}] vs Client[socketId=${currentSocketId}, userId=${currentUserId}, anonId=${anonymousId}]`);
        const socketIdMatch = currentSocketId === socketId;
-       const userIdMatch = currentUserId === registeredUserId; // Compare against user._id
+       // Check against logged-in user ID OR anonymous ID
+       const userIdMatch = user?.isLoggedIn
+         ? registeredUserId === currentUserId // Logged-in check
+         : registeredUserId === anonymousId; // Anonymous check
+
        console.log(`Match results: socketIdMatch=${socketIdMatch}, userIdMatch=${userIdMatch}`);
        if (socketIdMatch && userIdMatch) { // Check if the event is for THIS client
-          console.log(`Client registration confirmed for user ${registeredUserId}. Setting isRegistered=true.`);
+          console.log(`Client registration confirmed for ${user?.isLoggedIn ? 'user' : 'anonymous client'} ${registeredUserId}. Setting isRegistered=true.`);
           setIsRegistered(true); // Set state to true
-          // Now request lobbies after registration is confirmed
-          console.log('Emitting list-lobbies after registration.');
-          newSocket.emit('list-lobbies');
+
+          // Request lobbies ONLY if logged in, otherwise join global chat
+          if (user?.isLoggedIn) {
+            console.log('Logged-in user registered. Emitting list-lobbies.');
+            newSocket.emit('list-lobbies');
+          } else {
+            console.log('Anonymous client registered. Emitting join-global-chat.');
+            newSocket.emit('join-global-chat');
+          }
        } else {
           console.log('Received client-registered event for a different client/user or mismatch. Ignoring.');
        }
@@ -415,41 +435,54 @@ export const MultiplayerProvider = ({ children }) => {
   }, [user, clearCountdownInterval]); // Add clearCountdownInterval dependency
 
   useEffect(() => {
-    console.log('[MultiplayerProvider useEffect] Running effect. User:', user, 'SocketInstance:', socketInstance); // Log inputs
-    // Only attempt connection if user is loaded AND logged in, and not already connected
-    // Use user._id here as well
-    if (user?.isLoggedIn && user._id && user.username && !socketInstance) {
-      // Check session storage *before* connecting
-      const potentialLobbyId = sessionStorage.getItem('ag_lobbyId');
-      console.log(`[MultiplayerProvider useEffect] Checking session storage: ag_lobbyId=${potentialLobbyId}`);
-      console.log("[MultiplayerProvider useEffect] Condition met: User logged in, has _id, no socket instance. Calling connectSocket().");
-      // No need to pass lobbyId here, backend handles rejoin on 'register-client'
-      connectSocket();
-    } else if (!user) {
-       console.log("[MultiplayerProvider useEffect] Condition NOT met: User data not yet loaded.");
-    } else if (!user.isLoggedIn) {
-       console.log("[MultiplayerProvider useEffect] Condition NOT met: User is not logged in.");
-       // Clear any potentially stale connection state if user logs out
-       if (isConnected || isRegistered || socketInstance) {
-          console.log("[MultiplayerProvider useEffect] Cleaning up state due to user logout.");
-          startTransition(() => { // Wrap state updates
-            setIsConnected(false);
-            setIsRegistered(false);
-            // Reset game state on logout too
-            setGameState({ isActive: false, settings: null, round: 0, artifact: null, scores: {}, guesses: {}, players: {}, roundResults: null, finalScores: null, phase: 'lobby', error: null, gameHistory: [], playerStatuses: {}, disconnectCountdown: null, isForfeitWin: false, gameEndedAcknowledged: false });
-          });
-          socketInstance?.disconnect(); // Attempt disconnect if instance exists
-          setSocketInstance(null);
-       }
-    } else if (socketInstance) {
-        console.log("[MultiplayerProvider useEffect] Condition NOT met: Socket instance already exists.");
-    } else {
-        // Log the specific reason more clearly
-        console.log("[MultiplayerProvider useEffect] Condition NOT met: Other reason.", {isLoggedIn: user?.isLoggedIn, has_Id: !!user?._id, hasUsername: !!user?.username, hasSocket: !!socketInstance});
-    }
+    console.log('[MultiplayerProvider useEffect] Running effect. User:', user, 'SocketInstance:', socketInstance, 'PrevLoggedIn:', prevIsLoggedInRef.current); // Log inputs
 
-    // Cleanup function: Remove listeners but DON'T disconnect the socket here.
-    // The socket should persist as long as the provider is mounted at a high level.
+    // --- Handle Login Transition ---
+    const justLoggedIn = user?.isLoggedIn && !prevIsLoggedInRef.current;
+    if (justLoggedIn && socketInstance) {
+      console.log('[MultiplayerProvider useEffect] User just logged in while connected anonymously. Disconnecting old socket...');
+      socketInstance.disconnect();
+      // Reset state immediately to allow reconnection logic to trigger
+      startTransition(() => {
+        setIsConnected(false);
+        setIsRegistered(false);
+        setSocketInstance(null);
+        // Optionally reset other states like chat, lobbies if needed upon login
+        setChatMessages([]);
+        setLobbies([]);
+        setCurrentLobbyId(null);
+        setLobbyClients([]);
+      });
+      // Update ref *after* potential disconnect logic
+      prevIsLoggedInRef.current = user?.isLoggedIn;
+      return; // Exit effect early to allow state update and re-run for connection
+    }
+    // --- End Handle Login Transition ---
+
+
+    // Attempt connection if user data is loaded and not already connected
+    // connectSocket will handle logged-in vs anonymous registration
+    if (user && !socketInstance) {
+      console.log(`[MultiplayerProvider useEffect] User data loaded, no socket instance.`);
+       console.log("[MultiplayerProvider useEffect] Condition met: User data loaded, no socket instance. Calling connectSocket().");
+       // No need to pass lobbyId here, backend handles rejoin on 'register-client'
+       connectSocket();
+     } else if (!user) {
+        console.log("[MultiplayerProvider useEffect] Condition NOT met: User data not yet loaded.");
+     // Removed the `else if (!user.isLoggedIn)` block that caused disconnects for anonymous users.
+     // The socket's 'disconnect' event handler and the effect cleanup will handle state resets.
+     } else if (socketInstance) {
+         console.log("[MultiplayerProvider useEffect] Condition NOT met: Socket instance already exists.");
+     } else {
+        // Log the specific reason more clearly
+         console.log("[MultiplayerProvider useEffect] Condition NOT met: Other reason.", {isLoggedIn: user?.isLoggedIn, has_Id: !!user?._id, hasUsername: !!user?.username, hasSocket: !!socketInstance});
+     }
+
+    // Update ref at the end of the effect run
+    prevIsLoggedInRef.current = user?.isLoggedIn;
+
+     // Cleanup function: Remove listeners but DON'T disconnect the socket here.
+     // The socket should persist as long as the provider is mounted at a high level.
     return () => {
       if (socketInstance) {
         console.log('Cleaning up socket listeners on provider unmount/re-render.');
