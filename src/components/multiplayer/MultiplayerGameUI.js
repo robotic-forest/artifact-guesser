@@ -132,7 +132,10 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
   return (
     // Apply lobby background and text color
     <div className="p-4 min-h-screen flex flex-col items-center justify-center relative" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}> {/* Added relative positioning */}
-      <FixedChat lightContext={true} /> {/* Pass lightContext prop */}
+      {/* Wrap FixedChat in a positioning div for summary views */}
+      <div className="fixed bottom-4 left-4 z-50 hidden md:block">
+        <FixedChat lightContext={true} /> {/* Pass lightContext prop */}
+      </div>
       <h2 className="text-2xl font-bold mb-4">Round {round} Results</h2>
 
       {/* Display Correct Answer - Lobby Style Card */}
@@ -231,7 +234,10 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
   return (
     // Apply lobby background and text color
     <div className="p-4 min-h-screen flex flex-col items-center justify-center relative" css={{ background: 'var(--backgroundColor)', color: 'var(--textColor)'}}> {/* Added relative positioning */}
-      <FixedChat lightContext={true} /> {/* Pass lightContext prop */}
+      {/* Wrap FixedChat in a positioning div for summary views */}
+      <div className="fixed bottom-4 left-4 z-50 hidden md:block">
+        <FixedChat lightContext={true} /> {/* Pass lightContext prop */}
+      </div>
       <h2 className="text-3xl font-bold mb-6">{titleText}</h2>
 
       {/* Final Scores - Lobby Style Card */}
@@ -525,14 +531,15 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
              </div>
            </div>
         </div>
-        {/* Render Player Status below Chat (Desktop Only) - Pass playerStatuses */}
-        {/* This instance remains absolutely positioned at the bottom but is hidden on mobile */}
-        <div className="hidden md:flex flex-wrap justify-center p-2 w-full absolute bottom-[0px] left-0 z-10 pointer-events-none">
-          <PlayerStatusList players={players} guesses={guesses} playerStatuses={playerStatuses} />
+        {/* Container for Desktop Chat and Player Status */}
+        <div className="hidden md:flex flex-col absolute bottom-0 left-0 z-10 p-2"> {/* Position container & make flex column */}
+          {/* Render Fixed Chat (Desktop Only) */}
+          <FixedChat className={`${disconnectCountdown ? 'mt-6' : ''}`} />
+          {/* Render Player Status below Chat (Desktop Only) */}
+          <div className="flex flex-wrap justify-start mt-1"> {/* Stack below chat */}
+            <PlayerStatusList players={players} guesses={guesses} playerStatuses={playerStatuses} />
+          </div>
         </div>
-        {/* Render Fixed Chat (Desktop Only) - Conditionally push down if banner is visible */}
-        {/* Added hidden md:block */}
-        <FixedChat className={`${disconnectCountdown ? 'mt-6' : ''} hidden md:block`} />
       </div>
     );
   }

@@ -26,7 +26,7 @@ const MultiplayerPageContent = () => {
   }
 
   if (currentLobbyId) {
-    return <div className="relative"><div className="flex items-center justify-center h-screen text-black">Creating lobby...</div></div>;
+    return <div className="relative"><div className="flex items-center justify-center h-screen text-black">Entering lobby...</div></div>;
   }
 
   // 4. Default: Connected and registered, but not in any lobby

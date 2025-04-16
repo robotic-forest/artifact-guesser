@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react'; // Import useRef
 import { useMultiplayer } from '../context/MultiplayerContext';
 import { ChatInput } from './ChatInput';
-
-// Define sand color (adjust as needed, maybe use a CSS variable if available)
-const sandColor = '#f4e9d8'; // Example sand color
+import { createStyles } from '../../GlobalStyles'; // Import createStyles
+import { artifactsTheme } from '@/pages/artifacts'; // Import theme
 
 // Basic scrollbar styling (can be customized further)
 const scrollbarCSS = {
   '&::-webkit-scrollbar': {
-    width: '8px',
+    width: '8px', // Keep original width for FixedChat
+    height: '8px',
   },
   '&::-webkit-scrollbar-track': {
-    background: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: '4px',
+    background: 'none', // Match GlobalChat
   },
   '&::-webkit-scrollbar-thumb': {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: '4px',
+    backgroundColor: 'var(--textVeryLowOpacity)', // Match GlobalChat
+    borderRadius: '25px', // Match GlobalChat
+    border: '2px solid var(--backgroundColorBarelyLight)', // Adjusted border width for smaller scrollbar
   },
   '&::-webkit-scrollbar-thumb:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'var(--textLowOpacity)', // Match GlobalChat
   }
 };
 
@@ -99,15 +99,17 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
   // Determine base classes based on mobile layout
   const inactiveBaseClasses = isMobileLayout
     ? "relative w-full mb-2 cursor-pointer p-2 border border-black/20 rounded bg-white/80" // Mobile: relative, full width, margin, padding, border, light bg
-    : "fixed bottom-4 left-4 z-50 hidden md:block cursor-pointer"; // Desktop: fixed, bottom-left, hidden on mobile
+    : "z-50 hidden md:block cursor-pointer"; // Desktop: REMOVED fixed, bottom-4, left-4
 
+  // Adjusted active classes for consistency
   const activeBaseClasses = isMobileLayout
-    ? "relative w-full mb-2 rounded-md p-4 shadow-lg flex flex-col outline-none" // Mobile: relative, full width, margin
-    : "fixed bottom-6 left-6 z-50 rounded-md p-4 shadow-lg flex flex-col outline-none"; // Desktop: fixed, bottom-left
+    ? "relative w-full mb-2 p-3 flex flex-col outline-none" // Mobile: relative, full width, margin, padding adjusted
+    : "z-50 p-3 flex flex-col outline-none"; // Desktop: REMOVED fixed, bottom-3, left-3
 
+  // Adjusted active style for consistency
   const activeStyle = isMobileLayout
-    ? { backgroundColor: sandColor, height: '250px' } // Mobile: sand color, adjusted height, width is handled by w-full
-    : { backgroundColor: sandColor, width: '350px', height: '300px' }; // Desktop: original fixed dimensions
+    ? { width: '100%', maxHeight: '250px' } // Mobile: Use maxHeight, width is handled by w-full
+    : { width: '350px', maxHeight: '300px' }; // Desktop: Use maxHeight, keep original width
 
   // --- Desktop/Mobile Rendering with Active/Inactive Toggle ---
   if (!isActive) {
@@ -117,23 +119,44 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
       return (
         <div
           ref={containerRef}
-          // Removed w-full, changed bg/text/border colors, adjusted padding/margin to match desktop feel
-          className="relative inline-block mb-1 cursor-pointer p-1 px-2 rounded bg-black text-white text-sm border border-white/20"
+          // Use GlobalChat's inactive styling approach
+          className="relative inline-block mb-1 cursor-pointer"
           onClick={() => setIsActive(true)} // Activate on click/tap
         >
           {inactiveMessages.length > 0 ? (
-             // Show last message preview
-             <div className="max-w-xs">
-               {inactiveMessages[inactiveMessages.length - 1].username && <b>{inactiveMessages[inactiveMessages.length - 1].username}:</b>} {inactiveMessages[inactiveMessages.length - 1].message}
-             </div>
+             // Show last message preview (styled like GlobalChat inactive)
+             inactiveMessages.map((msg, index) => (
+              <div
+                key={index}
+                className="p-1 px-2 text-sm"
+                css={{
+                  background: 'var(--backgroundColor)',
+                  color: 'var(--textColor)',
+                  border: '1px solid var(--borderColor)',
+                  marginTop: '2px',
+                  borderRadius: '3px'
+                }}
+              >
+                {msg.username && <b className="mr-1">{msg.username}:</b>} {msg.message}
+              </div>
+             ))
            ) : (
-             // Show placeholder (updated text color)
-             <div className="italic text-white/70">Tap to chat...</div>
+             // Show placeholder (styled like GlobalChat inactive)
+             <div
+                className="p-1 px-2 rounded text-xs italic"
+                css={{
+                  background: 'var(--backgroundColor)',
+                  color: 'var(--textColorLowOpacity)',
+                  marginTop: '2px'
+                }}
+              >
+                Tap to chat...
+              </div>
            )}
         </div>
       );
     } else {
-      // Desktop Inactive: Show message previews on hover
+      // Desktop Inactive: Show message previews on hover (styled like GlobalChat inactive)
       return (
         <div
           ref={containerRef}
@@ -144,16 +167,29 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
             {inactiveMessages.map((msg, index) => (
               <div
                 key={index}
-                className={`p-1 max-w-xs truncate ${lightContext ? 'text-black' : 'text-white'}`}
-                css={{ background: 'var(--backgroundColor)' }}
+                className="p-1 px-2 text-sm" // Removed conditional classes, max-w, truncate
+                css={{
+                  background: 'var(--backgroundColor)',
+                  color: 'var(--textColor)', // Use theme text color
+                  border: '1px solid var(--borderColor)', // Use theme border color
+                  marginTop: '2px', // Add slight spacing
+                  borderRadius: '3px' // Add slight rounding
+                }}
               >
-                {msg.username && <b>{msg.username}:</b>} {msg.message}
+                {msg.username && <b className="mr-1">{msg.username}:</b>} {msg.message}
               </div>
             ))}
             {inactiveMessages.length === 0 && (
-               <div className={`p-1 text-xs italic ${
-                  lightContext ? 'bg-transparent text-black/70' : 'bg-black text-white/70'
-               }`}>No recent messages</div>
+               <div
+                className="p-1 px-2 rounded text-xs italic"
+                css={{
+                  background: 'var(--backgroundColor)',
+                  color: 'var(--textColorLowOpacity)',
+                  marginTop: '2px'
+                }}
+              >
+                No recent messages
+              </div>
             )}
           </div>
         </div>
@@ -161,32 +197,48 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
     }
   } else {
     // --- Active View (Mobile and Desktop) ---
+    // Wrap with theme provider like GlobalChat
     return (
-      <div
-        ref={containerRef}
-        tabIndex={-1} // Make focusable for blur/escape
-        className={activeBaseClasses} // Use appropriate base classes
-        style={activeStyle} // Use appropriate style
-        onMouseEnter={!isMobileLayout ? handleMouseEnter : undefined} // Desktop only hover
-        onMouseLeave={!isMobileLayout ? handleMouseLeave : undefined} // Desktop only hover
-        onFocus={!isMobileLayout ? handleFocus : undefined} // Desktop only focus
-        onBlur={handleBlur} // Keep blur for both (click outside)
-        onKeyDown={handleKeyDown} // Keep escape key for both
-      >
-        {/* Custom Chat Display Area */}
+      <div css={createStyles(artifactsTheme)}>
         <div
-          ref={chatDisplayRef}
-          className="flex-grow overflow-y-auto mb-2 text-sm text-black pr-1"
-          css={scrollbarCSS}
+          // Apply GlobalChat's active container styling
+          css={{
+            borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+            border: '1px outset',
+            background: 'var(--backgroundColor)',
+          }}
+          ref={containerRef}
+          tabIndex={-1} // Make focusable for blur/escape
+          className={activeBaseClasses} // Use appropriate base classes
+          style={activeStyle} // Use appropriate style
+          onMouseEnter={!isMobileLayout ? handleMouseEnter : undefined} // Desktop only hover
+          onMouseLeave={!isMobileLayout ? handleMouseLeave : undefined} // Desktop only hover
+          onFocus={!isMobileLayout ? handleFocus : undefined} // Desktop only focus
+          onBlur={handleBlur} // Keep blur for both (click outside)
+          onKeyDown={handleKeyDown} // Keep escape key for both
         >
-          {chatMessages.map((c, i) => (
-            <div key={i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }}>
-              {c.username && <b>{c.username}:</b>} {c.message}
-            </div>
-          ))}
+          {/* Chat Display Area - Apply GlobalChat styling */}
+          <div
+            ref={chatDisplayRef}
+            className="flex-grow overflow-y-auto text-sm text-black pr-1 rounded p-2 border border-black/10" // Added padding, border like GlobalChat
+            css={{
+              ...scrollbarCSS, // Apply updated scrollbar CSS
+              backgroundColor: 'var(--backgroundColorBarelyLight)', // Match GlobalChat
+            }}
+          >
+            {chatMessages.map((c, i) => (
+              <div key={i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }}>
+                {c.username && <b>{c.username}:</b>} {c.message}
+              </div>
+            ))}
+            {/* Add a small message if chat history is empty */}
+            {chatMessages.length === 0 && (
+              <div className="text-xs italic text-gray-500">Welcome to the lobby chat!</div>
+            )}
+          </div>
+          {/* Chat Input - No wrapper needed like GlobalChat */}
+          <ChatInput socket={_socket} lobbyId={currentLobbyId} />
         </div>
-        {/* Chat Input */}
-        <ChatInput socket={_socket} lobbyId={currentLobbyId} />
       </div>
     );
   }
