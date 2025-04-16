@@ -35,6 +35,7 @@ export const MultiplayerProvider = ({ children }) => {
   const [isLeaving, setIsLeaving] = useState(false); // Add state to track leave process
   const prevIsLoggedInRef = useRef(user?.isLoggedIn); // Ref to track previous login state
   const currentLobbyIdRef = useRef(currentLobbyId); // Ref to track current lobby ID for socket listener
+  const [lobbyJoinStatus, setLobbyJoinStatus] = useState('idle'); // 'idle', 'pending', 'success', 'failed-duplicate'
 
   // Update the ref whenever currentLobbyId changes
   useEffect(() => {
@@ -85,6 +86,7 @@ export const MultiplayerProvider = ({ children }) => {
       console.log('Socket connected via context:', newSocket.id);
       setIsConnected(true);
       setSocketInstance(newSocket);
+      setLobbyJoinStatus('idle'); // Reset status on connect
 
       // Use user._id instead of user.id
       if (user?.isLoggedIn && user._id && user.username) {
@@ -134,6 +136,7 @@ export const MultiplayerProvider = ({ children }) => {
             setCurrentLobbyId(null);
             setChatMessages([]);
             setLobbyClients([]);
+            setLobbyJoinStatus('idle'); // Reset join status
             // After clearing, proceed as if no lobby was stored (e.g., list lobbies or join global chat)
           }
           // --- End check ---
@@ -166,6 +169,7 @@ export const MultiplayerProvider = ({ children }) => {
         setChatMessages([]);
         setLobbyClients([]); // Clear clients on disconnect
         setSocketInstance(null);
+        setLobbyJoinStatus('idle'); // Reset join status
       });
     });
 
@@ -174,6 +178,7 @@ export const MultiplayerProvider = ({ children }) => {
       setIsConnected(false);
       setIsRegistered(false);
       setSocketInstance(null);
+      setLobbyJoinStatus('idle'); // Reset join status
     });
 
     // --- Other Event Listeners ---
@@ -210,6 +215,7 @@ export const MultiplayerProvider = ({ children }) => {
             setCurrentLobbyId(newLobbyId);
             // Also set initial client list for the creator
             setLobbyClients(update.lobby.clients || []);
+            setLobbyJoinStatus('success'); // Set status on successful create
             // Redirect the creator to the new lobby page
             console.log(`Redirecting to new lobby: /multiplayer/${newLobbyId}`);
             router.push(`/multiplayer/${newLobbyId}`);
@@ -224,12 +230,13 @@ export const MultiplayerProvider = ({ children }) => {
         setLobbyClients(clients || []);
       });
     });
- 
+
     newSocket.on('lobby-error', (error) => {
       console.error('Lobby Error:', error.message);
       // Check for the specific duplicate join error message
       if (error?.message?.includes('already connected to this lobby')) {
         console.log('Duplicate join detected, redirecting to /multiplayer...');
+        setLobbyJoinStatus('failed-duplicate'); // Set status
         // Clear potentially stale lobby ID from storage
         sessionStorage.removeItem('ag_lobbyId');
         sessionStorage.removeItem('ag_gameActive');
@@ -243,6 +250,9 @@ export const MultiplayerProvider = ({ children }) => {
         });
         // Redirect
         router.push('/multiplayer');
+      } else {
+        // Handle other lobby errors if needed, maybe reset status?
+        setLobbyJoinStatus('idle');
       }
     });
     newSocket.on('game-error', (error) => { console.error('Game Error:', error.message); });
@@ -501,6 +511,7 @@ export const MultiplayerProvider = ({ children }) => {
         console.log(`[MultiplayerContext] Rejoin successful for lobby ${lobbyId}. Applying received game state directly.`);
         sessionStorage.setItem('ag_lobbyId', lobbyId);
         sessionStorage.setItem('ag_gameActive', 'true');
+        setLobbyJoinStatus('success'); // Set status on successful rejoin
 
         // Directly set the context's game state - REMOVE startTransition for immediate update
         // startTransition(() => {
@@ -511,20 +522,29 @@ export const MultiplayerProvider = ({ children }) => {
         console.log('[MultiplayerContext] Applied received game state directly (without startTransition).');
       } else {
         console.warn('[MultiplayerContext] Received rejoin-successful event without lobbyId or gameState.');
+        setLobbyJoinStatus('idle'); // Reset status on error?
       }
     });
     // --- End Rejoin Success Listener ---
 
     // --- Listener for Join Success ---
-    // State/redirect is now handled optimistically in joinLobby action.
-    // This listener just confirms the server acknowledged the join.
     newSocket.on('join-successful', ({ lobbyId }) => {
       if (lobbyId) {
-        console.log(`[MultiplayerContext] Server confirmed successful join for lobby ${lobbyId}. (State updated optimistically)`);
-        // No state updates needed here anymore.
+        console.log(`[MultiplayerContext] Server confirmed successful join for lobby ${lobbyId}.`);
+        setLobbyJoinStatus('success'); // Set status
+        // Set state and storage now that join is confirmed
+        sessionStorage.setItem('ag_lobbyId', lobbyId);
+        startTransition(() => {
+          setCurrentLobbyId(lobbyId);
+          // Clear potentially stale data from previous lobby immediately
+          setChatMessages([]);
+          setLobbyClients([]);
+        });
+        // Navigate now that join is confirmed
+        router.push(`/multiplayer/${lobbyId}`);
       } else {
         console.warn('[MultiplayerContext] Received join-successful event without lobbyId.');
-        // Consider if error handling/state rollback is needed if optimistic update failed server-side.
+        setLobbyJoinStatus('idle'); // Reset status on error?
       }
     });
     // --- End Join Success Listener ---
@@ -549,6 +569,7 @@ export const MultiplayerProvider = ({ children }) => {
         setLobbies([]);
         setCurrentLobbyId(null);
         setLobbyClients([]);
+        setLobbyJoinStatus('idle'); // Reset join status
       });
       // Update ref *after* potential disconnect logic
       prevIsLoggedInRef.current = user?.isLoggedIn;
@@ -631,31 +652,20 @@ export const MultiplayerProvider = ({ children }) => {
   }, [user, socketInstance, isConnected, isRegistered]); // Add isRegistered dependency
 
   const joinLobby = useCallback((lobbyId) => {
-    // Prevent joining if currently leaving
-    if (isLeaving) {
-      console.warn(`[joinLobby] Attempted to join lobby ${lobbyId} while leaving flag is set. Aborting.`);
+    // Prevent joining if currently leaving or already pending
+    if (isLeaving || lobbyJoinStatus === 'pending') {
+      console.warn(`[joinLobby] Attempted to join lobby ${lobbyId} while leaving or join pending. Status: ${lobbyJoinStatus}, IsLeaving: ${isLeaving}. Aborting.`);
       return;
     }
     // Check for registration
     if (!socketInstance || !isConnected || !isRegistered) { console.error('Socket not connected or client not registered.'); return; }
-    if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
-    console.log(`Optimistically joining lobby ${lobbyId} and redirecting...`);
+     if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
 
-    // Optimistic Update: Set state and storage immediately
-    sessionStorage.setItem('ag_lobbyId', lobbyId);
-    // Remove startTransition for immediate state update before redirect
-    setCurrentLobbyId(lobbyId);
-    // Clear potentially stale data from previous lobby immediately
-    setChatMessages([]);
-    setLobbyClients([]);
-
-    // Redirect immediately
-    router.push(`/multiplayer/${lobbyId}`);
-
-    // Emit event to server
-    console.log(`Emitting join event for lobby ${lobbyId} via context`);
-    socketInstance.emit('join', { lobby: lobbyId, userId: user._id, username: user.username }); // Use user._id
-  }, [user, socketInstance, isConnected, isRegistered, router, isLeaving]); // Add isLeaving dependency
+     // Set status to pending and emit event
+     setLobbyJoinStatus('pending');
+     console.log(`Emitting join event for lobby ${lobbyId} via context`);
+     socketInstance.emit('join', { lobby: lobbyId, userId: user._id, username: user.username }); // Use user._id
+   }, [user, socketInstance, isConnected, isRegistered, router, isLeaving, setLobbyJoinStatus, lobbyJoinStatus]); // Add setLobbyJoinStatus & lobbyJoinStatus dependency
 
   const leaveLobby = useCallback(() => {
     // Checks
@@ -670,6 +680,7 @@ export const MultiplayerProvider = ({ children }) => {
 
     console.log(`Initiating leave for lobby ${currentLobbyId} via context`);
     setIsLeaving(true); // Set leaving flag immediately
+    setLobbyJoinStatus('idle'); // Reset join status on leave
 
     // Emit leave event BEFORE clearing state/navigating
     console.log(`Emitting leave event for ${currentLobbyId}`);
@@ -694,7 +705,7 @@ export const MultiplayerProvider = ({ children }) => {
       setIsLeaving(false); // Reset flag on navigation error just in case
     });
 
-  }, [currentLobbyId, user, socketInstance, isConnected, router, setIsLeaving]); // Keep setIsLeaving dependency
+  }, [currentLobbyId, user, socketInstance, isConnected, router, setIsLeaving, setLobbyJoinStatus]); // Keep setIsLeaving, add setLobbyJoinStatus dependency
 
   // Action to acknowledge the game summary and return to lobby phase
   const acknowledgeGameSummary = useCallback(() => {
@@ -716,6 +727,7 @@ export const MultiplayerProvider = ({ children }) => {
     isLeaving, // Expose leaving status
     setIsLeaving, // Expose setter for the leaving status reset on destination page
     lobbyClients, // Expose client list
+    lobbyJoinStatus, // Expose join status
     createLobby,
     joinLobby,
     leaveLobby,

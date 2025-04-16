@@ -27,19 +27,21 @@ const LobbyPage = () => {
     _socket,
     chatMessages,
     lobbyClients,
-    gameState,
-    isLeaving, // Get the new leaving flag
-    // Add any other necessary state/actions from context
-  } = useMultiplayer();
+     gameState,
+     isLeaving, // Get the new leaving flag
+     lobbyJoinStatus, // Get the new join status
+     // Add any other necessary state/actions from context
+   } = useMultiplayer();
 
   // Get game actions if needed
   const { submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
 
-  useEffect(() => {
+   useEffect(() => {
     // Join the lobby when the component mounts, lobbyid is available, socket is connected,
-    // we are not currently leaving, and the current lobby ID doesn't match the URL ID.
-    if (lobbyid && typeof lobbyid === 'string' && isConnected && !isLeaving && currentLobbyId !== lobbyid) {
-      console.log(`Attempting to join lobby: ${lobbyid}`);
+    // we are not currently leaving, the current lobby ID doesn't match the URL ID,
+    // AND the join status is idle (not pending or failed).
+    if (lobbyid && typeof lobbyid === 'string' && isConnected && !isLeaving && currentLobbyId !== lobbyid && lobbyJoinStatus === 'idle') {
+      console.log(`[LobbyPage] Attempting to join lobby: ${lobbyid} (Status: ${lobbyJoinStatus})`);
       joinLobby(lobbyid);
     }
 
@@ -51,7 +53,7 @@ const LobbyPage = () => {
     //     leaveLobby(); // Consider if this is the desired behavior on component unmount
     //   }
     // };
-  }, [lobbyid, isConnected, joinLobby, currentLobbyId, leaveLobby, isLeaving]); // Add isLeaving to dependencies
+  }, [lobbyid, isConnected, joinLobby, currentLobbyId, leaveLobby, isLeaving, lobbyJoinStatus]); // Add lobbyJoinStatus to dependencies
 
   // --- Loading / Error States ---
   // Wrap the entire return in the themed div
