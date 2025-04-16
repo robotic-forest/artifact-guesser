@@ -117,9 +117,6 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
 
   // --- Render Logic ---
 
-  // Check if we are on the multiplayer lobby page
-  const isLobbyPage = router.pathname === '/multiplayer';
-
   // Define base classes and styles like FixedChat (Desktop version assumed for GlobalChat)
   const inactiveBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} cursor-pointer`; // Positioned bottom-left
   const activeBaseClasses = `${notFixed ? '' : 'fixed bottom-3 left-3 z-50'} p-3 flex flex-col outline-none`; // Positioned bottom-left
@@ -149,42 +146,41 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
            )}
             {/* Show user count in inactive view if connected */}
             {canChat && (
-              <div className={`p-1 px-2 text-xs italic flex items-center ${
-                isLobbyPage
-                  ? 'bg-[var(--backgroundColor)]' // Lobby style
-                  : 'bg-black' // Default style
-              }`}>
+              // Apply lobby theme styles consistently
+              <div className="p-1 px-2 text-xs italic flex items-center" css={{ background: 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)' }}>
                 <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-3 mb-1"></span>
                 {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
               </div>
             )}
              {/* Show message preview only if connected */}
-            {canChat && inactiveMessages.length > 0 && inactiveMessages.map((msg, index) => {
-              // Conditional styling for lobby page
-             const lobbyInactiveClasses = "text-black border-black/20";
-             const defaultInactiveClasses = "bg-black text-white border-white/20";
-             const inactiveMsgClasses = isLobbyPage ? lobbyInactiveClasses : defaultInactiveClasses;
-
-             return (
-               <div
-                 key={index}
-                 // Apply conditional styles
-                 className={`p-1 px-2 text-sm ${inactiveMsgClasses}`}
-                 css={{
-                   background: 'var(--backgroundColor)'
-                 }}
-               >
-                 {msg.username && <b>{msg.username}:</b>} {msg.message}
-               </div>
-             );
-           })}
+            {canChat && inactiveMessages.length > 0 && inactiveMessages.map((msg, index) => (
+              // Apply lobby theme styles consistently
+              <div
+                key={index}
+                className="p-1 px-2 text-sm" // Removed conditional classes
+                css={{
+                  background: 'var(--backgroundColor)',
+                  color: 'var(--textColor)', // Use theme text color
+                  border: '1px solid var(--borderColor)', // Use theme border color
+                  marginTop: '2px', // Add slight spacing
+                  borderRadius: '3px' // Add slight rounding
+                }}
+              >
+                {msg.username && <b>{msg.username}:</b>} {msg.message}
+              </div>
+            ))}
            {/* Placeholder if connected but no messages */}
            {canChat && inactiveMessages.length === 0 && (
-              <div className={`p-1 px-2 rounded text-xs italic border ${
-                isLobbyPage
-                  ? 'bg-[var(--backgroundColor)] text-black/70 border-black/20' // Lobby style
-                  : 'bg-black text-white/70 border-white/20' // Default style
-              }`}>
+              // Apply lobby theme styles consistently
+              <div
+                className="p-1 px-2 rounded text-xs italic border"
+                css={{
+                  background: 'var(--backgroundColor)',
+                  color: 'var(--textColorLowOpacity)',
+                  borderColor: 'var(--borderColor)',
+                  marginTop: '2px'
+                }}
+              >
                 No recent messages
               </div>
           )}

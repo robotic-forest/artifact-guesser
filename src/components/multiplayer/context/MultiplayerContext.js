@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext, createContext, startTransition, useRef } from 'react'; // Import startTransition, useRef
+import { useRouter } from 'next/router'; // Import useRouter
 import io from 'socket.io-client';
 import useUser from '@/hooks/useUser';
 
@@ -15,6 +16,7 @@ export const useMultiplayer = () => {
 };
 
 export const MultiplayerProvider = ({ children }) => {
+  const router = useRouter(); // Get router instance
   const { user } = useUser();
   const [lobbies, setLobbies] = useState([]);
   // Initialize currentLobbyId from session storage on mount
@@ -206,6 +208,9 @@ export const MultiplayerProvider = ({ children }) => {
             setCurrentLobbyId(newLobbyId);
             // Also set initial client list for the creator
             setLobbyClients(update.lobby.clients || []);
+            // Redirect the creator to the new lobby page
+            console.log(`Redirecting to new lobby: /multiplayer/${newLobbyId}`);
+            router.push(`/multiplayer/${newLobbyId}`);
           });
        }
     });
@@ -490,19 +495,15 @@ export const MultiplayerProvider = ({ children }) => {
     // --- End Rejoin Success Listener ---
 
     // --- Listener for Join Success ---
+    // State/redirect is now handled optimistically in joinLobby action.
+    // This listener just confirms the server acknowledged the join.
     newSocket.on('join-successful', ({ lobbyId }) => {
       if (lobbyId) {
-        console.log(`[MultiplayerContext] Join successful confirmation received for lobby ${lobbyId}.`);
-        // Store lobby ID in session storage on successful join confirmation
-        sessionStorage.setItem('ag_lobbyId', lobbyId);
-        startTransition(() => { // Wrap state updates
-          setCurrentLobbyId(lobbyId);
-          setLobbyClients([]); // Clear old client list optimistically (will be updated by 'clients' event)
-          setChatMessages([]); // Clear any stale chat messages from a previous lobby
-        });
-        // History request moved to useEffect triggered by currentLobbyId change
+        console.log(`[MultiplayerContext] Server confirmed successful join for lobby ${lobbyId}. (State updated optimistically)`);
+        // No state updates needed here anymore.
       } else {
         console.warn('[MultiplayerContext] Received join-successful event without lobbyId.');
+        // Consider if error handling/state rollback is needed if optimistic update failed server-side.
       }
     });
     // --- End Join Success Listener ---
@@ -612,10 +613,24 @@ export const MultiplayerProvider = ({ children }) => {
     // Check for registration
     if (!socketInstance || !isConnected || !isRegistered) { console.error('Socket not connected or client not registered.'); return; }
     if (!user?.isLoggedIn) { console.error('User not logged in.'); return; }
-    console.log(`Emitting join for lobby ${lobbyId} via context`);
-    // DO NOT set currentLobbyId or session storage here optimistically. Wait for 'join-successful' event.
+    console.log(`Optimistically joining lobby ${lobbyId} and redirecting...`);
+
+    // Optimistic Update: Set state and storage immediately
+    sessionStorage.setItem('ag_lobbyId', lobbyId);
+    startTransition(() => {
+      setCurrentLobbyId(lobbyId);
+      // Clear potentially stale data from previous lobby immediately
+      setChatMessages([]);
+      setLobbyClients([]);
+    });
+
+    // Redirect immediately
+    router.push(`/multiplayer/${lobbyId}`);
+
+    // Emit event to server
+    console.log(`Emitting join event for lobby ${lobbyId} via context`);
     socketInstance.emit('join', { lobby: lobbyId, userId: user._id, username: user.username }); // Use user._id
-  }, [user, socketInstance, isConnected, isRegistered]); // Add isRegistered dependency
+  }, [user, socketInstance, isConnected, isRegistered, router]); // Add router dependency
 
   const leaveLobby = useCallback(() => {
     // Registration check might not be strictly needed for leave, but connection is
