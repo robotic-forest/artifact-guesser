@@ -289,7 +289,7 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
       {gameHistory && gameHistory.length > 0 && (
         <div className="mt-8 w-full max-w-2xl"> {/* Increased max-width */}
           <h3 className="text-xl font-semibold mb-4 text-center" css={{ color: 'var(--textColorLowOpacity)'}}>Round Breakdown</h3>
-          <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-2"> {/* Added scroll */}
+          <div className="space-y-4 pr-2"> {/* Added scroll */}
             {gameHistory.map((roundResult) => (
               <RoundDetail key={roundResult.round} roundData={roundResult} players={players} />
             ))}
