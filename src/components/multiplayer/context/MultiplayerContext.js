@@ -31,6 +31,13 @@ export const MultiplayerProvider = ({ children }) => {
   const [lobbyClients, setLobbyClients] = useState([]); // State for clients in the current lobby
   const [globalUserCount, setGlobalUserCount] = useState(0); // State for global user count
   const prevIsLoggedInRef = useRef(user?.isLoggedIn); // Ref to track previous login state
+  const currentLobbyIdRef = useRef(currentLobbyId); // Ref to track current lobby ID for socket listener
+
+  // Update the ref whenever currentLobbyId changes
+  useEffect(() => {
+    currentLobbyIdRef.current = currentLobbyId;
+  }, [currentLobbyId]);
+
   // REMOVE restoredGameState
   // const [restoredGameState, setRestoredGameState] = useState(null);
 
@@ -54,9 +61,6 @@ export const MultiplayerProvider = ({ children }) => {
     gameEndedAcknowledged: false,
   });
   const countdownIntervalRef = useRef(null); // Move countdown ref here too
-
-  // REMOVE clearRestoredGameState
-  // const clearRestoredGameState = useCallback(() => { ... });
 
   // Move countdown clear helper here
   const clearCountdownInterval = useCallback(() => {
@@ -203,7 +207,40 @@ export const MultiplayerProvider = ({ children }) => {
 
     newSocket.on('lobby-error', (error) => { console.error('Lobby Error:', error.message); });
     newSocket.on('game-error', (error) => { console.error('Game Error:', error.message); });
-    newSocket.on('chat', (messages) => { console.log('Received chat update:', messages); setChatMessages(messages); });
+    // Modified chat listener to filter for current lobby
+    newSocket.on('chat', (payload) => {
+      // Use the ref to get the *current* lobby ID when the event fires
+      const currentLobby = currentLobbyIdRef.current;
+
+      // Ignore if not currently in a lobby according to the ref
+      if (!currentLobby) {
+        // console.log('[MultiplayerContext] Received chat payload, but not currently in a lobby. Ignoring.');
+        return;
+      }
+
+      let relevantMessages = [];
+      if (Array.isArray(payload)) {
+        // Filter history/batch for messages matching the current lobby
+        relevantMessages = payload.filter(msg => msg.lobby === currentLobby);
+        if (relevantMessages.length > 0) {
+           console.log(`[MultiplayerContext] Received relevant chat history/batch for lobby ${currentLobby}:`, relevantMessages);
+           // Replace state with the filtered history/batch
+           setChatMessages(relevantMessages);
+        } else {
+           // console.log(`[MultiplayerContext] Received message array, but no messages matched current lobby ${currentLobby}.`);
+           // Optionally clear state if history for this lobby is empty? Or just ignore. Let's ignore for now.
+        }
+      } else if (typeof payload === 'object' && payload !== null && payload.lobby === currentLobby) {
+        // It's a single message update for the current lobby
+        const newMessage = payload;
+        console.log(`[MultiplayerContext] Received single relevant chat update for lobby ${currentLobby}:`, newMessage);
+        // Append the new message to the existing state
+        setChatMessages(prevMessages => [...prevMessages, newMessage]);
+      } else {
+        // Ignore payloads not relevant (e.g., global messages or messages for other lobbies)
+        // console.log(`[MultiplayerContext] Ignoring chat payload not relevant to current lobby ${currentLobby}:`, payload);
+      }
+    });
 
     // Listener for global user count updates
     newSocket.on('global-user-count-update', (count) => {
@@ -452,7 +489,9 @@ export const MultiplayerProvider = ({ children }) => {
         startTransition(() => { // Wrap state updates
           setCurrentLobbyId(lobbyId);
           setLobbyClients([]); // Clear old client list optimistically (will be updated by 'clients' event)
+          setChatMessages([]); // Clear any stale chat messages from a previous lobby
         });
+        // History request moved to useEffect triggered by currentLobbyId change
       } else {
         console.warn('[MultiplayerContext] Received join-successful event without lobbyId.');
       }
@@ -541,6 +580,16 @@ export const MultiplayerProvider = ({ children }) => {
   }
 };
   }, [connectSocket, user, socketInstance, clearCountdownInterval]); // Add clearCountdownInterval
+
+  // Effect to request chat history when lobby ID changes
+  useEffect(() => {
+    if (currentLobbyId && socketInstance && isConnected && isRegistered) {
+      console.log(`[MultiplayerContext useEffect] Lobby ID changed to ${currentLobbyId}. Requesting chat history.`);
+      socketInstance.emit('request-lobby-chat-history', { lobbyId: currentLobbyId });
+    }
+    // Now including socketInstance, isConnected, isRegistered in deps
+    // to ensure the request is sent once the lobby ID is set AND the socket is ready.
+  }, [currentLobbyId, socketInstance, isConnected, isRegistered]);
 
   // --- Actions ---
   const createLobby = useCallback((lobbySettings) => {

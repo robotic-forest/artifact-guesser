@@ -302,12 +302,12 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
   );
 };
 
-export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary /* Removed currentUserId prop */ }) => {
+export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary }) => {
   const { user } = useUser(); // Get user object
   // Destructure new state variables
   const {
     phase, round, artifact, players, guesses, settings, roundResults, finalScores, error,
-    playerStatuses, disconnectCountdown, isForfeitWin, isActive // Added playerStatuses, disconnectCountdown, isForfeitWin, isActive
+    playerStatuses, disconnectCountdown, isForfeitWin, isActive
   } = gameState;
 
   const [selectedDate, setSelectedDate] = useState(0);
