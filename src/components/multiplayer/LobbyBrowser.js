@@ -1,15 +1,23 @@
 import React from 'react';
+import dynamic from 'next/dynamic'; // Import dynamic
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { useMultiplayer } from '@/components/multiplayer/context/MultiplayerContext';
 import useUser from '@/hooks/useUser';
+import useAAAAtoast from '@/hooks/useAAAAtoast'; // Import the hook
 import { Tag } from '@/components/tag/Tag';
 import { Dropdown } from '@/components/dropdown/Dropdown';
 import { modes } from '@/components/gameui/ModeButton';
 import AAAAAA from '@/components/art/AAAAAA';
 import { generateInsult } from '@/hooks/useInsult';
 
+// Dynamically import AAAAAAConfetti
+const AAAAAAConfettiDynamic = dynamic(() => import('@/components/art/AAAAAAConfetti'), {
+  ssr: false,
+});
+
 export const LobbyBrowser = () => {
+  const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
   const { lobbies, joinLobby } = useMultiplayer();
   const { user } = useUser();
   const router = useRouter(); // Although joinLobby handles navigation, keep it for potential future use
@@ -27,32 +35,38 @@ export const LobbyBrowser = () => {
       joinLobby(lobbyId);
       router.push(`/multiplayer/${lobbyId}`); // Navigate to the lobby page after joining
     } else {
-      toast.custom(
-        <AAAAAA
-          initialAngry
-          initialText={(
-            <>
-              Log in or sign up<br/>
-              to join a lobby,<br/>
-              you {generateInsult('name')}!
-            </>
-          )}
-          initialWidth={280}
-          angle={-5}
-          textColor='#ffffff'
-          style={{ padding: '0 12px 12px 0' }}
-        />,
-        { position: 'bottom-center' }
+      // Extract JSX for clarity
+      const toastText = (
+        <>
+          Log in or sign up<br/>
+          to join a lobby,<br/>
+          you {generateInsult('name')}!
+        </>
+      );
+      // Use the hook to trigger the toast/confetti
+      triggerAAAAtoast(
+        { // Props for AAAAAA component
+          initialAngry: true,
+          initialText: toastText, // Use the variable here
+          initialWidth: 280,
+          angle: -5,
+          textColor: '#ffffff',
+          style: { padding: '0 12px 12px 0' }
+        },
+        { position: 'bottom-center' } // Toast options
       );
     }
   };
 
   return (
-    // Position this container appropriately relative to GlobalChat
-    // Using similar styling to GlobalChat's inactive state for consistency
-    <div className="p-1 px-2 text-xs"
-      css={{ background: 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)', marginTop: '2px', borderRadius: '6px', width: 'fit-content' }}>
-      <span className=" mr-2" css={{ color: 'var(--textColor)' }}>Lobbies</span>
+    <>
+      {/* Conditionally render confetti */}
+      {showConfetti && <AAAAAAConfettiDynamic />}
+      {/* Position this container appropriately relative to GlobalChat */}
+      {/* Using similar styling to GlobalChat's inactive state for consistency */}
+      <div className="p-1 px-2 text-xs"
+        css={{ background: 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)', marginTop: '2px', borderRadius: '6px', width: 'fit-content' }}>
+        <span className=" mr-2" css={{ color: 'var(--textColor)' }}>Lobbies</span>
       <div className="inline-flex flex-wrap gap-1"> {/* Use flex-wrap for multiple lobbies */}
         {availableLobbies.map((lobby) => {
           // Access data based on provided structure
@@ -105,5 +119,6 @@ export const LobbyBrowser = () => {
         })}
       </div>
     </div>
+    </>
   );
 };

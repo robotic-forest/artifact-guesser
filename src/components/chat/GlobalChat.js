@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'; // Import hooks
+import dynamic from 'next/dynamic'; // Import dynamic
 import { useRouter } from 'next/router'; // Import useRouter
 import Link from 'next/link'; // Import Link
 import useUser from '@/hooks/useUser'; // Import useUser
 import toast from 'react-hot-toast'; // Import toast
 import AAAAAA from '../art/AAAAAA'; // Import AAAAAA
 import { generateInsult } from '@/hooks/useInsult'; // Import generateInsult
+import useAAAAtoast from '@/hooks/useAAAAtoast'; // Import the new hook
 import { useGlobalChat } from '@/contexts/GlobalChatContext';
 import { useMultiplayer } from '@/components/multiplayer/context/MultiplayerContext';
 import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
@@ -12,6 +14,11 @@ import { ChatInput } from '@/components/multiplayer/chat/ChatInput';
 import { createStyles } from '../GlobalStyles';
 import { artifactsTheme } from '@/pages/artifacts';
 import { useMediaQuery } from 'react-responsive';
+
+// Dynamically import AAAAAAConfetti
+const AAAAAAConfettiDynamic = dynamic(() => import('@/components/art/AAAAAAConfetti'), {
+  ssr: false,
+});
 
 const scrollbarCSS = {
   '&::-webkit-scrollbar': {
@@ -33,6 +40,7 @@ const scrollbarCSS = {
 
 // Removed className and style props
 export const GlobalChat = ({ notFixed, showHeader }) => {
+  const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
   const [isActive, setIsActive] = useState(false);
   const {
     globalChatMessages,
@@ -206,6 +214,8 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
     // --- Active View ---
     return (
       <div css={createStyles(artifactsTheme)}>
+        {/* Conditionally render confetti */}
+        {showConfetti && <AAAAAAConfettiDynamic />}
         <div
           css={{
             borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
@@ -277,24 +287,23 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
             if (!user?.isLoggedIn) {
               e.preventDefault(); // Prevent input focus
               e.stopPropagation();
-              // Show toast instead of dialog
-              toast.custom(
-                <AAAAAA
-                  initialAngry
-                  initialText={(
+              // Use the hook to trigger the toast/confetti
+              triggerAAAAtoast({ // Props for AAAAAA component
+                  initialAngry: true,
+                  initialText: (
                     <>
                       Sign up to chat,<br/>
                       you {generateInsult('name')}!
                     </>
-                  )}
-                  initialWidth={280}
-                  angle={5}
-                  textColor='#ffffff'
-                  style={{
+                  ), // Added comma here
+                  initialWidth: 280,
+                  angle: 5,
+                  textColor: '#ffffff',
+                  style: {
                     padding: '0 12px 12px 0'
-                  }}
-                />,
-                { position: 'bottom-center' }
+                  }
+                },
+                { position: 'bottom-center' } // Toast options (second argument)
               );
             }
             // Otherwise, allow click to propagate to ChatInput (if not disabled)

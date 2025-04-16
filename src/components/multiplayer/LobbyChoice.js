@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic'; // Import dynamic
 import { dashbaordTheme } from "@/pages/dashboard";
 import { themeCSS } from "../GlobalStyles";
 import { Title } from "./Title";
@@ -9,6 +10,7 @@ import { useEffect } from "react"; // Import useEffect
 import useUser from "@/hooks/useUser"; // Import useUser
 import toast from 'react-hot-toast'; // Import toast
 import AAAAAA from '../art/AAAAAA'; // Import AAAAAA
+import useAAAAtoast from '@/hooks/useAAAAtoast'; // Import the hook
 import { generateInsult } from '@/hooks/useInsult'; // Import generateInsult
 import { MasonryLayout } from "../layout/MasonryLayout";
 import { useMultiplayer } from "./context/MultiplayerContext"; // Import the context hook
@@ -16,6 +18,11 @@ import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global C
 import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
 import { Button } from "../buttons/Button";
 import { AuthHeader } from "../layout/AuthHeader";
+
+// Dynamically import AAAAAAConfetti
+const AAAAAAConfettiDynamic = dynamic(() => import('@/components/art/AAAAAAConfetti'), {
+  ssr: false,
+});
 
 // Reusable button component for selecting lobby type
 const LobbyTypeButton = ({ className, theme, disabled, ...p }) => {
@@ -42,18 +49,16 @@ const LobbyTypeButton = ({ className, theme, disabled, ...p }) => {
 };
 
 export const LobbyChoice = () => {
+  const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
   const { lobbies, createLobby, joinLobby, isConnected, isRegistered } = useMultiplayer()
   const { user } = useUser(); // Get user state
 
   // Default settings for creating a lobby from this view
-  // TODO: Allow user to configure these before creating?
   const defaultSettings = { mode: 'Balanced', rounds: 5 };
 
   // Handle creating a lobby
   const handleCreateLobby = (isPublic = false) => {
-    // Check connection and registration status
     if (createLobby && isConnected && isRegistered) {
-      // Pass settings in the structure expected by the backend
       createLobby({ settings: defaultSettings /*, public: isPublic */ });
     } else {
       console.error("Cannot create lobby: Not connected, not registered, or createLobby function missing.");
@@ -62,21 +67,19 @@ export const LobbyChoice = () => {
 
   // Handle joining a lobby
   const handleJoinLobby = (lobbyId) => {
-     // Check connection and registration status
     if (joinLobby && isConnected && isRegistered) {
       joinLobby(lobbyId);
-      // Need logic elsewhere to navigate/update UI upon successful join.
     } else {
        console.error("Cannot join lobby: Not connected, not registered, or joinLobby function missing.");
     }
   };
 
-  // TODO: Add effect or logic to redirect/change view if currentLobbyId becomes set
-
   return (
     <div className='flex flex-col items-center min-h-screen justify-center font-mono w-full pb-[180px]' css={{
       '& *': { transition: 'all 0.2s ease-in-out, width 0s, max-width 0s' }
     }}>
+      {/* Conditionally render confetti */}
+      {showConfetti && <AAAAAAConfettiDynamic />}
       <div css={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
         <AuthHeader
           loginCss={{
@@ -102,40 +105,41 @@ export const LobbyChoice = () => {
             Create a new Lobby
           </div>
            <div className='mt-2 p-0 pb-2 pr-2 flex flex-wrap'>
-              {/* Disable button if not connected OR not registered */}
              <LobbyTypeButton theme={dashbaordTheme} onClick={() => handleCreateLobby(false)} disabled={true}>
                <div><b>Create Private Lobby</b></div>
                <div className="text-xs opacity-80">
                  Only players with a link can join (Not Implemented)
               </div>
              </LobbyTypeButton>
-             {/* Disable button if not connected OR not registered, add toast for anonymous */}
              <LobbyTypeButton
                theme={gamesTheme}
                onClick={() => {
                  if (!user?.isLoggedIn) {
-                   toast.custom(
-                     <AAAAAA
-                       initialAngry
-                       initialText={(
-                         <>
-                           Sign up to create a lobby,<br/>
-                           you {generateInsult('adjective')} {generateInsult('name')}!
-                         </>
-                       )}
-                       initialWidth={320}
-                       angle={-3}
-                       backgroundColor='transparent'
-                       textColor='#000000'
-                       style={{ padding: '0 12px 12px 0' }}
-                     />,
-                     { position: 'bottom-center' }
+                   // Extract JSX for clarity
+                   const toastText = (
+                     <>
+                       Sign up to create a lobby,<br/>
+                       you {generateInsult('adjective')} {generateInsult('name')}!
+                     </>
+                   );
+                   // Use the hook
+                   triggerAAAAtoast(
+                     { // Props for AAAAAA
+                       initialAngry: true,
+                       initialText: toastText,
+                       initialWidth: 320,
+                       angle: -3,
+                       backgroundColor: 'transparent',
+                       textColor: '#000000',
+                       style: { padding: '0 12px 12px 0' }
+                     },
+                     { position: 'bottom-center' } // Toast options
                    );
                  } else if (isConnected && isRegistered) {
                    handleCreateLobby(true);
                  }
                }}
-               disabled={!isConnected || !isRegistered} // Keep visual disable for connection/registration status
+               disabled={!isConnected || !isRegistered}
              >
                <div><b>Create Public Lobby</b></div>
                <div className="text-xs opacity-80">
@@ -153,12 +157,9 @@ export const LobbyChoice = () => {
           <div className='mt-2 p-2 pb-0' css={{
             background: `var(--backgroundColorBarelyDark)`,
             borderRadius: 3
-            // minHeight: '100px' // Removed min-height
           }}>
             {!isConnected && <div className='text-center pt-2 pb-4' css={{ color: 'var(--textLowOpacity)' }}>Connecting...</div>}
-            {/* Show registering message if connected but not yet registered */}
             {isConnected && !isRegistered && <div className='text-center pt-2 pb-4' css={{ color: 'var(--textLowOpacity)' }}>Registering client...</div>}
-            {/* Show loading lobbies only if connected AND registered */}
             {isConnected && isRegistered && !lobbies && (
               <div className='flex justify-center items-center pt-2 pb-4' css={{ color: 'var(--textLowOpacity)' }}>
                 <PulseLoader color='var(--textLowOpacity)' size={5} className='mr-4' />
@@ -170,26 +171,24 @@ export const LobbyChoice = () => {
                 No Lobbies available. Create one!
               </div>
             )}
-            {/* Render Lobby List only if connected AND registered */}
             {isConnected && isRegistered && lobbies && lobbies.length > 0 && (
               <MasonryLayout gutter={6}>
                 {lobbies.map(lobby => {
-                  // Extract data safely
                   const hostUsername = lobby?.host?.username || 'Unknown Host';
                   const mode = lobby?.settings?.mode || 'Unknown';
                   const rounds = lobby?.settings?.rounds || '?';
-                  const playerCount = lobby?.playerCount || lobby?.clients?.length || 0; // Use playerCount if provided by backend
-                   const modeColor = modes[mode]?.color || '#cccccc'; // Fallback color
-                   const isInProgress = lobby?.inProgress || false; // Check if the game is in progress
-                   const playerIds = lobby?.playerIds || []; // Get player IDs, default to empty array
-                   const isUserInLobby = user?.isLoggedIn && playerIds.includes(user._id); // Check if current user is in the lobby
- 
+                  const playerCount = lobby?.playerCount || lobby?.clients?.length || 0;
+                   const modeColor = modes[mode]?.color || '#cccccc';
+                   const isInProgress = lobby?.inProgress || false;
+                   const playerIds = lobby?.playerIds || [];
+                   const isUserInLobby = user?.isLoggedIn && playerIds.includes(user._id);
+
                    return (
                     <div key={lobby._id} className='p-2 px-4 mb-2 rounded-[6px] flex justify-between items-center' css={{
                       background: 'var(--backgroundColorBarelyLight)',
                       boxShadow: 'rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 12%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(64 68 82 / 8%) 0px 2px 5px 0px',
                     }}>
-                      <div> {/* Content div */}
+                      <div>
                         <div className='font-bold mb-1'>{hostUsername}'s Lobby</div>
                         <div className='text-xs flex items-center flex-wrap gap-x-3 gap-y-1 mb-2'>
                            <span>Players: <b>{playerCount}</b></span>
@@ -202,43 +201,42 @@ export const LobbyChoice = () => {
                             </div>
                          </div>
                        </div>
-                       {/* Wrapper div for right alignment */}
-                        <div css={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}> {/* Align items center */}
+                        <div css={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                            {isUserInLobby ? (
                              <span className="text-xs italic opacity-70 mr-2">Already in lobby</span>
                            ) : (
                              <Button
                                onClick={() => {
-                                 // Prevent joining if game is in progress
                                  if (isInProgress) return;
                                  if (!user?.isLoggedIn) {
-                                toast.custom(
-                                  <AAAAAA
-                                    initialAngry
-                                    initialText={(
-                                      <>
-                                        Sign up to join a lobby,<br/>
-                                        you {generateInsult('name')}!
-                                      </>
-                                    )}
-                                    initialWidth={300}
-                                    angle={4}
-                                    backgroundColor='transparent'
-                                    textColor='#000000'
-                                    style={{ padding: '0 12px 12px 0' }}
-                                  />,
-                                  { position: 'bottom-center' }
-                                );
-                              } else if (isConnected && isRegistered) {
-                                  handleJoinLobby(lobby._id);
-                                }
-                              }}
-                              size='sm'
-                               // Adjust padding for smaller size, remove width: 100%
+                                   // Extract JSX for clarity
+                                   const toastText = (
+                                     <>
+                                       Sign up to join a lobby,<br/>
+                                       you {generateInsult('name')}!
+                                     </>
+                                   );
+                                   // Use the hook
+                                   triggerAAAAtoast(
+                                     { // Props for AAAAAA
+                                       initialAngry: true,
+                                       initialText: toastText,
+                                       initialWidth: 300,
+                                       angle: 4,
+                                       backgroundColor: 'transparent',
+                                       textColor: '#000000',
+                                       style: { padding: '0 12px 12px 0' }
+                                     },
+                                     { position: 'bottom-center' } // Toast options
+                                   );
+                                 } else if (isConnected && isRegistered) {
+                                   handleJoinLobby(lobby._id);
+                                 }
+                               }}
+                               size='sm'
                                css={{ padding: '4px 12px' }}
-                               // Disable if not connected/registered OR if game is in progress
                                disabled={!isConnected || !isRegistered || isInProgress}
-                               disable={!isConnected || !isRegistered || isInProgress}
+                               disable={!isConnected || !isRegistered || isInProgress} // Note: 'disable' prop might be a typo, should likely be 'disabled'
                              >
                                {isInProgress ? 'In Progress' : 'Join Lobby'}
                              </Button>
@@ -252,11 +250,8 @@ export const LobbyChoice = () => {
           </div>
         </div>
       </div>
-      {/* Render Global Chat fixed in bottom-left */}
       <GlobalChat
-        className="fixed bottom-6 left-6 z-50 hidden md:block" // Use similar positioning as FixedChat (desktop only for now)
-        // Add any specific style overrides if needed
-        // style={{ width: '300px', height: '250px' }}
+        className="fixed bottom-6 left-6 z-50 hidden md:block"
       />
     </div>
   );

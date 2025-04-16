@@ -9,9 +9,11 @@ import { SignupDialog } from "../dialogs/SignupDialog"
 import { Img } from "../html/Img"
 import { Simulator, SimulatorButton } from "../art/Simulator"
 import { FancyBorderButton } from "../art/FancyBorder"
+import dynamic from 'next/dynamic'; // Import dynamic
 import { useHighscore } from "@/hooks/games/useHighscore"
 import { IconGenerator } from "../art/IconGenerator"
 import AAAAAA, { Shake } from "../art/AAAAAA"
+import useAAAAtoast from '@/hooks/useAAAAtoast'; // Import the hook
 import { MasonryLayout } from "../layout/MasonryLayout"
 import { BiLinkExternal } from "react-icons/bi"
 import Link from "next/link"
@@ -20,6 +22,11 @@ import { ModeButton, modes } from "../gameui/ModeButton"
 import { SocialMedia } from "../moloch/components/SocialMedia"
 import toast from "react-hot-toast"
 import { generateInsult } from "@/hooks/useInsult"
+
+// Dynamically import AAAAAAConfetti
+const AAAAAAConfettiDynamic = dynamic(() => import('@/components/art/AAAAAAConfetti'), {
+  ssr: false,
+});
 
 export const GameSummary = ({ game: playedGame }) => {
   const { game: currentGame, startNewGame } = useGame()
@@ -40,6 +47,7 @@ export const GameSummary = ({ game: playedGame }) => {
 }
 
 const GameScore = ({ game, startNewGame, isPlayed }) => {
+  const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
   const { user } = useUser()
   const { highscore, prevHighscore, gameId } = useHighscore({ skip: isPlayed })
   const [signupOpen, setSignupOpen] = useState(false)
@@ -48,6 +56,8 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
 
   return (
     <>
+      {/* Conditionally render confetti */}
+      {showConfetti && <AAAAAAConfettiDynamic />}
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
       <div className='flex flex-col items-center relative'>
         <div className='flex text-2xl mt-4 font-mono font-bold'>
@@ -235,24 +245,27 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
                   if (user?.isLoggedIn) startNewGame({ mode })
                   else {
                     setSignupOpen(true)
-                    toast.custom(
-                      <AAAAAA
-                        initialAngry
-                        initialText={(
-                          <>
-                            Sign up to try this mode,<br/>
-                            you {generateInsult('name')}!
-                          </>
-                        )}
-                        initialWidth={280}
-                        angle={5}
-                        textColor='#ffffff'
-                        style={{
+                    // Extract JSX for clarity
+                    const toastText = (
+                      <>
+                        Sign up to try this mode,<br/>
+                        you {generateInsult('name')}!
+                      </>
+                    );
+                    // Use the hook to trigger the toast/confetti
+                    triggerAAAAtoast(
+                      { // Props for AAAAAA component
+                        initialAngry: true,
+                        initialText: toastText, // Use the variable here
+                        initialWidth: 280,
+                        angle: 5,
+                        textColor: '#ffffff',
+                        style: {
                           padding: '0 12px 12px 0'
-                        }}
-                      />,
-                      { position: 'bottom-right' }
-                    )
+                        }
+                      },
+                      { position: 'bottom-right' } // Toast options
+                    );
                   }
                 }} />
               ))}
