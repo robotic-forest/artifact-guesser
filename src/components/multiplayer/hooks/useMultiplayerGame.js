@@ -6,8 +6,8 @@ import { useMultiplayer } from '../context/MultiplayerContext'; // Import contex
 // Simplified hook to provide actions and consume centralized game state
 export const useMultiplayerGame = (socket, lobbyId) => { // socket and lobbyId are still passed from Multiplayer component
 
-  // Get gameState directly from context
-  const { gameState } = useMultiplayer();
+  // Get gameState and acknowledgeGameSummary action from context
+  const { gameState, acknowledgeGameSummary } = useMultiplayer();
 
   // REMOVED local gameState state
   // REMOVED countdownIntervalRef and clearCountdownInterval
@@ -41,12 +41,11 @@ export const useMultiplayerGame = (socket, lobbyId) => { // socket and lobbyId a
         // 'gameEndedAcknowledged' flag needs to be managed centrally.
         // For now, we assume it's primarily for navigation triggering.
         // If the context needs this flag, we'd add a function to the context
-        // like `acknowledgeGameSummary()` and call it here.
-         console.log("Game summary acknowledged by user. (Action in useMultiplayerGame)");
-         // No local state update needed here.
+        // Call the context action to transition the phase back to 'lobby'
+        acknowledgeGameSummary();
       }
       // No action needed for 'round-summary' phase, backend handles it.
-  }, [gameState.phase]); // Depend on context's gameState phase
+  }, [gameState.phase, acknowledgeGameSummary]); // Depend on context's gameState phase and the action
 
 
   // Return the gameState from context and the actions

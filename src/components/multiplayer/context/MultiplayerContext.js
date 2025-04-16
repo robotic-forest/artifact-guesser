@@ -553,6 +553,19 @@ export const MultiplayerProvider = ({ children }) => {
     });
   }, [currentLobbyId, user, socketInstance, isConnected]);
 
+  // Action to acknowledge the game summary and return to lobby phase
+  const acknowledgeGameSummary = useCallback(() => {
+    startTransition(() => { // Wrap state update
+      setGameState(prev => {
+        if (prev.phase === 'game-summary') {
+          console.log('[Context] Game summary acknowledged. Transitioning to lobby phase.');
+          return { ...prev, phase: 'lobby', gameEndedAcknowledged: true }; // Transition phase
+        }
+        return prev; // No change if not in game-summary phase
+      });
+    });
+  }, []); // No dependencies needed as it only uses setGameState
+
   const value = {
     lobbies,
     currentLobbyId,
@@ -567,6 +580,7 @@ export const MultiplayerProvider = ({ children }) => {
     globalUserCount, // Expose global user count
     // Provide gameState directly
     gameState,
+    acknowledgeGameSummary, // Expose the new action
     // REMOVE restoredGameState and clearRestoredGameState
   };
 
