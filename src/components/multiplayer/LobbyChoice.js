@@ -55,8 +55,6 @@ export const LobbyChoice = () => {
     if (createLobby && isConnected && isRegistered) {
       // Pass settings in the structure expected by the backend
       createLobby({ settings: defaultSettings /*, public: isPublic */ });
-      // Note: useLobby doesn't automatically join the created lobby.
-      // Need logic elsewhere (e.g., watching currentLobbyId) to navigate/update UI.
     } else {
       console.error("Cannot create lobby: Not connected, not registered, or createLobby function missing.");
     }

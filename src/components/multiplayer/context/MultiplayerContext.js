@@ -134,7 +134,6 @@ export const MultiplayerProvider = ({ children }) => {
     });
 
     newSocket.on('disconnect', (reason) => {
-      console.log('Socket disconnected via context:', reason);
       // Clear session storage on disconnect
       sessionStorage.removeItem('ag_lobbyId');
       sessionStorage.removeItem('ag_gameActive');
@@ -158,7 +157,6 @@ export const MultiplayerProvider = ({ children }) => {
 
     // --- Other Event Listeners ---
     newSocket.on('update-lobbies', (update) => {
-      console.log('Received lobby update via context:', update);
       if (!update || !update.type) return;
       startTransition(() => { // Wrap setLobbies
         setLobbies(prevLobbies => {
@@ -185,7 +183,6 @@ export const MultiplayerProvider = ({ children }) => {
       });
        if (update.type === 'create' && update.lobby?.host?.socketId === newSocket?.id) {
           const newLobbyId = update.lobby._id;
-          console.log(`Detected own lobby creation, setting currentLobbyId: ${newLobbyId}`);
           // Store lobby ID in session storage on creation confirmation
           sessionStorage.setItem('ag_lobbyId', newLobbyId);
           startTransition(() => { // Wrap state updates
@@ -198,7 +195,6 @@ export const MultiplayerProvider = ({ children }) => {
 
     // Listen for client list updates
     newSocket.on('clients', ({ lobby, clients }) => {
-      console.log(`Received client list for lobby ${lobby}:`, clients);
       startTransition(() => { // Wrap setLobbyClients
         // Update client list state
         setLobbyClients(clients || []);
@@ -223,7 +219,6 @@ export const MultiplayerProvider = ({ children }) => {
         // Filter history/batch for messages matching the current lobby
         relevantMessages = payload.filter(msg => msg.lobby === currentLobby);
         if (relevantMessages.length > 0) {
-           console.log(`[MultiplayerContext] Received relevant chat history/batch for lobby ${currentLobby}:`, relevantMessages);
            // Replace state with the filtered history/batch
            setChatMessages(relevantMessages);
         } else {
@@ -233,7 +228,6 @@ export const MultiplayerProvider = ({ children }) => {
       } else if (typeof payload === 'object' && payload !== null && payload.lobby === currentLobby) {
         // It's a single message update for the current lobby
         const newMessage = payload;
-        console.log(`[MultiplayerContext] Received single relevant chat update for lobby ${currentLobby}:`, newMessage);
         // Append the new message to the existing state
         setChatMessages(prevMessages => [...prevMessages, newMessage]);
       } else {
@@ -244,7 +238,6 @@ export const MultiplayerProvider = ({ children }) => {
 
     // Listener for global user count updates
     newSocket.on('global-user-count-update', (count) => {
-      console.log(`[Context] Received global user count: ${count}`);
       startTransition(() => { // Wrap state update
         setGlobalUserCount(count);
       });
@@ -252,7 +245,6 @@ export const MultiplayerProvider = ({ children }) => {
 
     // --- Game State Listeners (Moved from useMultiplayerGame) ---
     const handleGameStarted = ({ settings, players }) => {
-      console.log('[Context] Game Started:', settings, players);
       const initialStatuses = {};
       if (players) {
         Object.keys(players).forEach(id => {
@@ -584,7 +576,6 @@ export const MultiplayerProvider = ({ children }) => {
   // Effect to request chat history when lobby ID changes
   useEffect(() => {
     if (currentLobbyId && socketInstance && isConnected && isRegistered) {
-      console.log(`[MultiplayerContext useEffect] Lobby ID changed to ${currentLobbyId}. Requesting chat history.`);
       socketInstance.emit('request-lobby-chat-history', { lobbyId: currentLobbyId });
     }
     // Now including socketInstance, isConnected, isRegistered in deps
@@ -607,10 +598,6 @@ export const MultiplayerProvider = ({ children }) => {
     console.log(`Emitting join for lobby ${lobbyId} via context`);
     // DO NOT set currentLobbyId or session storage here optimistically. Wait for 'join-successful' event.
     socketInstance.emit('join', { lobby: lobbyId, userId: user._id, username: user.username }); // Use user._id
-    // Optimistically clear clients? Maybe not necessary as 'clients' event will update.
-    // startTransition(() => {
-    //   setLobbyClients([]);
-    // });
   }, [user, socketInstance, isConnected, isRegistered]); // Add isRegistered dependency
 
   const leaveLobby = useCallback(() => {
@@ -634,7 +621,6 @@ export const MultiplayerProvider = ({ children }) => {
     startTransition(() => { // Wrap state update
       setGameState(prev => {
         if (prev.phase === 'game-summary') {
-          console.log('[Context] Game summary acknowledged. Transitioning to lobby phase.');
           return { ...prev, phase: 'lobby', gameEndedAcknowledged: true }; // Transition phase
         }
         return prev; // No change if not in game-summary phase
@@ -654,13 +640,9 @@ export const MultiplayerProvider = ({ children }) => {
     _socket: socketInstance,
     chatMessages,
     globalUserCount, // Expose global user count
-    // Provide gameState directly
     gameState,
     acknowledgeGameSummary, // Expose the new action
-    // REMOVE restoredGameState and clearRestoredGameState
   };
-
-   console.log('[MultiplayerProvider] Rendering State:', { isConnected, isRegistered, currentLobbyId, gamePhase: gameState.phase, lobbiesCount: lobbies?.length ?? 'null', chatCount: chatMessages?.length ?? 'null', clientCount: lobbyClients?.length ?? 'null' });
 
   return (
     <MultiplayerContext.Provider value={value}>

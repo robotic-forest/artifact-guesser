@@ -8,13 +8,11 @@ import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerCont
 
 // Inner component to access context after provider is mounted
 const MultiplayerPageContent = () => {
-  const { currentLobbyId, isConnected, isRegistered, restoredGameState } = useMultiplayer();
-
-  console.log('[MultiplayerPageContent Render] State:', { currentLobbyId, isConnected, isRegistered, hasRestoredState: !!restoredGameState });
+  const { currentLobbyId, isConnected, isRegistered } = useMultiplayer();
+  console.log({ currentLobbyId, isConnected, isRegistered })
 
   // 1. Handle initial connection/registration phase
   if (!isConnected || !isRegistered) {
-    console.log('[MultiplayerPageContent Render] Rendering Connecting state (initial)');
     return <div className="relative"><div className="flex items-center justify-center h-screen text-black">Connecting...</div></div>;
   }
 
@@ -25,18 +23,15 @@ const MultiplayerPageContent = () => {
     // The useMultiplayerGame hook inside Multiplayer will handle applying the
     // restored state correctly if it exists for the rejoining user.
     // For the user who didn't refresh, this ensures they stay in the game view.
-    console.log('[MultiplayerPageContent Render] Rendering Multiplayer (rejoin expected or game active)');
     return <div className="relative"><Multiplayer /></div>;
   }
 
   // 3. Handle being in a lobby normally (game not started, or joined after game ended)
   if (currentLobbyId) {
-    console.log('[MultiplayerPageContent Render] Rendering Multiplayer (lobby ID set, no active game expected/restored)');
     return <div className="relative"><Multiplayer /></div>; // Render Multiplayer which shows lobby details/start button
   }
 
   // 4. Default: Connected and registered, but not in any lobby
-  console.log('[MultiplayerPageContent Render] Rendering LobbyChoice (connected, registered, no lobby)');
   return <div className="relative"><LobbyChoice /></div>;
 }
 

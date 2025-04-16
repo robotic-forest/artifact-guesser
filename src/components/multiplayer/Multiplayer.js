@@ -38,24 +38,23 @@ const Multiplayer = () => {
 
   // --- Navigation Effect ---
   // Navigate back to lobby list when game is acknowledged as ended
-  useEffect(() => {
-    // Check if the flag is true and we aren't already navigating
-    if (gameState.gameEndedAcknowledged && !isNavigating) {
-      console.log("[Multiplayer] Game ended acknowledged. Setting navigating flag, calling leaveLobby and navigating.");
-      setIsNavigating(true); // Prevent effect re-trigger
-      leaveLobby(); // Clear context state *before* navigating
-      router.push('/multiplayer'); // Navigate
-    }
-    // Depend on flag, router, leaveLobby, and isNavigating
-  }, [gameState.gameEndedAcknowledged, router, leaveLobby, isNavigating]);
+  // useEffect(() => {
+  //   console.log({ gameState })
+  //   // Check if the flag is true and we aren't already navigating
+  //   if (gameState.gameEndedAcknowledged && !isNavigating) {
+  //     console.log("[Multiplayer] Game ended acknowledged. Setting navigating flag, calling leaveLobby and navigating.");
+  //     setIsNavigating(true); // Prevent effect re-trigger
+  //     leaveLobby(); // Clear context state *before* navigating
+  //     router.push('/multiplayer'); // Navigate
+  //   }
+  //   // Depend on flag, router, leaveLobby, and isNavigating
+  // }, [gameState.gameEndedAcknowledged, router, leaveLobby, isNavigating]);
 
   // Remove the separate cleanup effect
 
   // Decide what to render based solely on the gameState from the context/hook
   const shouldRenderGameUI = gameState.phase === 'guessing' || gameState.phase === 'round-summary' || gameState.phase === 'game-summary';
   // We rely on the context setting the correct phase upon rejoin.
-
-  console.log('[Multiplayer Render] Deciding UI:', { shouldRenderGameUI, gameStatePhase: gameState.phase, isNavigating });
 
   // Re-introduce check to prevent rendering during navigation
   if (isNavigating) {
@@ -70,12 +69,9 @@ const Multiplayer = () => {
          gameState={gameState}
          submitGuess={submitGuess}
          proceedAfterSummary={proceedAfterSummary}
-         // currentUserId={_socket?.id} // Removed prop
        />
      );
    }
-
-  console.log(lobbies, currentLobbyId, chatMessages)
 
   // --- Render Lobby View ---
   return (
@@ -95,10 +91,7 @@ const Multiplayer = () => {
           '@media (max-width: 800px)': { alignItems: 'center' }
         }}>
           <Title isLobby={!!currentLobbyId} />
-          {/* TODO: Pass lobby list and join/create functions to Lobby or a new LobbyList component */}
-          {/* Pass lobby list and join/create functions to Lobby or a new LobbyList component */}
           <Lobby {...{ clients, lobbies, joinLobby, currentLobbyId, leaveLobby }} />
-          {/* Pass lobbyId, socket instance and messages to Chat */}
           <Chat lobbyId={currentLobbyId} _socket={_socket} chatMessages={chatMessages} />
         </div>
         <div css={{
