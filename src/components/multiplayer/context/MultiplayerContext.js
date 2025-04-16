@@ -120,7 +120,24 @@ export const MultiplayerProvider = ({ children }) => {
           console.log(`Client registration confirmed for ${user?.isLoggedIn ? 'user' : 'anonymous client'} ${registeredUserId}. Setting isRegistered=true.`);
           setIsRegistered(true); // Set state to true
 
+          // --- Check for stale lobby ID on refresh ---
+          const lobbyIdFromStorage = sessionStorage.getItem('ag_lobbyId');
+          const gameActiveFromStorage = sessionStorage.getItem('ag_gameActive') === 'true';
+
+          if (lobbyIdFromStorage && !gameActiveFromStorage) {
+            console.log(`[MultiplayerContext] Found stale lobby ID (${lobbyIdFromStorage}) without active game on reconnect. Clearing.`);
+            sessionStorage.removeItem('ag_lobbyId'); // Clear from storage
+            // Reset relevant state (no need for startTransition here as it's part of initial setup)
+            setCurrentLobbyId(null);
+            setChatMessages([]);
+            setLobbyClients([]);
+            // After clearing, proceed as if no lobby was stored (e.g., list lobbies or join global chat)
+          }
+          // --- End check ---
+
+
           // Request lobbies ONLY if logged in, otherwise join global chat
+          // This logic now runs *after* the potential stale lobby check
           if (user?.isLoggedIn) {
             console.log('Logged-in user registered. Emitting list-lobbies.');
             newSocket.emit('list-lobbies');
