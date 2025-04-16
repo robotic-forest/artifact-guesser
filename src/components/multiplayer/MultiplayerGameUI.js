@@ -24,6 +24,7 @@ import { Button } from "../buttons/Button";
 import { FixedChat } from "./chat/FixedChat"; // Import FixedChat
 import { theme, useTheme } from "@/pages/_app";
 import { createStyles } from "../GlobalStyles";
+import { IconGenerator } from "../art/IconGenerator";
 
 // --- Disconnect Countdown Banner ---
 const DisconnectCountdownBanner = ({ countdownData }) => {
@@ -73,8 +74,9 @@ const PlayerStatusList = ({ players, guesses, playerStatuses }) => {
         return (
           <div
             key={playerId}
-            className={`p-1 px-2 m-1 rounded text-xs font-medium transition-colors duration-300 ease-in-out ${bgColor} ${textColor} border border-white/20`}
+            className={`inline-flex p-1 px-2 m-1 rounded text-xs font-medium transition-colors duration-300 ease-in-out ${bgColor} ${textColor} border border-white/20`}
           >
+            <IconGenerator className='mr-2' />
             {player?.username || 'Player'}
             {status === 'disconnected' && ' (Disconnected)'}
             {status === 'forfeited' && ' (Forfeited)'}

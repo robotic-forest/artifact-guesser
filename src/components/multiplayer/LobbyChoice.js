@@ -198,12 +198,6 @@ export const LobbyChoice = () => {
                                {mode}
                               </Tag>
                             </div>
-                            {/* Add indicator if game is in progress */}
-                            {isInProgress && (
-                              <span className='text-xs font-semibold' css={{ color: 'var(--warningColor)' }}>
-                                (In Progress)
-                              </span>
-                            )}
                          </div>
                        </div>
                        {/* Wrapper div for right alignment */}
