@@ -10,8 +10,13 @@ async function loginRoute(req, res) {
   const existingSession = await getUser(req)
   
   try {
-    const { email: formEmail, password: formPassword } = req.body
-    let user = await db.collection('accounts').findOne({ email: { $regex: new RegExp(`^${formEmail}$`, 'i') } })
+    const { identifier, password: formPassword } = req.body
+    let user = await db.collection('accounts').findOne({ 
+      $or: [
+        { email: { $regex: new RegExp(`^${identifier}$`, 'i') } },
+        { username: { $regex: new RegExp(`^${identifier}$`, 'i') } }
+      ]
+     })
     
     if (!existingSession || !existingSession?.role === 'admin') {
       if (user && !user.password) {
@@ -26,7 +31,7 @@ async function loginRoute(req, res) {
       if (!user) {
          res.send({
           success: false,
-          message: 'The email or password you entered is incorrect. Please try again.'
+          message: 'The email/username or password you entered is incorrect. Please try again.'
         })
         return; // Stop execution if user not found
       }
@@ -35,7 +40,7 @@ async function loginRoute(req, res) {
       if (!bcrypt.compareSync(formPassword, user.password)) {
         res.send({
           success: false,
-          message: 'The email or password you entered is incorrect. Please try again.'
+          message: 'The email/username or password you entered is incorrect. Please try again.'
         })
         return
       }
