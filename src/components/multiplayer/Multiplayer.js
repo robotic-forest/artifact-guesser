@@ -8,6 +8,7 @@ import { useRouter } from 'next/router'; // Import useRouter
 import { useMultiplayer } from "./context/MultiplayerContext"; // Use context hook
 import { useMultiplayerGame } from "./hooks/useMultiplayerGame";
 import { MultiplayerGameUI } from "./MultiplayerGameUI";
+import { AuthHeader } from '@/components/layout/AuthHeader'; // Import AuthHeader
 
 const Multiplayer = () => {
   const router = useRouter(); // Get router instance
@@ -83,6 +84,10 @@ const Multiplayer = () => {
       background: 'var(--backgroundColor)', // Assuming this is your clay color
       '& *': { transition: 'all 0.2s ease-in-out, width 0s, max-width 0s' }
     }}>
+      {/* Add AuthHeader positioned top right */}
+      <div css={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+        <AuthHeader />
+      </div>
       <div className='p-6 w-screen grid grid-cols-2 gap-6 max-w-[1200px]' css={{
         '@media (max-width: 800px)': { gridTemplateColumns: '1fr' }
       }}>

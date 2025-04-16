@@ -13,7 +13,7 @@ import { MenuIconButton } from "./Layout"
 import { GiAbstract034 } from "react-icons/gi"
 import { gamesTheme } from "@/pages/games"
 
-export const AuthHeader = () => {
+export const AuthHeader = ({ loginCss, signupCss }) => {
   const { user, isAdmin, logout } = useUser()
   const [loginOpen, setLoginOpen] = useState(false)
   const [signupOpen, setSignupOpen] = useState(false)
@@ -25,8 +25,11 @@ export const AuthHeader = () => {
       <div className='fixed flex items-center m-1 top-0 right-0 z-10 text-sm'>
         {user?.isLoggedIn && (
           <>
-            <div className='bg-black p-[1px_6px] rounded-[4px] mr-1 flex items-center min-h-[22px]'
-              css={{ '@media (max-width: 800px)': { display: 'none' } }}
+            <div className='p-[1px_6px] rounded-[4px] mr-1 flex items-center min-h-[22px]'
+              css={{
+                '@media (max-width: 800px)': { display: 'none' },
+                background: 'var(--backgroundColorSlightlyLight)',
+              }}
             >
               <IconGenerator />
               <span css={{ marginLeft: 6 }}>
@@ -103,7 +106,7 @@ export const AuthHeader = () => {
         )}
         {!user?.isLoggedIn && (
           <>
-            <GameButton css={{ fontSize: '1.1em', padding: '2.45px 10px' }} onClick={() => setLoginOpen(true)}>
+            <GameButton css={{ fontSize: '1.1em', padding: '2.45px 10px', ...loginCss }} onClick={() => setLoginOpen(true)}>
               Log in
             </GameButton>
             <GameButton
@@ -113,7 +116,8 @@ export const AuthHeader = () => {
                 background: '#E4C1F4',
                 color: '#000000',
                 ':hover': { background: '#CCA5DE' },
-                fontSize: '1.1em', padding: '2.45px 10px'
+                fontSize: '1.1em', padding: '2.45px 10px',
+                ...signupCss
               }}
             >
               <b>Sign Up</b>

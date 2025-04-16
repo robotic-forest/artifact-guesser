@@ -21,20 +21,30 @@ export const GlobalChatProvider = ({ children }) => {
   console.log(globalChatMessages)
 
   // Listener for incoming chat messages (filters for global)
-  const handleChatMessage = useCallback((messages) => {
-    // Ensure messages is an array before filtering
-    if (Array.isArray(messages)) {
-      const globalMessages = messages.filter(msg => msg.lobby === 'global');
-      // Only update if there are actually global messages in the payload
-      // This prevents overwriting history if a lobby-specific chat update comes through
-      if (globalMessages.length > 0 || messages.every(msg => msg.lobby === 'global')) {
-         console.log('[GlobalChatContext] Received chat update containing global messages:', globalMessages);
-         setGlobalChatMessages(globalMessages);
+  const handleChatMessage = useCallback((payload) => {
+    // Determine if the payload is the initial history (array) or a single update (object)
+    // Note: This assumes the server sends full history as an array and updates as single objects.
+    // Adjust if the server behavior is different.
+
+    if (Array.isArray(payload)) {
+      // Likely the initial history load or potentially multiple messages at once
+      const globalMessages = payload.filter(msg => msg.lobby === 'global');
+      if (globalMessages.length > 0 || payload.every(msg => msg.lobby === 'global')) {
+        console.log('[GlobalChatContext] Received global message array (history or batch):', globalMessages);
+        // Replace state with the full history/batch
+        setGlobalChatMessages(globalMessages);
       } else {
-         // console.log('[GlobalChatContext] Received chat update, but no global messages found. Ignoring.');
+        // console.log('[GlobalChatContext] Received array, but no global messages found. Ignoring.');
       }
+    } else if (typeof payload === 'object' && payload !== null && payload.lobby === 'global') {
+      // Likely a single new message update
+      const newMessage = payload;
+      console.log('[GlobalChatContext] Received single global message update:', newMessage);
+      // Append the new message to the existing state
+      setGlobalChatMessages(prevMessages => [...prevMessages, newMessage]);
     } else {
-       console.warn('[GlobalChatContext] Received non-array chat message payload:', messages);
+      // Ignore payloads that are not arrays or relevant single objects
+      // console.warn('[GlobalChatContext] Received unexpected chat message payload:', payload);
     }
   }, []);
 

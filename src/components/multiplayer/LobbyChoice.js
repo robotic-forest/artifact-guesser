@@ -15,6 +15,7 @@ import { useMultiplayer } from "./context/MultiplayerContext"; // Import the con
 import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
 import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
 import { Button } from "../buttons/Button";
+import { AuthHeader } from "../layout/AuthHeader";
 
 // Reusable button component for selecting lobby type
 const LobbyTypeButton = ({ className, theme, disabled, ...p }) => {
@@ -78,6 +79,23 @@ export const LobbyChoice = () => {
     <div className='flex flex-col items-center min-h-screen justify-center font-mono w-full' css={{
       '& *': { transition: 'all 0.2s ease-in-out, width 0s, max-width 0s' }
     }}>
+      <div css={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+        <AuthHeader
+          loginCss={{
+            background: '#81b5e4',
+            color: '#000000',
+            '&:hover': {
+              background: '#4d9dcf'
+            }
+          }}
+          signupCss={{
+            background: '#87cfb4',
+            '&:hover': {
+              background: '#4dba91',
+            }
+          }}
+        />
+      </div>
       <div className='p-6 w-screen flex flex-col max-w-[1200px]'>
         <Title />
         {/* Create Lobby Section */}
