@@ -9,23 +9,23 @@ import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import useGloba
 import { MolochButton } from "../buttons/MolochButton";
 
 export const Title = () => {
-  const { currentLobbyId, leaveLobby } = useMultiplayer();
+  // Destructure lobbies instead of gameState
+  const { currentLobbyId, leaveLobby, lobbies } = useMultiplayer();
   const { sendGlobalMessage, isInGlobalChat, joinGlobalChat } = useGlobalChat(); // Get chat functions
 
   const handleBroadcast = () => {
+    // Find current lobby data
+    const currentLobbyData = lobbies?.find(l => l._id === currentLobbyId);
+    // Get game mode from lobby data, provide fallback
+    const gameMode = currentLobbyData?.settings?.mode || 'Artifact Guesser';
     // Ensure user is in global chat before sending
     if (!isInGlobalChat) {
       joinGlobalChat(); // Attempt to join if not already in
-      // Optionally, wait a moment or check status before sending,
-      // but sendGlobalMessage itself has checks.
-      // A simple approach is to just try sending after joining.
-      // Consider adding a small delay or feedback if joining takes time.
-      console.log("Attempting to join global chat before broadcasting...");
-      // We might need a better mechanism if join is async and takes time
     }
-    const message = `Come join my Artifact Guesser lobby! ${window.location.href}`;
+    // Format message as Markdown link using the game mode
+    const message = `[Join my ${gameMode} lobby!](${window.location.href})`;
     sendGlobalMessage(message);
-    toast.success('Lobby link broadcasted to global chat!');
+    toast.success('Lobby link broadcasted to global chat!'); // Re-add toast
   };
 
   const handleCopyLink = () => {
@@ -74,7 +74,7 @@ export const Title = () => {
           </MolochButton>
           <Dropdown
             top={34}
-            closeAfterClick={true}
+            closeAfterClick
             button={
               <MolochButton className="bg-blue-600 hover:bg-blue-700">
                  <FiShare2 className="mr-2" /> {/* Use Share icon */}

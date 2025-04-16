@@ -7,8 +7,8 @@ import AAAAAA from '../art/AAAAAA'; // Import AAAAAA
 import { generateInsult } from '@/hooks/useInsult'; // Import generateInsult
 import { useGlobalChat } from '@/contexts/GlobalChatContext';
 import { useMultiplayer } from '@/components/multiplayer/context/MultiplayerContext';
-// ChatDisplay is not directly used anymore, rendering messages directly
-import { ChatInput } from '@/components/multiplayer/chat/ChatInput'; // Reusing existing input
+import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
+import { ChatInput } from '@/components/multiplayer/chat/ChatInput';
 import { createStyles } from '../GlobalStyles';
 import { artifactsTheme } from '@/pages/artifacts';
 
@@ -166,7 +166,16 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
                   borderRadius: '3px' // Add slight rounding
                 }}
               >
-                {msg.username && <b>{msg.username}:</b>} {msg.message}
+                {/* Render inactive messages with Markdown */}
+                {msg.username && <b className="mr-1">{msg.username}:</b>}
+                <ReactMarkdown
+                  components={{
+                    p: ({children}) => <>{children}</>, // Render paragraphs inline
+                    a: ({node, ...props}) => <a {...props} style={{ color: '#578cff', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer" /> // Darker blue
+                  }}
+                >
+                  {msg.message}
+                </ReactMarkdown>
               </div>
             ))}
            {/* Placeholder if connected but no messages */}
@@ -240,7 +249,16 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
           >
             {globalChatMessages.map((c, i) => (
               <div key={i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }}>
-                {c.username && <b>{c.username}:</b>} {c.message}
+                {c.username && <b className="mr-1">{c.username}:</b>}
+                {/* Use ReactMarkdown to render the message */}
+                <ReactMarkdown
+                  components={{
+                    p: ({children}) => <>{children}</>, // Render paragraphs inline
+                    a: ({node, ...props}) => <a {...props} style={{ color: '#578cff', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer" /> // Darker blue
+                  }}
+                >
+                  {c.message}
+                </ReactMarkdown>
               </div>
             ))}
             {/* Add a small message if chat history is empty */}
