@@ -22,6 +22,8 @@ import { AuthHeader } from "../layout/AuthHeader"; // Added Auth Header
 import useUser from "@/hooks/useUser"; // Import useUser hook
 import { Button } from "../buttons/Button";
 import { FixedChat } from "./chat/FixedChat"; // Import FixedChat
+import { theme, useTheme } from "@/pages/_app";
+import { createStyles } from "../GlobalStyles";
 
 // --- Disconnect Countdown Banner ---
 const DisconnectCountdownBanner = ({ countdownData }) => {
@@ -303,6 +305,7 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
 };
 
 export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary }) => {
+  useTheme()
   const { user } = useUser(); // Get user object
   // Destructure new state variables
   const {
@@ -422,7 +425,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
     const imgLength = artifact?.images?.external?.length || 0;
     return (
       // Added relative positioning to allow absolute positioning of banner
-      <div ref={ref} className='relative fixed top-0 left-0 w-screen h-screen overflow-hidden bg-black'>
+      <div ref={ref} className='relative fixed top-0 left-0 w-screen h-screen overflow-hidden bg-black' css={createStyles(theme)}>
         {/* Render Disconnect Banner Conditionally */}
         <DisconnectCountdownBanner countdownData={disconnectCountdown} />
 

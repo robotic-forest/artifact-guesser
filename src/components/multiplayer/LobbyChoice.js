@@ -241,6 +241,7 @@ export const LobbyChoice = () => {
                              css={{ padding: '4px 12px' }}
                              // Disable if not connected/registered OR if game is in progress
                              disabled={!isConnected || !isRegistered || isInProgress}
+                             disable={!isConnected || !isRegistered || isInProgress}
                            >
                              {isInProgress ? 'In Progress' : 'Join Lobby'}
                            </Button>
