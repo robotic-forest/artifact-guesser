@@ -182,11 +182,10 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
            {canChat && inactiveMessages.length === 0 && (
               // Apply lobby theme styles consistently
               <div
-                className="p-1 px-2 rounded text-xs italic border"
+                className="p-1 px-2 rounded text-xs italic"
                 css={{
                   background: 'var(--backgroundColor)',
                   color: 'var(--textColorLowOpacity)',
-                  borderColor: 'var(--borderColor)',
                   marginTop: '2px'
                 }}
               >

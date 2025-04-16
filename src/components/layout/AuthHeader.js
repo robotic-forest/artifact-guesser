@@ -1,7 +1,9 @@
 import { useState } from "react"
+import { useRouter } from "next/router" // Import useRouter
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
 import useUser from "@/hooks/useUser"
 import { SignupDialog } from "@/components/dialogs/SignupDialog"
+import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerContext" // Import useMultiplayer
 import { FaHeart } from "react-icons/fa"
 import { IconButton } from "@/components/buttons/IconButton"
 import { GrLogout } from "react-icons/gr"
@@ -15,6 +17,8 @@ import { gamesTheme } from "@/pages/games"
 
 export const AuthHeader = ({ loginCss, signupCss }) => {
   const { user, isAdmin, logout } = useUser()
+  const router = useRouter() // Get router object
+  const { leaveLobby, currentLobbyId } = useMultiplayer() // Get multiplayer context functions/state
   const [loginOpen, setLoginOpen] = useState(false)
   const [signupOpen, setSignupOpen] = useState(false)
 
@@ -79,20 +83,34 @@ export const AuthHeader = ({ loginCss, signupCss }) => {
             <IconButton
               iconSize={10}
               onClick={() => {
+                const handleLogout = () => {
+                  const isOnLobbyPage = router.pathname.startsWith('/multiplayer/') && router.query.lobbyid;
+                  const isInThisLobby = currentLobbyId === router.query.lobbyid;
+
+                  if (isOnLobbyPage && isInThisLobby) {
+                    console.log('Leaving lobby before logout...');
+                    leaveLobby(); // Leave the lobby first
+                    logout();     // Then logout
+                    router.push('/multiplayer'); // Redirect to multiplayer index
+                  } else {
+                    logout(); // Standard logout if not in a lobby
+                  }
+                };
+
                 // Check session storage if a game is active
                 const isGameActive = sessionStorage.getItem('ag_gameActive') === 'true';
                 if (isGameActive) {
                   // Show confirmation dialog
                   if (window.confirm('Are you sure you want to log out? This will forfeit your current game.')) {
-                    // User confirmed, proceed with logout
-                    logout();
+                    // User confirmed, proceed with logout logic
+                    handleLogout();
                   } else {
                     // User cancelled, do nothing
                     console.log('Logout cancelled by user.');
                   }
                 } else {
-                  // No active game, logout directly
-                  logout();
+                  // No active game, logout directly using the new logic
+                  handleLogout();
                 }
               }}
               css={{
