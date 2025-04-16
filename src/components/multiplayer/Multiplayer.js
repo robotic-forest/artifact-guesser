@@ -34,21 +34,6 @@ const Multiplayer = () => {
 
   // Get only actions from the simplified useMultiplayerGame hook
   const { submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
-  // We now use the gameState obtained directly from useMultiplayer() above
-
-  // --- Navigation Effect ---
-  // Navigate back to lobby list when game is acknowledged as ended
-  // useEffect(() => {
-  //   console.log({ gameState })
-  //   // Check if the flag is true and we aren't already navigating
-  //   if (gameState.gameEndedAcknowledged && !isNavigating) {
-  //     console.log("[Multiplayer] Game ended acknowledged. Setting navigating flag, calling leaveLobby and navigating.");
-  //     setIsNavigating(true); // Prevent effect re-trigger
-  //     leaveLobby(); // Clear context state *before* navigating
-  //     router.push('/multiplayer'); // Navigate
-  //   }
-  //   // Depend on flag, router, leaveLobby, and isNavigating
-  // }, [gameState.gameEndedAcknowledged, router, leaveLobby, isNavigating]);
 
   // Remove the separate cleanup effect
 

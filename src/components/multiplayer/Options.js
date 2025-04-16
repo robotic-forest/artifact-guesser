@@ -164,22 +164,11 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
                      tooltip={'Change Mode'}
                      tooltipPlace='left'
                      onClick={() => setIsSelectingMode(true)}
-                     css={{ marginRight: 14, background: 'var(--backgroundColorLight)', '&:hover': { background: 'var(--backgroundColorLight)', filter: 'brightness(1.1)' } }}
+                     css={{ marginRight: 14, marginLeft: 8, background: 'var(--backgroundColorLight)', '&:hover': { background: 'var(--backgroundColorLight)', filter: 'brightness(1.1)' } }}
                    >
                      <BiRefresh />
                    </IconButton>
                  )}
-                 {!currentLobbyId && ( // Show cycle button only when not in lobby
-                     <IconButton
-                       size={28}
-                       tooltip={'Cycle Mode'}
-                       tooltipPlace='left'
-                       onClick={() => { /* Define cycleMode if needed */ }}
-                       css={{ marginRight: 14, background: 'var(--backgroundColorLight)', '&:hover': { background: 'var(--backgroundColorLight)', filter: 'brightness(1.1)' } }}
-                     >
-                       <BiRefresh />
-                     </IconButton>
-                  )}
               </div>
             )}
           </div>
