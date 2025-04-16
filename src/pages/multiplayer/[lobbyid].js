@@ -12,10 +12,12 @@ import { Title } from '@/components/multiplayer/Title';
 import { AuthHeader } from '@/components/layout/AuthHeader';
 import { useMultiplayerGame } from '@/components/multiplayer/hooks/useMultiplayerGame'; // Assuming this is needed for game actions
 import { SuperKaballah } from '@/components/art/Kaballah';
+import useUser from '@/hooks/useUser';
 
 const LobbyPage = () => {
   useTheme(artifactsTheme); // Apply the theme
   const router = useRouter();
+  const { user, isLoading: userLoading } = useUser(); // Get user status
   const { lobbyid } = router.query; // Get lobbyid from URL
 
   const {
@@ -36,11 +38,18 @@ const LobbyPage = () => {
   // Get game actions if needed
   const { submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
 
-   useEffect(() => {
+  useEffect(() => {
+    // Redirect if not logged in
+    if (!userLoading && !user) {
+      console.log('[LobbyPage] User not logged in, redirecting to /multiplayer');
+      router.push('/multiplayer');
+      return; // Stop further execution in this effect if redirecting
+    }
+
     // Join the lobby when the component mounts, lobbyid is available, socket is connected,
-    // we are not currently leaving, the current lobby ID doesn't match the URL ID,
+    // user is loaded and logged in, we are not currently leaving, the current lobby ID doesn't match the URL ID,
     // AND the join status is idle (not pending or failed).
-    if (lobbyid && typeof lobbyid === 'string' && isConnected && !isLeaving && currentLobbyId !== lobbyid && lobbyJoinStatus === 'idle') {
+    if (!userLoading && user && lobbyid && typeof lobbyid === 'string' && isConnected && !isLeaving && currentLobbyId !== lobbyid && lobbyJoinStatus === 'idle') {
       console.log(`[LobbyPage] Attempting to join lobby: ${lobbyid} (Status: ${lobbyJoinStatus})`);
       joinLobby(lobbyid);
     }
@@ -53,10 +62,29 @@ const LobbyPage = () => {
     //     leaveLobby(); // Consider if this is the desired behavior on component unmount
     //   }
     // };
-  }, [lobbyid, isConnected, joinLobby, currentLobbyId, leaveLobby, isLeaving, lobbyJoinStatus]); // Add lobbyJoinStatus to dependencies
+  }, [lobbyid, isConnected, joinLobby, currentLobbyId, leaveLobby, isLeaving, lobbyJoinStatus, user, userLoading, router]); // Add user, userLoading, router to dependencies
 
   // --- Loading / Error States ---
-  // Wrap the entire return in the themed div
+  // Show loading if user status is still loading
+  if (userLoading) {
+    return (
+      <div css={createStyles(artifactsTheme)}>
+        <div className="flex items-center justify-center min-h-screen"><SuperKaballah speed={500} color={'#000000'} /></div>
+      </div>
+    );
+  }
+
+  // If user is loaded but not logged in, show loading briefly while redirect happens (or null)
+  // The useEffect above should handle the redirect quickly.
+  if (!user) {
+     return (
+      <div css={createStyles(artifactsTheme)}>
+        <div className="flex items-center justify-center min-h-screen"><SuperKaballah speed={500} color={'#000000'} /></div>
+      </div>
+    ); // Or return null;
+  }
+
+  // Wrap the entire return in the themed div (only render if user is logged in)
   return (
     <div css={createStyles(artifactsTheme)}>
       {!isConnected && <div className="flex items-center justify-center min-h-screen">Connecting...</div>}
