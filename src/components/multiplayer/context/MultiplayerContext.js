@@ -577,6 +577,36 @@ export const MultiplayerProvider = ({ children }) => {
     }
     // --- End Handle Login Transition ---
 
+    // --- Handle Logout Transition ---
+    const justLoggedOut = !user?.isLoggedIn && prevIsLoggedInRef.current;
+    if (justLoggedOut && socketInstance) {
+      console.log('[MultiplayerProvider useEffect] User just logged out while connected. Disconnecting old socket...');
+      socketInstance.disconnect();
+      // Reset state immediately to allow reconnection as anonymous
+      startTransition(() => {
+        setIsConnected(false);
+        setIsRegistered(false);
+        setSocketInstance(null);
+        setChatMessages([]);
+        setLobbies([]);
+        setCurrentLobbyId(null); // Clear lobby ID on logout
+        setLobbyClients([]);
+        setGlobalUserCount(0); // Reset global count
+        setLobbyJoinStatus('idle'); // Reset join status
+        // Reset game state as well
+        setGameState({
+          isActive: false, settings: null, round: 0, artifact: null, scores: {},
+          guesses: {}, players: {}, roundResults: null, finalScores: null,
+          phase: 'lobby', error: null, gameHistory: [], playerStatuses: {},
+          disconnectCountdown: null, isForfeitWin: false, gameEndedAcknowledged: false,
+        });
+      });
+      // Update ref *after* potential disconnect logic
+      prevIsLoggedInRef.current = user?.isLoggedIn;
+      return; // Exit effect early to allow state update and re-run for connection
+    }
+    // --- End Handle Logout Transition ---
+
 
     // Attempt connection if user data is loaded and not already connected
     // connectSocket will handle logged-in vs anonymous registration
