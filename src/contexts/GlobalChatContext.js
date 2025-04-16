@@ -57,9 +57,13 @@ export const GlobalChatProvider = ({ children }) => {
         _socket.off('chat', handleChatMessage);
       };
     } else {
-       console.log('[GlobalChatContext] Socket not ready, listener not attached.');
-       // Clear messages if socket disconnects
-       setGlobalChatMessages([]);
+       console.log('[GlobalChatContext] Socket not ready for listening (disconnected or not registered). Listener not attached.');
+       // Only clear messages if the socket is actually disconnected
+       if (!isConnected) {
+           console.log('[GlobalChatContext] Socket disconnected, clearing messages.');
+           setGlobalChatMessages([]);
+           setIsInGlobalChat(false); // Also reset joined state if disconnected
+       }
     }
   }, [_socket, isConnected, isRegistered, handleChatMessage]);
 
