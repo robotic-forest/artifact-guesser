@@ -143,12 +143,13 @@ export const MultiplayerProvider = ({ children }) => {
           // This logic now runs *after* the potential stale lobby check
           if (user?.isLoggedIn) {
             console.log('Logged-in user registered. Emitting list-lobbies.');
-            newSocket.emit('list-lobbies');
-          } else {
-            console.log('Anonymous client registered. Emitting join-global-chat.');
-            newSocket.emit('join-global-chat');
-          }
-       } else {
+             newSocket.emit('list-lobbies');
+           } else {
+             console.log('Anonymous client registered. Emitting join-global-chat AND list-lobbies.');
+             newSocket.emit('join-global-chat');
+             newSocket.emit('list-lobbies'); // <-- ADD THIS LINE
+           }
+        } else {
           console.log('Received client-registered event for a different client/user or mismatch. Ignoring.');
        }
     });
