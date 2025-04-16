@@ -646,7 +646,10 @@ export const MultiplayerProvider = ({ children }) => {
       setChatMessages([]);
       setLobbyClients([]); // Clear clients on leave
     });
-  }, [currentLobbyId, user, socketInstance, isConnected]);
+    // Redirect back to the main multiplayer page
+    console.log('Redirecting back to /multiplayer after leaving lobby.');
+    router.push('/multiplayer');
+  }, [currentLobbyId, user, socketInstance, isConnected, router]); // Add router dependency
 
   // Action to acknowledge the game summary and return to lobby phase
   const acknowledgeGameSummary = useCallback(() => {
