@@ -16,7 +16,7 @@ const AAAAAAConfettiDynamic = dynamic(() => import('@/components/art/AAAAAAConfe
   ssr: false,
 });
 
-export const LobbyBrowser = () => {
+export const LobbyBrowser = ({ backgroundColor }) => {
   const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
   const { lobbies, joinLobby } = useMultiplayer();
   const { user } = useUser();
@@ -65,7 +65,7 @@ export const LobbyBrowser = () => {
       {/* Position this container appropriately relative to GlobalChat */}
       {/* Using similar styling to GlobalChat's inactive state for consistency */}
       <div className="p-1 px-2 text-xs"
-        css={{ background: 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)', marginTop: '2px', borderRadius: '6px', width: 'fit-content' }}>
+        css={{ background: backgroundColor || 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)', marginTop: '2px', width: 'fit-content' }}>
         <span className=" mr-2" css={{ color: 'var(--textColor)' }}>Lobbies</span>
       <div className="inline-flex flex-wrap gap-1 items-center"> {/* Use flex-wrap for multiple lobbies, added items-center */}
         {availableLobbies.slice(0, 5).map((lobby) => {
@@ -99,7 +99,7 @@ export const LobbyBrowser = () => {
               onHover // Use onHover prop to trigger on mouse enter/leave
               button={triggerElement} // Pass the wrapper div as the 'button' prop
               dropdownStyle={{ width: 'auto', minWidth: '100px', width: 'max-content', right: 'auto', left: 0, padding: 0, border: 'none' }} // Adjust dropdown style
-              top={-120} // Adjust vertical offset slightly if needed
+              top={-130} // Adjust vertical offset slightly if needed
               onClick={() => handleJoinClick(lobby._id)}
             >
               {/* Dropdown Content passed as children - Apply mode color and onClick */}

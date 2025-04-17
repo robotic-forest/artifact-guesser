@@ -1,15 +1,16 @@
-import { IconGenerator } from "@/components/art/IconGenerator"
-import { Statistics } from "@/components/dashbaord/Statistics"
-import { Layout } from "@/components/layout/Layout"
-import { MdDashboard } from "react-icons/md"
+import { IconGenerator } from "@/components/art/IconGenerator";
+import { Statistics } from "@/components/dashbaord/Statistics";
+import { Layout } from "@/components/layout/Layout";
+import { MdDashboard } from "react-icons/md";
+import { GlobalChat } from "@/components/chat/GlobalChat";
+import { LobbyBrowser } from "@/components/multiplayer/LobbyBrowser";
 
-export const dashbaordTheme = {
-  backgroundColor: '#78c9ab',
-  primaryColor: '#96a1f7',
-  textColor: '#000000',
-}
-
-export default () => {
+const DashboardPage = () => {
+  const dashbaordTheme = {
+    backgroundColor: '#78c9ab',
+    primaryColor: '#96a1f7',
+    textColor: '#000000',
+  };
 
   return (
     <Layout title='Dashboard' theme={dashbaordTheme} contentCSS={{
@@ -31,6 +32,16 @@ export default () => {
         </div>
       </div>
       <Statistics />
+      <div css={{
+        position: 'fixed',
+        bottom: 8,
+        left: 48,
+      }}>
+        <GlobalChat notFixed backgroundColor='var(--backgroundColorDark)' />
+        <LobbyBrowser backgroundColor='var(--backgroundColorDark)' />
+      </div>
     </Layout>
-  )
-}
+  );
+};
+
+export default DashboardPage;

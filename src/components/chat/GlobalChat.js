@@ -36,13 +36,13 @@ const scrollbarCSS = {
   '&::-webkit-scrollbar-thumb:hover': {
     backgroundColor: 'var(--textLowOpacity)',
   }
-}
-
-// Removed className and style props
-export const GlobalChat = ({ notFixed, showHeader }) => {
-  const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
-  const [isActive, setIsActive] = useState(false);
-  const {
+ }
+ 
+ // Removed className and style props
+ export const GlobalChat = ({ notFixed, showHeader, backgroundColor }) => {
+   const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
+   const [isActive, setIsActive] = useState(false);
+   const {
     globalChatMessages,
     joinGlobalChat,
     leaveGlobalChat,
@@ -159,24 +159,24 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
               </div>
            )}
             {/* Show user count in inactive view if connected */}
-            {canChat && (
-              // Apply lobby theme styles consistently
-              <div className="p-1 px-2 text-xs italic flex items-center" css={{ background: 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)' }}>
-                <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-3 mb-1"></span>
-                {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
-              </div>
+             {canChat && (
+               // Apply lobby theme styles consistently
+               <div className="p-1 px-2 text-xs italic flex items-center" css={{ background: backgroundColor || 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)' }}>
+                 <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-3 mb-1"></span>
+                 {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
+               </div>
             )}
              {/* Show message preview only if connected */}
             {canChat && inactiveMessages.length > 0 && inactiveMessages.map((msg, index) => (
               // Apply lobby theme styles consistently
               <div
                 key={index}
-                className="p-1 px-2 text-sm" // Removed conditional classes
-                css={{
-                  background: 'var(--backgroundColor)',
-                  color: 'var(--textColor)', // Use theme text color
-                  border: '1px solid var(--borderColor)', // Use theme border color
-                  marginTop: '2px', // Add slight spacing
+                 className="p-1 px-2 text-sm" // Removed conditional classes
+                 css={{
+                   background: backgroundColor || 'var(--backgroundColor)',
+                   color: 'var(--textColor)', // Use theme text color
+                   border: '1px solid var(--borderColor)', // Use theme border color
+                   marginTop: '2px', // Add slight spacing
                   borderRadius: '3px' // Add slight rounding
                 }}
               >
@@ -196,12 +196,12 @@ export const GlobalChat = ({ notFixed, showHeader }) => {
            {canChat && inactiveMessages.length === 0 && (
               // Apply lobby theme styles consistently
               <div
-                className="p-1 px-2 rounded text-xs italic"
-                css={{
-                  background: 'var(--backgroundColor)',
-                  color: 'var(--textColorLowOpacity)',
-                  marginTop: '2px'
-                }}
+                 className="p-1 px-2 rounded text-xs italic"
+                 css={{
+                   background: backgroundColor || 'var(--backgroundColor)',
+                   color: 'var(--textColorLowOpacity)',
+                   marginTop: '2px'
+                 }}
               >
                 No recent messages
               </div>
