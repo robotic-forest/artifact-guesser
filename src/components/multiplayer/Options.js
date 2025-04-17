@@ -170,21 +170,33 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
              ) : (
                // Host view or lobby creation view: Allow selection
                <>
+                  <RoundButton
+                    key="private"
+                    onClick={() => handleLobbyTypeSelect('private')}
+                    isActive={!isPublic}
+                    disabled={false} // Host/Creator can always change
+                    css={{
+                    background: isPublic ? "var(--backgroundColorBarelyLight)" : '#78c9ab',
+                    '&:hover': {
+                      background: isPublic ? "var(--backgroundColorLight)" : '#78c9ab',
+                    }
+                    }}
+                  >
+                    Private
+                  </RoundButton>
                  <RoundButton
                    key="public"
                    onClick={() => handleLobbyTypeSelect('public')}
                    isActive={isPublic}
                    disabled={false} // Host/Creator can always change
+                   css={{
+                    background: !isPublic ? "var(--backgroundColorBarelyLight)" :  '#abb4f5',
+                    '&:hover': {
+                      background: !isPublic ? "var(--backgroundColorLight)" : '#abb4f5',
+                    }
+                   }}
                  >
                    Public
-                 </RoundButton>
-                 <RoundButton
-                   key="private"
-                   onClick={() => handleLobbyTypeSelect('private')}
-                   isActive={!isPublic}
-                   disabled={false} // Host/Creator can always change
-                 >
-                   Private
                  </RoundButton>
                </>
              )}
