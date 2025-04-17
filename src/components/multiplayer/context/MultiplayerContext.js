@@ -36,6 +36,7 @@ export const MultiplayerProvider = ({ children }) => {
   const prevIsLoggedInRef = useRef(user?.isLoggedIn); // Ref to track previous login state
   const currentLobbyIdRef = useRef(currentLobbyId); // Ref to track current lobby ID for socket listener
   const [lobbyJoinStatus, setLobbyJoinStatus] = useState('idle'); // 'idle', 'pending', 'success', 'failed-duplicate'
+  const [revealImage, setRevealImage] = useState(false); // State for image reveal sync
 
   // Update the ref whenever currentLobbyId changes
   useEffect(() => {
@@ -352,6 +353,7 @@ export const MultiplayerProvider = ({ children }) => {
            disconnectCountdown: null,
            isForfeitWin: false,
          }));
+         setRevealImage(false); // Reset reveal state for the new round
        });
       clearCountdownInterval();
     };
@@ -526,6 +528,15 @@ export const MultiplayerProvider = ({ children }) => {
       }
     });
     // --- End Rejoin Success Listener ---
+
+    // --- Listener for Image Reveal ---
+    newSocket.on('reveal_image', () => {
+      console.log('[MultiplayerContext] Received reveal_image event from server.');
+      startTransition(() => { // Wrap state update
+        setRevealImage(true);
+      });
+    });
+    // --- End Image Reveal Listener ---
 
     // --- Listener for Join Success ---
     newSocket.on('join-successful', ({ lobbyId }) => {
@@ -765,6 +776,7 @@ export const MultiplayerProvider = ({ children }) => {
     chatMessages,
     globalUserCount, // Expose global user count
     gameState,
+    revealImage, // Expose reveal state
     acknowledgeGameSummary, // Expose the new action
   };
 

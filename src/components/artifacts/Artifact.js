@@ -421,18 +421,36 @@ export const defaultMapValue = {
   translation: { x: 0, y: 0 }
 }
 
-export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError }) => {
+// Added onImageLoaded and revealImage props for multiplayer sync
+export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError, onImageLoaded, revealImage }) => {
   const [ref, bounds] = useMeasure()
   const [loaded, setLoaded] = useState(0)
   const [errorImgs, setErrorImgs] = useState([])
+  const [imageLoadEventSent, setImageLoadEventSent] = useState(false); // Flag to prevent multiple emits
 
   const renderImgs = imgs.filter(img => !errorImgs.includes(img))
 
+  // Reset state when images change (new round)
   useEffect(() => {
-    if (bounds && renderImgs?.length === loaded && setLoadingComplete) {
-      setLoadingComplete(bounds)
+    setLoaded(0);
+    setErrorImgs([]);
+    setImageLoadEventSent(false);
+  }, [imgs]);
+
+  // Modified useEffect to also call onImageLoaded when all images are loaded, but only once
+  useEffect(() => {
+    if (bounds && renderImgs?.length > 0 && renderImgs.length === loaded) {
+      // Call setLoadingComplete for layout adjustments (can be called multiple times if bounds change slightly)
+      setLoadingComplete && setLoadingComplete(bounds);
+
+      // Only call onImageLoaded (server emit) ONCE per image set load
+      if (!imageLoadEventSent) {
+        onImageLoaded && onImageLoaded(); // Signal that this client has loaded the image
+        setImageLoadEventSent(true); // Set flag to prevent re-emitting
+      }
     }
-  }, [loaded, renderImgs, bounds])
+    // Dependencies: Keep original dependencies, but the flag prevents repeated calls to onImageLoaded
+  }, [loaded, renderImgs, bounds, setLoadingComplete, onImageLoaded, imageLoadEventSent]);
 
   useEffect(() => {
     if (imgs?.length === errorImgs.length) {
@@ -456,8 +474,10 @@ export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError }
           <img
             key={img}
             src={img}
+            // Use revealImage prop to control final visibility, remove dependency on loadingComplete for opacity
             css={{
-              opacity: (loadingComplete || !setLoadingComplete) ? 1 : 0,
+              opacity: revealImage ? 1 : 0, // Controlled by server signal now
+              transition: 'opacity 0.5s ease-in-out', // Add smooth transition
               display: errorImgs.includes(img) ? 'none' : 'block',
             }}
             onLoad={() => setLoaded(l => l + 1)}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef } from "react"; // Import useContext, useRef
+import { useState, useEffect, useContext, useRef, useCallback } from "react"; // Import useContext, useRef
 import { MapInteractionCSS } from 'react-map-interaction';
 import { IoMdEye, IoMdTimer } from "react-icons/io"; // Add IoMdTimer
 import { Range } from "@/components/form/FormRange";
@@ -318,7 +318,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
   const router = useRouter()
   useTheme()
   const { user } = useUser(); // Get user object
-  const { _socket: socket } = useMultiplayer() // Get socket from context
+  // Get socket and revealImage state from context
+  const { _socket: socket, revealImage } = useMultiplayer()
   // Destructure new state variables
   const {
     phase, round, artifact, players, guesses, settings, roundResults, finalScores, error,
@@ -386,10 +387,11 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
   }, [artifact, phase, modeInfo, user?._id, settings?.timer]); // Add settings.timer dependency
 
 
-  // Effect for the round timer countdown
+  // Effect for the round timer countdown - Modified to wait for revealImage
   useEffect(() => {
-    // Only run the timer if in guessing phase and remainingTime is set
-    if (phase === 'guessing' && remainingTime !== null && remainingTime > 0) {
+    // Only run the timer if in guessing phase, remainingTime is set, AND image is revealed
+    if (phase === 'guessing' && revealImage && remainingTime !== null && remainingTime > 0) {
+      console.log('[MultiplayerGameUI] Timer starting now that image is revealed.'); // Added log
       timerIntervalRef.current = setInterval(() => {
         setRemainingTime(prevTime => {
           if (prevTime <= 1) {
@@ -416,10 +418,17 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
         timerIntervalRef.current = null;
       }
     };
-  }, [phase, remainingTime]); // Rerun effect if phase or remainingTime changes
+    // Rerun effect if phase, remainingTime, OR revealImage changes
+    // Rerun effect if phase, remainingTime, OR revealImage changes
+  }, [phase, remainingTime, revealImage]);
 
-  // Handle image loading state
-  const handleImageLoadComplete = (imgBounds) => {
+  // Handle layout adjustments after image loads - Memoized with useCallback
+  const handleLayoutCalculation = useCallback((imgBounds) => {
+    // Check if imgBounds is valid before accessing properties
+    if (!imgBounds) {
+      console.warn('[MultiplayerGameUI] handleLayoutCalculation called without imgBounds.');
+      return;
+    }
     const h = imgBounds.height;
     if (h) {
       // Adjust map view based on image dimensions (mirroring Game.js logic)
@@ -440,7 +449,17 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
       // Only set loading to false once bounds are processed
       setIsLoadingImage(false);
     }
-  };
+    // Add dependencies based on variables used inside the function
+  }, [isLoadingImage, mapValue.translation.y, mapValue.scale, windowHeight, windowWidth]);
+
+  // Handle emitting image loaded event to server - Memoized with useCallback
+  const handleImageLoadedForServer = useCallback(() => {
+    // Emit image_loaded event to the server
+    if (socket && phase === 'guessing') { // Ensure socket exists and we are in the guessing phase
+      console.log('[MultiplayerGameUI] Image loaded, emitting image_loaded to server.');
+      socket.emit('image_loaded');
+    }
+  }, [socket, phase]); // Dependencies: only recreate if socket or phase changes
 
   const handleImageLoadError = () => {
      console.error("Error loading artifact image in multiplayer game.");
@@ -510,8 +529,12 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
         <MapInteractionCSS value={mapValue} onChange={v => setMapValue(v)} maxScale={100}>
           <ImageView
             imgs={artifact?.images?.external}
-            loadingComplete={!isLoadingImage} // Controlled by state now
-            setLoadingComplete={handleImageLoadComplete}
+            // Pass revealImage state from context to control visibility
+            revealImage={revealImage}
+            // Pass the function that emits the socket event
+            onImageLoaded={handleImageLoadedForServer}
+            // Pass the function that handles layout calculation
+            setLoadingComplete={handleLayoutCalculation}
             onError={handleImageLoadError}
           />
         </MapInteractionCSS>
