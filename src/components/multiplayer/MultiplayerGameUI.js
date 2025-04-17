@@ -76,7 +76,7 @@ const PlayerStatusList = ({ players, guesses, playerStatuses }) => {
         return (
           <div
             key={playerId}
-            className={`inline-flex p-1 px-2 m-1 rounded text-xs font-medium transition-colors duration-300 ease-in-out ${bgColor} ${textColor} border border-white/20`}
+            className={`inline-flex items-center p-1 px-2 m-1 rounded text-xs font-medium transition-colors duration-300 ease-in-out ${bgColor} ${textColor} border border-white/20`}
           >
             <IconGenerator className='mr-2' />
             {player?.username || 'Player'}
@@ -222,14 +222,20 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
     .map(([userId, score]) => ({ userId, score })) // Keep it simple here
     .sort((a, b) => b.score - a.score);
 
-  // Determine winner and title text, considering forfeits
+  // Determine winner, draw, and title text, considering forfeits
   const winner = sortedScores.length > 0 ? sortedScores[0] : null;
   const isCurrentUserWinner = winner && winner.userId === currentUserId;
+  // Check for a draw: more than one player exists, and the top two scores are equal
+  const isDraw = sortedScores.length > 1 && sortedScores[0].score === sortedScores[1].score;
 
   let titleText = "Game Over"; // Default
   if (isForfeitWin) {
+    // Forfeit logic remains the same, draw doesn't apply if someone forfeited to end the game
     titleText = isCurrentUserWinner ? "You Win! Opponent Forfeited." : "Opponent Forfeited.";
+  } else if (isDraw) {
+    titleText = "It's a Draw!"; // New Draw condition
   } else {
+    // Original win/loss logic if not a forfeit and not a draw
     titleText = isCurrentUserWinner ? "You Won!" : "You Lose!";
   }
 
@@ -357,7 +363,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
 
   if (currentUserHasGuessed) {
     // If current user guessed, show waiting message or their guess info? Let's show waiting for now.
-    statusMessage = "Guess submitted! Waiting for others...";
+    statusMessage = "Guess submitted!";
   } else if (lastOtherGuesser) {
     statusMessage = `${lastOtherGuesser} made a guess.`;
   }

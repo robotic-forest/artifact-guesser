@@ -175,7 +175,12 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
            <div className='p-2 text-sm flex' css={{ background: 'var(--backgroundColorSlightlyLight)', borderRadius: 6 }}>
              {currentLobbyId && !isHost ? (
                // Non-host view: Show the current setting, disabled
-               <RoundButton isActive={true} disabled={true}>
+               <RoundButton isActive={true} disabled={true} css={{
+                background: isPublic ? '#abb4f5' : '#78c9ab',
+                '&:hover': {
+                  background: isPublic ? '#abb4f5' : '#78c9ab',
+                }
+               }}>
                  {isPublic ? 'Public' : 'Private'}
                </RoundButton>
              ) : (
@@ -187,28 +192,28 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
                     isActive={!isPublic}
                     disabled={false} // Host/Creator can always change
                     css={{
-                    background: isPublic ? "var(--backgroundColorBarelyLight)" : '#78c9ab',
-                    '&:hover': {
-                      background: isPublic ? "var(--backgroundColorLight)" : '#78c9ab',
-                    }
+                      background: isPublic ? "var(--backgroundColorBarelyLight)" : '#78c9ab',
+                      '&:hover': {
+                        background: isPublic ? "var(--backgroundColorLight)" : '#78c9ab',
+                      }
                     }}
                   >
                     Private
                   </RoundButton>
-                 <RoundButton
-                   key="public"
-                   onClick={() => handleLobbyTypeSelect('public')}
-                   isActive={isPublic}
-                   disabled={false} // Host/Creator can always change
-                   css={{
-                    background: !isPublic ? "var(--backgroundColorBarelyLight)" :  '#abb4f5',
-                    '&:hover': {
-                      background: !isPublic ? "var(--backgroundColorLight)" : '#abb4f5',
-                    }
-                   }}
-                 >
-                   Public
-                 </RoundButton>
+                  <RoundButton
+                    key="public"
+                    onClick={() => handleLobbyTypeSelect('public')}
+                    isActive={isPublic}
+                    disabled={false} // Host/Creator can always change
+                    css={{
+                      background: !isPublic ? "var(--backgroundColorBarelyLight)" :  '#abb4f5',
+                      '&:hover': {
+                        background: !isPublic ? "var(--backgroundColorLight)" : '#abb4f5',
+                      }
+                    }}
+                  >
+                    Public
+                  </RoundButton>
                </>
              )}
            </div>
