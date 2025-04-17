@@ -1,6 +1,6 @@
-import { useState, useEffect, useContext } from "react"; // Import useContext
+import { useState, useEffect, useContext, useRef } from "react"; // Import useContext, useRef
 import { MapInteractionCSS } from 'react-map-interaction';
-import { IoMdEye } from "react-icons/io";
+import { IoMdEye, IoMdTimer } from "react-icons/io"; // Add IoMdTimer
 import { Range } from "@/components/form/FormRange";
 import { Map } from "@/components/gameui/Map";
 import toast from "react-hot-toast";
@@ -330,6 +330,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
   const [mapValue, setMapValue] = useState(defaultMapValue); // For MapInteractionCSS
   const [hoverCountry, setHoverCountry] = useState();
   const [isLoadingImage, setIsLoadingImage] = useState(true); // Track image loading
+  const [remainingTime, setRemainingTime] = useState(null); // State for round timer
+  const timerIntervalRef = useRef(null); // Ref for the timer interval
 
   const [ref, bounds] = useMeasure();
   const { height: windowHeight, width: windowWidth } = bounds;
@@ -370,8 +372,51 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
       setIsLoadingImage(true); // Start loading new image
     }
     // Reset status message potentially if needed when round changes?
-  }, [artifact, phase, modeInfo, user?._id]); // Depend on user._id
+    // Also reset timer here
+    if (phase === 'guessing' && settings?.timer) {
+      setRemainingTime(settings.timer); // Initialize timer
+    } else {
+      setRemainingTime(null); // Clear timer if not in guessing phase
+    }
+    // Clear any existing interval when dependencies change
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  }, [artifact, phase, modeInfo, user?._id, settings?.timer]); // Add settings.timer dependency
 
+
+  // Effect for the round timer countdown
+  useEffect(() => {
+    // Only run the timer if in guessing phase and remainingTime is set
+    if (phase === 'guessing' && remainingTime !== null && remainingTime > 0) {
+      timerIntervalRef.current = setInterval(() => {
+        setRemainingTime(prevTime => {
+          if (prevTime <= 1) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+            // Server will handle the end of the round, client just stops counting
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+    } else {
+      // Clear interval if phase changes or time runs out client-side
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    }
+
+    // Cleanup function to clear interval on unmount or phase change
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [phase, remainingTime]); // Rerun effect if phase or remainingTime changes
 
   // Handle image loading state
   const handleImageLoadComplete = (imgBounds) => {
@@ -498,14 +543,19 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
                  {statusMessage}
                </div> */}
              </div>
-             {/* Right Side: Status + Round Info */}
+             {/* Right Side: Status + Timer + Round Info + Forfeit */}
              <div className="flex items-center"> {/* Wrap Status and Round in a flex container */}
                <MultiplayerStatus message={statusMessage} /> {/* Add Status here */}
-               {/* TODO: Adapt GameInfo for multiplayer scores? */}
-                {/* <GameInfo /> */}
-                <div className="text-white bg-black p-1 px-2 rounded text-sm mr-1">Round: {round} / {settings?.rounds}</div> {/* Adjusted padding & added margin */}
-                {/* Add Forfeit Button */}
-                <GameButton
+               {/* Timer Display */}
+               {remainingTime !== null && phase === 'guessing' && (
+                 <div className={`text-white bg-black p-1 px-2 rounded text-sm mr-1 flex items-center ${remainingTime <= 10 ? 'text-red-500 font-bold' : ''}`}>
+                   <IoMdTimer className="mr-1" /> {remainingTime}s
+                 </div>
+               )}
+               {/* Round Info */}
+               <div className="text-white bg-black p-1 px-2 rounded text-sm mr-1">Round: {round} / {settings?.rounds}</div> {/* Adjusted padding & added margin */}
+               {/* Forfeit Button */}
+               <GameButton
                   onClick={handleManualForfeit}
                   disabled={playerStatuses?.[user?._id] === 'forfeited' || currentUserHasGuessed} // Disable if forfeited or already guessed
                   className="text-xs !p-[1px_6px] !min-h-[22px]" // Smaller padding and height
