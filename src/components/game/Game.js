@@ -137,6 +137,7 @@ const GameUI = () => {
               }
             }}
             onError={handleArtifactLoadError}
+            revealImage
           />
         </MapInteractionCSS>
       )}

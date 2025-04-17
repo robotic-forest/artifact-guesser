@@ -118,6 +118,7 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
               {!loadingComplete && <LoadingArtifact className='absolute' />}
               <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
                 <ImageView
+                  revealImage
                   imgs={a.images.external}
                   loadingComplete={loadingComplete}
                   setLoadingComplete={bounds => {

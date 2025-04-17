@@ -26,7 +26,7 @@ export const Immersive2D = ({ value, setValue, setImmersive, roundSummary, artif
         </>
       )}
     >
-      <ImageView imgs={artifact.images.external} />
+      <ImageView imgs={artifact.images.external} revealImage />
     </ImmersiveDialog>
   )
 }

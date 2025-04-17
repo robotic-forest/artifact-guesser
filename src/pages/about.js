@@ -3,10 +3,24 @@ import { artifactsTheme } from "./artifacts"
 import { IconGenerator } from "@/components/art/IconGenerator"
 import { PiRedditLogoFill } from "react-icons/pi"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
-import { ArtifactCountMap } from "@/components/dashbaord/ArtifactCountMap"
+// import { ArtifactCountMap } from "@/components/dashbaord/ArtifactCountMap" // Removed direct import
 import { SiKofi } from "react-icons/si"
 import { MenuButton } from "@/components/layout/components/MobileNav"
-import { Collosi } from "@/components/dashbaord/Collosi"
+import dynamic from 'next/dynamic'; // Added dynamic import
+// import { Collosi } from "@/components/dashbaord/Collosi" // Removed direct import
+
+// Dynamically import ArtifactCountMap with ssr: false
+const ArtifactCountMap = dynamic(() => import('@/components/dashbaord/ArtifactCountMap').then(mod => mod.ArtifactCountMap), {
+  ssr: false,
+  loading: () => <div className='p-4' style={{ background: 'var(--backgroundColor)' }}>Loading Map...</div>
+});
+
+// Dynamically import Collosi with ssr: false
+const Collosi = dynamic(() => import('@/components/dashbaord/Collosi').then(mod => mod.Collosi), {
+  ssr: false,
+  loading: () => <div className='p-4' style={{ background: 'var(--backgroundColor)' }}>Loading 3D Preview...</div>
+});
+
 
 export default () => {
   const { artifacts } = useArtifacts({ stats: true })
@@ -95,15 +109,13 @@ export default () => {
           <li>Improve timeline on desktop</li>
           <li>Timed round function</li>
           <li>
-            <b>New Game Modes</b>: Continent Modes, Country Modes (timeline only), Era Modes (timeline constrained between set dates, ie. BC only, AD only, etc),{' '}
-            medium modes (ie. only bronze artifacts), artifact types (swords, coins, etc), artifact subjects (frogs, dragons, etc)
+            <b>New Game Modes</b>: Medium modes (ie. only bronze artifacts), artifact types (swords, coins, etc), artifact subjects (frogs, dragons, etc)
           </li>
         </ul>
         <div className='my-2'>
           <b>BIG Future Features</b>:
         </div>
         <ul className='list-disc ml-8'>
-          <li>Multiplayer!</li>
           <li>Map shows world/empires as they were when adjusting timeline date</li>
           <li>
             <b>3D Artifacts!</b> Preview:
