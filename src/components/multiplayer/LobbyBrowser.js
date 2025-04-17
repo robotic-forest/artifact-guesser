@@ -75,6 +75,7 @@ export const LobbyBrowser = ({ backgroundColor }) => {
           // Access data based on provided structure
           const mode = lobby.settings?.mode;
           const rounds = lobby.settings?.rounds;
+          const timer = lobby.settings?.timer; // Add timer
           const color = modes[mode]?.color || '#cccccc'; // Default to gray if mode not found
           const playerCount = lobby.playerCount ?? lobby.clients?.length ?? 0; // Use playerCount or fallback to clients array length
 
@@ -113,6 +114,7 @@ export const LobbyBrowser = ({ backgroundColor }) => {
                 <div className="font-bold mb-1">{mode}</div> {/* Use mode variable */}
                 <div>Players: {playerCount}</div>
                 <div>Rounds: {rounds}</div> {/* Use rounds variable */}
+                <div>Timer: {timer}s</div> {/* Add timer display */}
                 {/* Add italic, low-opacity text */}
                 <div className="mt-1 text-xs italic opacity-70">
                   click to join
