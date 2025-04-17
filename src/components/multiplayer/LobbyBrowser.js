@@ -22,8 +22,11 @@ export const LobbyBrowser = ({ backgroundColor }) => {
   const { user } = useUser();
   const router = useRouter(); // Although joinLobby handles navigation, keep it for potential future use
 
-  // Filter out lobbies that are currently in progress
-  const availableLobbies = lobbies?.filter(lobby => !lobby.inProgress) || [];
+  // Filter out lobbies that are currently in progress OR private
+  const availableLobbies = lobbies?.filter(lobby =>
+    !lobby.inProgress &&
+    (lobby.settings?.isPublic === undefined || lobby.settings?.isPublic === true) // Show public or undefined (default public)
+  ) || [];
 
   if (availableLobbies.length === 0) {
     return null; // Render nothing if no available lobbies

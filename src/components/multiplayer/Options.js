@@ -50,6 +50,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
   // Local state for selections
   const [selectedMode, setSelectedMode] = useState(modeKeys[0]);
   const [selectedRounds, setSelectedRounds] = useState(5);
+  const [isPublic, setIsPublic] = useState(true); // Default to Public
   const [isSelectingMode, setIsSelectingMode] = useState(false);
 
   // Effect to sync local state with lobby data from context
@@ -58,15 +59,19 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
     if (currentLobbyData?.settings) {
       const newMode = currentLobbyData.settings.mode || modeKeys[0];
       const newRounds = currentLobbyData.settings.rounds || 5;
-      console.log(`[Options useEffect] Syncing state from lobby data: Mode=${newMode}, Rounds=${newRounds}`);
+      // Default isPublic to true if not specified in settings
+      const newIsPublic = currentLobbyData.settings.isPublic === undefined ? true : currentLobbyData.settings.isPublic;
+      console.log(`[Options useEffect] Syncing state from lobby data: Mode=${newMode}, Rounds=${newRounds}, IsPublic=${newIsPublic}`);
       setSelectedMode(newMode);
       setSelectedRounds(newRounds);
+      setIsPublic(newIsPublic);
       setIsSelectingMode(false); // Ensure selection view is closed on update
     } else if (!currentLobbyId) {
       // Reset to defaults only if NOT in a lobby anymore
       console.log("[Options useEffect] Not in lobby, resetting defaults.");
       setSelectedMode(modeKeys[0]);
       setSelectedRounds(5);
+      setIsPublic(true); // Reset to default when not in lobby
       setIsSelectingMode(false);
     }
     // Add isHost as dependency? No, derived from context data which is already a dependency via currentLobbyData
@@ -79,17 +84,24 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
 
   const handleCreateLobby = () => {
     if (onCreateLobby) {
-      onCreateLobby({ settings: { mode: selectedMode, rounds: selectedRounds } });
+      onCreateLobby({ settings: { mode: selectedMode, rounds: selectedRounds, isPublic: isPublic } });
     }
   };
 
   // Emit setting changes if host
-  const emitSettingChange = (newSettings) => {
+  const emitSettingChange = (settingUpdate) => {
     if (isHost && _socket && currentLobbyId) {
-      console.log(`Host emitting update-settings:`, newSettings);
+      // Construct the full settings object based on current state + update
+      const currentSettings = {
+        mode: selectedMode,
+        rounds: selectedRounds,
+        isPublic: isPublic,
+        ...settingUpdate // Apply the specific change
+      };
+      console.log(`Host emitting update-settings:`, currentSettings);
       _socket.emit('update-settings', {
         lobbyId: currentLobbyId,
-        settings: newSettings
+        settings: currentSettings
       });
     }
   };
@@ -97,12 +109,18 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
   const handleModeSelect = (modeKey) => {
     setSelectedMode(modeKey);
     setIsSelectingMode(false);
-    emitSettingChange({ mode: modeKey, rounds: selectedRounds });
+    emitSettingChange({ mode: modeKey }); // Only send the changed setting
   };
 
   const handleRoundsSelect = (rounds) => {
     setSelectedRounds(rounds);
-    emitSettingChange({ mode: selectedMode, rounds: rounds });
+    emitSettingChange({ rounds: rounds }); // Only send the changed setting
+  };
+
+  const handleLobbyTypeSelect = (type) => {
+    const newIsPublic = type === 'public';
+    setIsPublic(newIsPublic);
+    emitSettingChange({ isPublic: newIsPublic }); // Only send the changed setting
   };
 
   const handleStartGame = () => {
@@ -113,7 +131,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
     }
     if (_socket && currentLobbyId && isHost) {
       // Use the state that reflects the latest selection/sync
-      const currentSettings = { mode: selectedMode, rounds: selectedRounds };
+      const currentSettings = { mode: selectedMode, rounds: selectedRounds, isPublic: isPublic }; // Include isPublic
       console.log(`Emitting start-game for lobby ${currentLobbyId} with settings:`, currentSettings);
       _socket.emit('start-game', {
         lobbyId: currentLobbyId,
@@ -140,6 +158,39 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
       </div>
 
       <div className='mt-3 p-3'>
+        {/* Visibility Selection */}
+         <div className="mb-4">
+           <div className='text-sm mb-2'>Visibility</div>
+           <div className='p-2 text-sm flex' css={{ background: 'var(--backgroundColorSlightlyLight)', borderRadius: 6 }}>
+             {currentLobbyId && !isHost ? (
+               // Non-host view: Show the current setting, disabled
+               <RoundButton isActive={true} disabled={true}>
+                 {isPublic ? 'Public' : 'Private'}
+               </RoundButton>
+             ) : (
+               // Host view or lobby creation view: Allow selection
+               <>
+                 <RoundButton
+                   key="public"
+                   onClick={() => handleLobbyTypeSelect('public')}
+                   isActive={isPublic}
+                   disabled={false} // Host/Creator can always change
+                 >
+                   Public
+                 </RoundButton>
+                 <RoundButton
+                   key="private"
+                   onClick={() => handleLobbyTypeSelect('private')}
+                   isActive={!isPublic}
+                   disabled={false} // Host/Creator can always change
+                 >
+                   Private
+                 </RoundButton>
+               </>
+             )}
+           </div>
+         </div>
+
         {/* Mode Selection */}
         <div className="mb-4">
           <div className='text-sm mb-2'>{currentLobbyId && isHost && isSelectingMode ? 'Select New Mode' : 'Mode'}</div>

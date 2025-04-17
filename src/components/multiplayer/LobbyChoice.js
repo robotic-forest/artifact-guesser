@@ -1,20 +1,16 @@
 import dynamic from 'next/dynamic'; // Import dynamic
-import { dashbaordTheme } from "@/pages/dashboard";
+import { dashboardTheme } from "@/pages/dashboard";
 import { themeCSS } from "../GlobalStyles";
 import { Title } from "./Title";
 import { gamesTheme } from "@/pages/games";
 import { PulseLoader } from "react-spinners";
 import { Tag } from "../tag/Tag";
 import { modes } from "../gameui/ModeButton";
-import { useEffect } from "react"; // Import useEffect
 import useUser from "@/hooks/useUser"; // Import useUser
-import toast from 'react-hot-toast'; // Import toast
-import AAAAAA from '../art/AAAAAA'; // Import AAAAAA
 import useAAAAtoast from '@/hooks/useAAAAtoast'; // Import the hook
 import { generateInsult } from '@/hooks/useInsult'; // Import generateInsult
 import { MasonryLayout } from "../layout/MasonryLayout";
 import { useMultiplayer } from "./context/MultiplayerContext"; // Import the context hook
-import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
 import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
 import { Button } from "../buttons/Button";
 import { AuthHeader } from "../layout/AuthHeader";
@@ -50,16 +46,24 @@ const LobbyTypeButton = ({ className, theme, disabled, ...p }) => {
 
 export const LobbyChoice = () => {
   const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
-  const { lobbies, createLobby, joinLobby, isConnected, isRegistered } = useMultiplayer()
+  const { lobbies: l, createLobby, joinLobby, isConnected, isRegistered } = useMultiplayer()
   const { user } = useUser(); // Get user state
+
+  const lobbies = l.filter(lobby => lobby.settings?.isPublic !== false)
 
   // Default settings for creating a lobby from this view
   const defaultSettings = { mode: 'Balanced', rounds: 5 };
 
   // Handle creating a lobby
-  const handleCreateLobby = (isPublic = false) => {
+  const handleCreateLobby = (isPublic = true) => { // Default to public if not specified, though buttons explicitly pass it
     if (createLobby && isConnected && isRegistered) {
-      createLobby({ settings: defaultSettings /*, public: isPublic */ });
+      // Combine default settings with the desired visibility
+      const settingsToCreate = {
+        ...defaultSettings,
+        isPublic: isPublic
+      };
+      console.log("Creating lobby with settings:", settingsToCreate);
+      createLobby({ settings: settingsToCreate });
     } else {
       console.error("Cannot create lobby: Not connected, not registered, or createLobby function missing.");
     }
@@ -105,10 +109,10 @@ export const LobbyChoice = () => {
             Create a new Lobby
           </div>
            <div className='mt-2 p-0 pb-2 pr-2 flex flex-wrap'>
-             <LobbyTypeButton theme={dashbaordTheme} onClick={() => handleCreateLobby(false)} disabled={true}>
+             <LobbyTypeButton theme={dashboardTheme} onClick={() => handleCreateLobby(false)}>
                <div><b>Create Private Lobby</b></div>
                <div className="text-xs opacity-80">
-                 Only players with a link can join (Not Implemented)
+                 Only players with a link can join
               </div>
              </LobbyTypeButton>
              <LobbyTypeButton
@@ -173,7 +177,8 @@ export const LobbyChoice = () => {
             )}
             {isConnected && isRegistered && lobbies && lobbies.length > 0 && (
               <MasonryLayout gutter={6}>
-                {lobbies.map(lobby => {
+                {lobbies // Filter out private lobbies
+                 .map(lobby => {
                   const hostUsername = lobby?.host?.username || 'Unknown Host';
                   const mode = lobby?.settings?.mode || 'Unknown';
                   const rounds = lobby?.settings?.rounds || '?';

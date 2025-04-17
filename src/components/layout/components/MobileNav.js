@@ -16,7 +16,7 @@ import { gamesTheme } from "@/pages/games"
 import { BsDiscord } from "react-icons/bs"
 import Link from "next/link"
 import { accountTheme } from "@/pages/accounts"
-import { dashbaordTheme } from "@/pages/dashboard"
+import { dashboardTheme } from "@/pages/dashboard"
 import { SignupDialog } from "@/components/dialogs/SignupDialog"
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
 import { PiRedditLogoFill } from "react-icons/pi"
@@ -106,7 +106,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       {game ? 'Resume' : 'Play'} Game
                     </MenuButton>
                     {isAdmin && (
-                      <MenuButton theme={dashbaordTheme} url='/dashboard'>
+                      <MenuButton theme={dashboardTheme} url='/dashboard'>
                         <MdDashboard className='mr-2' />
                         Dashboard
                       </MenuButton>

@@ -8,7 +8,7 @@ import { GrLogout } from "react-icons/gr"
 import { FaHeart, FaUser } from "react-icons/fa"
 import { css } from "@emotion/react"
 import { createStyles, themeCSS } from "../GlobalStyles"
-import { dashbaordTheme } from "@/pages/dashboard"
+import { dashboardTheme } from "@/pages/dashboard"
 import { artifactsTheme } from "@/pages/artifacts"
 import { gamesTheme } from "@/pages/games"
 import { accountTheme } from "@/pages/accounts"
@@ -52,7 +52,7 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
               <ResumeGameButton className='mt-1.5 mb-6' />
               {isAdmin && (
                 <Link href='/dashboard' css={{ '&:hover': { color: 'var(--textColor)'} }}>
-                  <MenuIconButton tooltip='Dashboard' className='mb-3' theme={dashbaordTheme}>
+                  <MenuIconButton tooltip='Dashboard' className='mb-3' theme={dashboardTheme}>
                     <MdDashboard />
                   </MenuIconButton>
                 </Link>

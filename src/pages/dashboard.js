@@ -5,15 +5,16 @@ import { MdDashboard } from "react-icons/md";
 import { GlobalChat } from "@/components/chat/GlobalChat";
 import { LobbyBrowser } from "@/components/multiplayer/LobbyBrowser";
 
+export const dashboardTheme = {
+  backgroundColor: '#78c9ab',
+  primaryColor: '#96a1f7',
+  textColor: '#000000',
+};
+
 const DashboardPage = () => {
-  const dashbaordTheme = {
-    backgroundColor: '#78c9ab',
-    primaryColor: '#96a1f7',
-    textColor: '#000000',
-  };
 
   return (
-    <Layout title='Dashboard' theme={dashbaordTheme} contentCSS={{
+    <Layout title='Dashboard' theme={dashboardTheme} contentCSS={{
       fontFamily: 'monospace',
       background: 'linear-gradient(180deg, var(--backgroundColor), var(--backgroundColorDark))',
       minHeight: '100vh',
