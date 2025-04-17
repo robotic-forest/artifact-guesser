@@ -10,6 +10,7 @@ import { useMultiplayer } from "./context/MultiplayerContext";
 import toast from "react-hot-toast"; // Import toast
 
 const modeKeys = Object.keys(gameModesObject);
+const timerOptions = [5, 15, 30, null]; // null represents 'No Timer'
 
 const RoundButton = ({ css, isActive, disabled, children, ...p }) => (
   <Button
@@ -50,6 +51,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
   // Local state for selections
   const [selectedMode, setSelectedMode] = useState(modeKeys[0]);
   const [selectedRounds, setSelectedRounds] = useState(5);
+  const [selectedTimer, setSelectedTimer] = useState(15); // Default timer: 15s
   const [isPublic, setIsPublic] = useState(true); // Default to Public
   const [isSelectingMode, setIsSelectingMode] = useState(false);
 
@@ -59,11 +61,13 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
     if (currentLobbyData?.settings) {
       const newMode = currentLobbyData.settings.mode || modeKeys[0];
       const newRounds = currentLobbyData.settings.rounds || 5;
+      const newTimer = currentLobbyData.settings.timer !== undefined ? currentLobbyData.settings.timer : 15; // Sync timer, default 15s
       // Default isPublic to true if not specified in settings
       const newIsPublic = currentLobbyData.settings.isPublic === undefined ? true : currentLobbyData.settings.isPublic;
-      console.log(`[Options useEffect] Syncing state from lobby data: Mode=${newMode}, Rounds=${newRounds}, IsPublic=${newIsPublic}`);
+      console.log(`[Options useEffect] Syncing state from lobby data: Mode=${newMode}, Rounds=${newRounds}, Timer=${newTimer}, IsPublic=${newIsPublic}`);
       setSelectedMode(newMode);
       setSelectedRounds(newRounds);
+      setSelectedTimer(newTimer);
       setIsPublic(newIsPublic);
       setIsSelectingMode(false); // Ensure selection view is closed on update
     } else if (!currentLobbyId) {
@@ -71,6 +75,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
       console.log("[Options useEffect] Not in lobby, resetting defaults.");
       setSelectedMode(modeKeys[0]);
       setSelectedRounds(5);
+      setSelectedTimer(15); // Reset timer to default
       setIsPublic(true); // Reset to default when not in lobby
       setIsSelectingMode(false);
     }
@@ -84,7 +89,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
 
   const handleCreateLobby = () => {
     if (onCreateLobby) {
-      onCreateLobby({ settings: { mode: selectedMode, rounds: selectedRounds, isPublic: isPublic } });
+      onCreateLobby({ settings: { mode: selectedMode, rounds: selectedRounds, timer: selectedTimer, isPublic: isPublic } });
     }
   };
 
@@ -95,6 +100,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
       const currentSettings = {
         mode: selectedMode,
         rounds: selectedRounds,
+        timer: selectedTimer, // Include timer in settings
         isPublic: isPublic,
         ...settingUpdate // Apply the specific change
       };
@@ -123,6 +129,11 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
     emitSettingChange({ isPublic: newIsPublic }); // Only send the changed setting
   };
 
+  const handleTimerSelect = (timerValue) => {
+    setSelectedTimer(timerValue);
+    emitSettingChange({ timer: timerValue }); // Send timer change
+  };
+
   const handleStartGame = () => {
     // Add client-side check before emitting (belt-and-suspenders)
     if (!enoughPlayersPresent) {
@@ -131,7 +142,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
     }
     if (_socket && currentLobbyId && isHost) {
       // Use the state that reflects the latest selection/sync
-      const currentSettings = { mode: selectedMode, rounds: selectedRounds, isPublic: isPublic }; // Include isPublic
+      const currentSettings = { mode: selectedMode, rounds: selectedRounds, timer: selectedTimer, isPublic: isPublic }; // Include timer and isPublic
       console.log(`Emitting start-game for lobby ${currentLobbyId} with settings:`, currentSettings);
       _socket.emit('start-game', {
         lobbyId: currentLobbyId,
@@ -254,6 +265,29 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
                   disabled={false} // Host/Creator can always change
                 >
                   {rounds}
+                </RoundButton>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Timer Selection */}
+        <div className='mt-4'>
+          <div className='text-sm mb-2'>Timer (seconds)</div>
+          <div className='p-2 text-sm flex' css={{ background: 'var(--backgroundColorSlightlyLight)', borderRadius: 6 }}>
+            {currentLobbyId && !isHost ? (
+               <RoundButton isActive={true} disabled={true}>
+                 {selectedTimer === null ? 'None' : `${selectedTimer}s`} {/* Display the selected timer */}
+               </RoundButton>
+            ) : (
+              timerOptions.map(timerValue => (
+                <RoundButton
+                  key={timerValue === null ? 'none' : timerValue}
+                  onClick={() => handleTimerSelect(timerValue)}
+                  isActive={selectedTimer === timerValue}
+                  disabled={false} // Host/Creator can always change
+                >
+                  {timerValue === null ? 'None' : `${timerValue}s`}
                 </RoundButton>
               ))
             )}

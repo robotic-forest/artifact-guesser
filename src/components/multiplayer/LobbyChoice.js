@@ -52,7 +52,7 @@ export const LobbyChoice = () => {
   const lobbies = l.filter(lobby => lobby.settings?.isPublic !== false)
 
   // Default settings for creating a lobby from this view
-  const defaultSettings = { mode: 'Balanced', rounds: 5 };
+  const defaultSettings = { mode: 'Balanced', rounds: 5, timer: 30 }; // Set default timer to 30s
 
   // Handle creating a lobby
   const handleCreateLobby = (isPublic = true) => { // Default to public if not specified, though buttons explicitly pass it
@@ -182,6 +182,7 @@ export const LobbyChoice = () => {
                   const hostUsername = lobby?.host?.username || 'Unknown Host';
                   const mode = lobby?.settings?.mode || 'Unknown';
                   const rounds = lobby?.settings?.rounds || '?';
+                  const timer = lobby?.settings?.timer || '?'; // Extract timer setting
                   const playerCount = lobby?.playerCount || lobby?.clients?.length || 0;
                    const modeColor = modes[mode]?.color || '#cccccc';
                    const isInProgress = lobby?.inProgress || false;
@@ -198,6 +199,7 @@ export const LobbyChoice = () => {
                         <div className='text-xs flex items-center flex-wrap gap-x-3 gap-y-1 mb-2'>
                            <span>Players: <b>{playerCount}</b></span>
                            <span>Rounds: <b>{rounds}</b></span>
+                           <span>Timer: <b>{timer}s</b></span> {/* Add timer display */}
                            <div className='flex items-center'>
                              <span className='mr-1'>Mode:</span>
                              <Tag className='' bold color={modeColor} css={{padding: '1px 4px'}}>
