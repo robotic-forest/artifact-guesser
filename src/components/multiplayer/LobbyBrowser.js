@@ -67,8 +67,8 @@ export const LobbyBrowser = () => {
       <div className="p-1 px-2 text-xs"
         css={{ background: 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)', marginTop: '2px', borderRadius: '6px', width: 'fit-content' }}>
         <span className=" mr-2" css={{ color: 'var(--textColor)' }}>Lobbies</span>
-      <div className="inline-flex flex-wrap gap-1"> {/* Use flex-wrap for multiple lobbies */}
-        {availableLobbies.map((lobby) => {
+      <div className="inline-flex flex-wrap gap-1 items-center"> {/* Use flex-wrap for multiple lobbies, added items-center */}
+        {availableLobbies.slice(0, 5).map((lobby) => {
           // Access data based on provided structure
           const mode = lobby.settings?.mode;
           const rounds = lobby.settings?.rounds;
@@ -87,6 +87,7 @@ export const LobbyBrowser = () => {
                   fontSize: '0.8rem', // Slightly smaller font
                 }}
               >
+                <b className='mr-1'>{mode[0]}</b>
                 {playerCount} {/* Show player count in the tag */}
               </Tag>
             </div>
@@ -117,6 +118,12 @@ export const LobbyBrowser = () => {
             </Dropdown>
           );
         })}
+        {/* Display '+ N more' if there are more than 5 lobbies */}
+        {availableLobbies.length > 5 && (
+          <span className="ml-1" style={{ color: 'var(--textColorLowOpacity)' }}>
+            + {availableLobbies.length - 5} more
+          </span>
+        )}
       </div>
     </div>
     </>
