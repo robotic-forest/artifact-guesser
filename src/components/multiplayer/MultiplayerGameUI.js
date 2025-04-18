@@ -27,6 +27,7 @@ import { createStyles } from "../GlobalStyles";
 import { IconGenerator } from "../art/IconGenerator";
 import { useMultiplayer } from "./context/MultiplayerContext"
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 // --- Disconnect Countdown Banner ---
 const DisconnectCountdownBanner = ({ countdownData }) => {
@@ -116,7 +117,7 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
 
   // Countdown Timer Effect
   useEffect(() => {
-    setCountdown(10); // Reset countdown on mount/results change - Updated to 10
+    setCountdown(15); // Reset countdown on mount/results change - Updated to 15
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
@@ -156,6 +157,20 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
         <p><b>Artifact:</b> {correctArtifact?.name || 'N/A'}</p> {/* Use .name for display */}
         <p><b>Date:</b> {correctArtifact?.time ? formatDate(correctArtifact.time.start) : 'N/A'} {correctArtifact?.time?.end !== correctArtifact?.time?.start ? ` → ${formatDate(correctArtifact.time.end)}` : ''}</p>
         <p><b>Location:</b> {correctArtifact?.location ? formatLocation(correctArtifact.location) : 'N/A'}</p>
+        <Link href={`/artifacts/${correctArtifact?._id}`} passHref target="_blank">
+          <Button
+            className="mt-4" // Added margin-bottom
+            size='lg'
+            css={{
+              background: 'var(--primaryColor)',
+              '&:hover': { background: 'var(--primaryColorLight)', boxShadow: 'none' },
+              border: '1px outset', borderColor: '#ffffff77 #00000077 #00000077 #ffffff77', // Keep consistent border
+              boxShadow: 'none', borderRadius: 0 // Keep consistent style
+            }}
+          >
+            View artifact details
+          </Button>
+        </Link>
       </div>
 
       {/* Display Player Guesses & Scores */}
@@ -287,7 +302,6 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
         {sortedScores.length === 0 && <p className="text-center" css={{ color: 'var(--textColorLowOpacity)'}}>No scores recorded.</p>}
       </div>
 
-      {/* --- Return to Lobby Button (Moved Up) --- */}
       <Button
         onClick={onProceed}
         className="mt-4 mb-6" // Added margin-bottom
@@ -301,8 +315,6 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
       >
         Return to Lobby
       </Button>
-      {/* --- End Return to Lobby Button --- */}
-
 
       {/* --- Round Summaries Section --- */}
       {gameHistory && gameHistory.length > 0 && (
@@ -683,6 +695,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
 const RoundDetail = ({ roundData, players }) => {
   const { round, correctArtifact, results: playerResults } = roundData;
 
+  console.log(correctArtifact)
+
   // Find the highest score for this specific round
   const highestRoundScore = Math.max(0, ...Object.values(playerResults || {}).map(r => r.roundScore || 0));
 
@@ -733,6 +747,21 @@ const RoundDetail = ({ roundData, players }) => {
             );
           })}
           {Object.keys(playerResults || {}).length === 0 && <p>No guesses this round.</p>}
+
+          <Link href={`/artifacts/${correctArtifact?._id}`} passHref target="_blank">
+            <Button
+              className="mt-4 mb-6" // Added margin-bottom
+              size='lg'
+              css={{
+                background: 'var(--primaryColor)',
+                '&:hover': { background: 'var(--primaryColorLight)', boxShadow: 'none' },
+                border: '1px outset', borderColor: '#ffffff77 #00000077 #00000077 #ffffff77', // Keep consistent border
+                boxShadow: 'none', borderRadius: 0 // Keep consistent style
+              }}
+            >
+              View artifact details
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

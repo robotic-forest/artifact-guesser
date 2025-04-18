@@ -114,7 +114,7 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
                 </div>
               </div>
             )}
-            <div className='relative'>
+            <div className='relative h-full'>
               {!loadingComplete && <LoadingArtifact className='absolute' />}
               <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
                 <ImageView
