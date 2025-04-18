@@ -234,7 +234,8 @@ const GameUI = () => {
               </IconButton>
             </div>
             {/* Timer Display */}
-            {isTimerActive && countdown !== null && (
+            {/* Only show timer if timing is enabled, active, and countdown is a valid number */}
+            {game?.timing !== 'None' && isTimerActive && countdown !== null && !isNaN(countdown) && (
               <div className={`
                 flex items-center rounded font-bold p-1 px-2 text-sm mr-1
                 ${countdown <= 5
