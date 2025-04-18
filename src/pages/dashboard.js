@@ -38,7 +38,7 @@ const DashboardPage = () => {
         bottom: 8,
         left: 48,
       }}>
-        <GlobalChat notFixed backgroundColor='var(--backgroundColorDark)' />
+        <GlobalChat notFixed showHeader backgroundColor='var(--backgroundColorDark)' />
         <LobbyBrowser backgroundColor='var(--backgroundColorDark)' />
       </div>
     </Layout>

@@ -162,7 +162,7 @@ const scrollbarCSS = {
              {canChat && (
                // Apply lobby theme styles consistently
                <div className="p-1 px-2 text-xs italic flex items-center" css={{ background: backgroundColor || 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)' }}>
-                 <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-3 mb-1"></span>
+                 <span className="inline-block w-2.5 h-2.5 bg-green-500 border border-black rounded-full mr-3"></span>
                  {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
                </div>
             )}
@@ -249,7 +249,7 @@ const scrollbarCSS = {
 
            {/* User Count Display */}
            <div className="text-xs text-black/60 mb-1 ml-1 flex items-center">
-             <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+             <span className="inline-block w-2.5 h-2.5 bg-green-500 border border-black rounded-full mr-1.5"></span>
              {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
            </div>
 
