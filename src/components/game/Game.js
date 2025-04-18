@@ -262,7 +262,7 @@ const GameUI = () => {
             )}
           </div>
           <div className='w-full'>
-            <div className='flex items-center bg-black p-[4.5px_6px_4px] rounded-[3px] border border-white/30 text-sm h-[24px] mb-1 w-full'>
+            <div className='flex items-center bg-black p-[4.5px_6px_5px] rounded-[3px] border border-white/30 text-sm h-[25px] mb-1 w-full'>
               <Range
                 min={modeInfo?.type === 'Era' ? modeInfo.start : -3000}
                 max={modeInfo?.type === 'Era' ? modeInfo.end : new Date().getFullYear()}

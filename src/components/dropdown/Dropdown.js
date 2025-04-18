@@ -25,9 +25,14 @@ export const Dropdown = ({
   const [boundsRef, bounds] = useMeasure()
   const [showDropDown, setShowDropdown] = useState(false)
 
-  const openDropdown = () => {
-    setShowDropdown(true)
-    onOpen && onOpen()
+  const toggleDropdown = () => {
+    const newState = !showDropDown;
+    setShowDropdown(newState);
+    if (newState) {
+      onOpen && onOpen();
+    } else {
+      onClose && onClose();
+    }
   }
 
   const closeDropdown = () => {
@@ -43,11 +48,11 @@ export const Dropdown = ({
     <div ref={ref} css={{ ...containerStyle, position: 'relative' }}>
       {React.cloneElement(button, {
         ref: boundsRef,
-        onClick: onClick || openDropdown,
+        onClick: onClick || toggleDropdown, // Changed from openDropdown to toggleDropdown
         disable: button.props.disable || MenuIconButtons?.every(item => item.disabled),
         disabled: button.props.disabled || MenuIconButtons?.every(item => item.disabled),
-        onMouseEnter: () => onHover && openDropdown(),
-        onMouseLeave: () => onHover && closeDropdown()
+        onMouseEnter: () => onHover && !showDropDown && toggleDropdown(), // Only open on hover if closed
+        onMouseLeave: () => onHover && showDropDown && toggleDropdown() // Only close on hover if open
       })}
       {showDropDown && (
         <DropDownUI dense={dense} css={{ ...dropdownStyle, top: bounds.height + top }}>
