@@ -255,7 +255,8 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
         <h3 className="text-xl font-semibold mb-3 text-center" css={{ color: 'var(--textColorLowOpacity)'}}>Final Scores</h3>
         {/* Use players prop to display usernames */}
          {sortedScores.map(({ userId, score }, index) => {
-           const isWinner = index === 0 && sortedScores.length > 0 && !isForfeitWin; // Don't highlight winner if it was a forfeit win for visual clarity
+           // Update: Also check for !isDraw to prevent highlighting on a draw
+           const isWinner = index === 0 && sortedScores.length > 0 && !isForfeitWin && !isDraw;
            const playerStatus = playerStatuses?.[userId] || 'active'; // Get status
            const isForfeited = playerStatus === 'forfeited';
            const winnerBg = 'linear-gradient(0deg, #ffc1072e, #ffeb3b1f)'; // Subtle gold gradient for winner

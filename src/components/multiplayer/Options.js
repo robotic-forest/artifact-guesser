@@ -10,7 +10,7 @@ import { useMultiplayer } from "./context/MultiplayerContext";
 import toast from "react-hot-toast"; // Import toast
 
 const modeKeys = Object.keys(gameModesObject);
-const timerOptions = [5, 15, 30, null]; // null represents 'No Timer'
+const timerOptions = [5, 15, 30, 60, null]; // null represents 'No Timer'
 
 const RoundButton = ({ css, isActive, disabled, children, ...p }) => (
   <Button
@@ -278,7 +278,7 @@ export const Options = ({ onCreateLobby, currentLobbyId, _socket }) => {
 
         {/* Timer Selection */}
         <div className='mt-4'>
-          <div className='text-sm mb-2'>Timer (seconds)</div>
+          <div className='text-sm mb-2'>Timer</div>
           <div className='p-2 text-sm flex' css={{ background: 'var(--backgroundColorSlightlyLight)', borderRadius: 6 }}>
             {currentLobbyId && !isHost ? (
                <RoundButton isActive={true} disabled={true}>
