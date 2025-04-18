@@ -45,6 +45,7 @@ const RoundButton = ({ css, isActive, disabled, children, ...p }) => (
         background: disabled
           ? isActive ? 'var(--primaryColor)' : 'var(--backgroundColorBarelyLight)'
           : isActive ? 'var(--primaryColorLight)' : 'var(--backgroundColorLight)',
+        color: isActive ? '#000000' : '#ffffff',
         boxShadow: 'none',
       },
       border: '1px outset',
