@@ -58,7 +58,6 @@ const games = async (req, res) => {
   let results;
   try {
     results = await gamesCollection.aggregate(statsPipeline).toArray();
-    console.log("API: Aggregation results:", JSON.stringify(results, null, 2)); // Log aggregation results
   } catch (error) {
     console.error("API Error: Failed during aggregation:", error);
     return res.status(500).send({ error: "Failed to fetch game statistics from database." });
