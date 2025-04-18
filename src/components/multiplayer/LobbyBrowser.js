@@ -103,7 +103,7 @@ export const LobbyBrowser = ({ backgroundColor }) => {
               onHover // Use onHover prop to trigger on mouse enter/leave
               button={triggerElement} // Pass the wrapper div as the 'button' prop
               dropdownStyle={{ width: 'auto', minWidth: '100px', width: 'max-content', right: 'auto', left: 0, padding: 0, border: 'none' }} // Adjust dropdown style
-              top={-130} // Adjust vertical offset slightly if needed
+              top={-150} // Adjust vertical offset slightly if needed
               onClick={() => handleJoinClick(lobby._id)}
             >
               {/* Dropdown Content passed as children - Apply mode color and onClick */}
