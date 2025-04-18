@@ -153,7 +153,7 @@ export const GameProvider = ({ children }) => {
       // 4. Timer is not already active (prevent multiple intervals)
       // 5. Images are ready (for timed mode)
       const shouldStartTimer = timerDuration !== null &&
-                               !loading && // Still useful for initial game load
+                               // !loading && // REMOVED: Initial loading shouldn't block timer once images are ready
                                currentRoundData &&
                                !currentRoundData.guessed &&
                                !currentRoundData.timedOut &&
@@ -194,8 +194,8 @@ export const GameProvider = ({ children }) => {
           console.log("[Timer] Cleanup: Interval cleared.");
         }
       };
-      // Dependencies: game round, loading state, guessed status, selectedTimer from game state, AND image readiness
-    }, [game?.round, game?.selectedTimer, loading, game?.roundData, imagesReadyForTimer]); // Added imagesReadyForTimer
+      // Dependencies: game round, guessed status, selectedTimer from game state, AND image readiness
+    }, [game?.round, game?.selectedTimer, game?.roundData, imagesReadyForTimer]); // REMOVED loading from dependencies
 
 
   // --- End Timer Logic ---

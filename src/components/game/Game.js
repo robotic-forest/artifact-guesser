@@ -69,6 +69,13 @@ const GameUI = () => {
   const { height: windowHeight, width: windowWidth } = bounds
   const [value, setValue] = useState(defaultMapValue)
   const [hoverCountry, setHoverCountry] = useState();
+  const [initialCenteringDone, setInitialCenteringDone] = useState(false); // Track initial centering
+
+  // Reset centering flag when round changes
+  useEffect(() => {
+    setInitialCenteringDone(false);
+    setValue(defaultMapValue); // Also reset zoom/pan state for the new round
+  }, [game?.round]);
 
   useEffect(() => {
     // Lock body scroll when game is active (not summary, not guessed, not timed out)
@@ -138,30 +145,38 @@ const GameUI = () => {
         <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
           <ImageView
             imgs={artifact?.images.external}
-            // setLoadingComplete handles layout adjustments after images load
-            setLoadingComplete={bounds => {
-              const h = bounds?.height; // Use optional chaining
-              // Only adjust view if images are actually ready (prevents adjustments during initial load flicker)
-              if (h && imagesReadyForTimer) {
+            // setLoadingComplete is called when images finish loading and bounds are available
+            setLoadingComplete={imageBounds => { // Renamed param for clarity
+              const h = imageBounds?.height;
+              // Only perform initial centering ONCE when images are ready
+              if (h && imagesReadyForTimer && !initialCenteringDone) {
+                let newScale = 1;
+                let newX = 0;
+                let newY = 0;
+
                 if (h < windowHeight) {
-                  const newY = (windowHeight - h) / 2;
-                  // Check if translation needs update (avoid unnecessary updates)
-                  if (value.translation.y !== newY) {
-                    setValue({ scale: 1, translation: { x: 0, y: newY } });
-                  }
+                  // Image is shorter than window, center vertically
+                  newY = (windowHeight - h) / 2;
                 } else {
-                  const newScale = windowHeight / h;
-                  const newX = (windowWidth - (bounds.width * newScale)) / 2;
-                  // Check if scale needs update
-                  if (value.scale !== newScale) {
-                    setValue({ scale: newScale, translation: { x: newX, y: 0 } });
-                  }
+                  // Image is taller than window, scale down to fit height and center horizontally
+                  newScale = windowHeight / h;
+                  newX = (windowWidth - (imageBounds.width * newScale)) / 2;
                 }
+
+                // Check if the calculated state is different from the current state
+                // to avoid unnecessary updates if already centered somehow.
+                if (value.scale !== newScale || value.translation.x !== newX || value.translation.y !== newY) {
+                  setValue({ scale: newScale, translation: { x: newX, y: newY } });
+                } // <-- Added missing closing brace here
+                setInitialCenteringDone(true); // Mark centering as done for this round
               }
             }}
             onError={handleArtifactLoadError}
             // Pass the setter function for single-player callback
-            onAllImagesLoaded={() => setImagesReadyForTimer(true)}
+            onAllImagesLoaded={() => {
+              setImagesReadyForTimer(true);
+              // Note: Centering happens in setLoadingComplete now, triggered by image readiness
+            }}
             // For multiplayer, revealImage comes from server; for single-player, it's effectively true
             // as opacity is handled internally based on onAllImagesLoaded callback.
             // Let's pass isSinglePlayer to let ImageView decide internally (though current ImageView logic uses onAllImagesLoaded for opacity)

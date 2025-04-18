@@ -252,9 +252,9 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
             {canSetTimer && (
               <div className='mt-4 mb-6 w-full max-w-md'>
                 <div className='text-sm mb-2 flex items-center justify-center'>
-                  <GiTimeBomb className='mr-2'/> Timer for Next Game (seconds)
+                  <GiTimeBomb className='mr-2'/> Timer for Next Game
                 </div>
-                <div className='p-2 text-sm flex justify-center' css={{ background: 'var(--backgroundColorSlightlyLight)', borderRadius: 6 }}>
+                <div className='p-2 text-sm flex justify-center' css={{ borderRadius: 6 }}>
                   {timerOptions.map(timerValue => (
                     <RoundButton
                       key={timerValue === null ? 'none' : timerValue}
