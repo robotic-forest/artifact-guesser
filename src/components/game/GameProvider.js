@@ -366,7 +366,7 @@ export const GameProvider = ({ children }) => {
 
   const handleArtifactLoadError = async () => {
     console.error("Error loading artifact image, fetching a new one.");
-    // No need to manually clear timer here, the loading state change should handle it via useEffect
+    setImagesReadyForTimer(false); // <-- Reset image readiness before fetching new
     setLoading(true);
     const newArtifact = await getRandomArtifact(game, game.mode)
     const newGame = {
