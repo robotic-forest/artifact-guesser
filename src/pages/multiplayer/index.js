@@ -10,7 +10,6 @@ import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerCont
 // Inner component to access context after provider is mounted
 const MultiplayerPageContent = () => {
   const { currentLobbyId, isConnected, isRegistered, isLeaving, setIsLeaving } = useMultiplayer(); // Get isLeaving and setIsLeaving
-  console.log({ currentLobbyId, isConnected, isRegistered, isLeaving })
 
   // Reset the isLeaving flag when landing on this page
   useEffect(() => {

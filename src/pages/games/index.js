@@ -215,12 +215,9 @@ const gameColumns = [
             overflow: 'hidden', 
             textOverflow: 'ellipsis',
             maxWidth: '200px', // Adjust as needed
-            display: 'inline-block' 
+            display: 'inline-block'
           }}>
-            {row.players?.length > 3
-              ? `${row.players?.length} player(s)`
-              : row.players?.join(', ')
-            }
+            {`${row.players?.length} player${row.players?.length === 1 ? '' : 's'}`}
           </span>
         );
       } else {
