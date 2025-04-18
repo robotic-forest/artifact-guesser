@@ -36,16 +36,18 @@ export const Statistics = () => {
           actions={<AllAccountActions />}
         />
         <Behistun />
-        <Notes />
+        {/* <Notes /> */}
       </div>
       <div>
         <DashInfo
           title={<><GiAbstract034 className='text-sm mr-3'/>Games played</>}
-          count={(stats?.noauthGames && games) && (games + stats?.noauthGames)}
+          count={(stats?.noauthGames && games) && (games?.total + stats?.noauthGames)}
           extraInfo={(
             <div className='p-3 text-sm'>
-              <span className='mr-2'><span className='opacity-60 mr-1'>Auth</span> {games}</span>
-              <span className='opacity-60 mr-1'>Anon</span> {stats?.noauthGames}
+              <span className='mr-2'><span className='opacity-60 mr-1'>Auth</span> {games?.total}</span>
+              <span className='mr-2'><span className='opacity-60 mr-1'>Anon</span> {stats?.noauthGames}</span>
+              <span className='mr-2'><span className='opacity-60 mr-1'>Single</span> {games?.singlePlayerGames}</span>
+              <span className='opacity-60 mr-1'>Multi</span> {games?.multiplayerGames}
             </div>
           )}
           url='/games?__sortfield=startedAt&__sortdirection=-1'

@@ -39,6 +39,7 @@ const RoundButton = ({ css, isActive, disabled, children, ...p }) => (
     variant='outlined'
     css={{
       background: isActive ? 'var(--primaryColor)' : 'var(--backgroundColorBarelyLight)',
+      color: isActive ? '#000000' : '#ffffff',
       cursor: disabled ? 'not-allowed' : 'pointer',
       '&:hover': {
         background: disabled
