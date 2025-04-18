@@ -40,7 +40,7 @@ export const EditableDate = ({ value, onChange, className, dropDownPlace = 'top'
       />
       <Dropdown
         disabled={disabled} // Pass disabled prop to Dropdown
-        top={dropDownPlace === 'top' ? -100 : 12}
+        top={dropDownPlace === 'top' ? -85 : 12}
         button={<span css={{ cursor: disabled ? 'not-allowed' : 'pointer', '&:hover': { opacity: disabled ? 1 : 0.7 } }}>{notation}</span>} // Adjust cursor and hover
         MenuIconButtons={[
           {

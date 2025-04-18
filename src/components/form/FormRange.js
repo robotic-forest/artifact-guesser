@@ -49,6 +49,7 @@ export const Range = forwardRef(({ width, style, inputStyle, ...props }, ref) =>
 
 const InputStyles = styled.div`
   position: relative;
+  top: 5px;
   width: ${p => p.width};
   // Add styles for disabled state
   opacity: ${p => p.disabled ? 0.7 : 1};
@@ -60,14 +61,18 @@ const InputStyles = styled.div`
     width: ${p => p.width}; /* Specific width is required for Firefox. */
     background: transparent; /* Otherwise white in Chrome */
     position: relative;
-    top: -5px;
+    /* Adjust height and vertical position to cover the visual track */
+    height: 20px; 
+    top: -8px; 
+    margin: 0; /* Reset margin */
+    padding: 0; /* Reset padding */
   }
 
   div#track {
     width: ${p => p.width}; /* Specific width is required for Firefox. */
     background: transparent; /* Otherwise white in Chrome */
     position: absolute;
-    top: -1px;
+    top: -2px;
     z-index: 0;
     height: 10px;
     border-bottom: 1px solid white;
