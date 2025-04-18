@@ -190,7 +190,7 @@ const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by ser
                    <p>Round Score: +{result.roundScore}</p>
                  </>
                ) : (
-                 <p className="text-gray-400">Did not guess.</p>
+                 <p>Did not guess.</p>
                )}
              </div>
            );
@@ -577,7 +577,13 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
                <MultiplayerStatus message={statusMessage} /> {/* Add Status here */}
                {/* Timer Display */}
                {remainingTime !== null && phase === 'guessing' && (
-                 <div className={`text-white bg-black p-1 px-2 rounded text-sm mr-1 flex items-center ${remainingTime <= 10 ? 'text-red-500 font-bold' : ''}`}>
+                 <div className={`
+                   flex items-center rounded font-bold p-1 px-2 text-sm mr-1
+                   ${remainingTime <= 5
+                     ? 'bg-red-600 text-white animate-pulse' // Urgent style
+                     : 'bg-black text-white' // Default style
+                   }
+                 `}>
                    <IoMdTimer className="mr-1" /> {remainingTime}s
                  </div>
                )}
@@ -720,12 +726,12 @@ const RoundDetail = ({ roundData, players }) => {
                     </p>
                   </>
                 ) : (
-                  <p className="text-gray-400 italic">No guess</p>
+                  <p>No guess</p>
                 )}
               </div>
             );
           })}
-          {Object.keys(playerResults || {}).length === 0 && <p className="text-gray-400 italic">No guesses this round.</p>}
+          {Object.keys(playerResults || {}).length === 0 && <p>No guesses this round.</p>}
         </div>
       </div>
     </div>
