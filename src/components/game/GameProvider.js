@@ -30,6 +30,7 @@ export const GameProvider = ({ children }) => {
   const [selectedTimer, setSelectedTimer] = useState(null); // Default: No timer
   const [countdown, setCountdown] = useState(null);
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [imagesReadyForTimer, setImagesReadyForTimer] = useState(false); // New state for image readiness
   const timerIntervalRef = useRef(null); // Ref to store interval ID
 
   const { data, mutate } = useSWR(user?.isLoggedIn && '/api/games/current')
@@ -40,8 +41,9 @@ export const GameProvider = ({ children }) => {
     setSelectedCountry(g.roundData[g.round - 1].selectedCountry || null);
     // Initialize selectedTimer from game data if available, else default null
     setSelectedTimer(g.selectedTimer !== undefined ? g.selectedTimer : null);
-    // Reset timer state for the new/loaded game
+    // Reset timer and image readiness state for the new/loaded game
     setIsTimerActive(false);
+    setImagesReadyForTimer(false); // Reset image readiness
     setCountdown(g.selectedTimer);
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
@@ -149,8 +151,17 @@ export const GameProvider = ({ children }) => {
       // 2. Game is loaded (not loading)
       // 3. Current round exists and is not guessed/timedOut
       // 4. Timer is not already active (prevent multiple intervals)
-      if (timerDuration !== null && !loading && currentRoundData && !currentRoundData.guessed && !currentRoundData.timedOut && !isTimerActive) {
-        console.log(`[Timer] Starting timer for round ${game.round}. Duration: ${timerDuration}s`);
+      // 5. Images are ready (for timed mode)
+      const shouldStartTimer = timerDuration !== null &&
+                               !loading && // Still useful for initial game load
+                               currentRoundData &&
+                               !currentRoundData.guessed &&
+                               !currentRoundData.timedOut &&
+                               !isTimerActive &&
+                               imagesReadyForTimer; // <-- New condition
+
+      if (shouldStartTimer) {
+        console.log(`[Timer] Starting timer for round ${game.round}. Duration: ${timerDuration}s. Images ready.`);
         setCountdown(timerDuration); // Initialize countdown
         setIsTimerActive(true);
 
@@ -183,8 +194,8 @@ export const GameProvider = ({ children }) => {
           console.log("[Timer] Cleanup: Interval cleared.");
         }
       };
-      // Dependencies: game round, loading state, guessed status, selectedTimer from game state
-    }, [game?.round, game?.selectedTimer, loading, game?.roundData]);
+      // Dependencies: game round, loading state, guessed status, selectedTimer from game state, AND image readiness
+    }, [game?.round, game?.selectedTimer, loading, game?.roundData, imagesReadyForTimer]); // Added imagesReadyForTimer
 
 
   // --- End Timer Logic ---
@@ -281,6 +292,7 @@ export const GameProvider = ({ children }) => {
   const startNextRound = async () => {
     if (game.round === game.rounds) return;
     setLoading(true);
+    setImagesReadyForTimer(false); // Reset image readiness for next round
     setIsTimerActive(false); // Ensure timer is inactive before loading next round
     if (timerIntervalRef.current) { // Clear any lingering interval
       clearInterval(timerIntervalRef.current);
@@ -322,6 +334,7 @@ export const GameProvider = ({ children }) => {
     setSelectedDate(modes[mode]?.type === 'Era' ? ((modes[mode].start + modes[mode].end) / 2) : 0);
     setSelectedTimer(timer); // Update the timer state for the new game
     setCountdown(timer); // Reset countdown display
+    setImagesReadyForTimer(false); // Reset image readiness for new game
 
     // Pass mode and timer in the newGameSettings object
     updateGame({ ...game, ongoing: false }, true, { newMode: mode, newTimer: timer });
@@ -437,7 +450,10 @@ export const GameProvider = ({ children }) => {
       selectedTimer, // The setting for the *next* game
       handleSetSelectedTimer, // Function to set the timer for the next game
       countdown, // Current countdown value
-      isTimerActive // Boolean indicating if timer is running
+      isTimerActive, // Boolean indicating if timer is running
+      // Image readiness state and setter
+      imagesReadyForTimer,
+      setImagesReadyForTimer
     }}>
       {children}
     </GameContext.Provider>

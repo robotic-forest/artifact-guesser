@@ -423,44 +423,74 @@ export const defaultMapValue = {
 }
 
 // Added onImageLoaded and revealImage props for multiplayer sync
-export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError, onImageLoaded, revealImage }) => {
+// Added onAllImagesLoaded for single-player "all loaded" signal
+export const ImageView = ({
+  imgs,
+  setLoadingComplete, // For layout adjustments
+  onError,
+  onImageLoaded, // For multiplayer server emit
+  revealImage, // For multiplayer server signal
+  onAllImagesLoaded // For single-player signal
+}) => {
   const [ref, bounds] = useMeasure()
-  const [loaded, setLoaded] = useState(0)
+  const [loadedCount, setLoadedCount] = useState(0)
   const [errorImgs, setErrorImgs] = useState([])
-  const [imageLoadEventSent, setImageLoadEventSent] = useState(false); // Flag to prevent multiple emits
+  const [imageLoadEventSent, setImageLoadEventSent] = useState(false); // Multiplayer flag
+  const [allLoaded, setAllLoaded] = useState(false); // Single-player flag/state
 
-  const renderImgs = imgs.filter(img => !errorImgs.includes(img))
+  const renderImgs = imgs?.filter(img => !errorImgs.includes(img)) || [];
+  const totalImages = renderImgs.length;
 
   // Reset state when images change (new round)
   useEffect(() => {
-    setLoaded(0);
+    setLoadedCount(0);
     setErrorImgs([]);
     setImageLoadEventSent(false);
-  }, [imgs]);
+    setAllLoaded(false); // Reset all loaded state
+  }, [imgs]); // Dependency on imgs array reference
 
-  // Modified useEffect to also call onImageLoaded when all images are loaded, but only once
+  // Effect to handle completion
   useEffect(() => {
-    if (bounds && renderImgs?.length > 0 && renderImgs.length === loaded) {
-      // Call setLoadingComplete for layout adjustments (can be called multiple times if bounds change slightly)
+    // Ensure we have images and all have attempted to load (success or error)
+    if (totalImages > 0 && (loadedCount + errorImgs.length) === totalImages) {
+      // Call setLoadingComplete for layout adjustments (can be called multiple times if bounds change)
       setLoadingComplete && setLoadingComplete(bounds);
 
-      // Only call onImageLoaded (server emit) ONCE per image set load
+      // Set internal state for single-player opacity transition
+      setAllLoaded(true);
+      // Call single-player callback if provided
+      onAllImagesLoaded && onAllImagesLoaded();
+
+      // Multiplayer: Only call onImageLoaded (server emit) ONCE per image set load
       if (!imageLoadEventSent) {
-        onImageLoaded && onImageLoaded(); // Signal that this client has loaded the image
-        setImageLoadEventSent(true); // Set flag to prevent re-emitting
+        onImageLoaded && onImageLoaded(); // Signal multiplayer server
+        setImageLoadEventSent(true); // Prevent re-emitting
       }
     }
-    // Dependencies: Keep original dependencies, but the flag prevents repeated calls to onImageLoaded
-  }, [loaded, renderImgs, bounds, setLoadingComplete, onImageLoaded, imageLoadEventSent]);
+    // Dependencies: counts, total, bounds, callbacks
+  }, [loadedCount, errorImgs.length, totalImages, bounds, setLoadingComplete, onAllImagesLoaded, onImageLoaded, imageLoadEventSent]);
 
+  // Effect to handle all images failing
   useEffect(() => {
-    if (imgs?.length === errorImgs.length) {
+    if (imgs?.length > 0 && imgs.length === errorImgs.length) {
       onError && onError()
     }
-  }, [imgs, errorImgs])
+  }, [imgs, errorImgs, onError])
+
+  // Determine opacity: Use internal `allLoaded` state for single-player,
+  // fallback to `revealImage` prop for multiplayer if `onAllImagesLoaded` isn't provided.
+  const containerOpacity = onAllImagesLoaded ? (allLoaded ? 1 : 0) : (revealImage ? 1 : 0);
 
   return (
-    <div ref={ref} css={{ padding: 32 }}>
+    // Apply opacity and transition to the container
+    <div
+      ref={ref}
+      css={{
+        padding: 32,
+        opacity: containerOpacity,
+        transition: 'opacity 0.5s ease-in-out', // Smooth transition
+      }}
+    >
       <MasonryLayout
         gutter={0}
         breaks={{
@@ -475,15 +505,15 @@ export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError, 
           <img
             key={img}
             src={img}
-            // Use revealImage prop to control final visibility, remove dependency on loadingComplete for opacity
             css={{
-              opacity: revealImage ? 1 : 0, // Controlled by server signal now
-              transition: 'opacity 0.5s ease-in-out', // Add smooth transition
+              // Individual image display is handled by Masonry, hide only if error
               display: errorImgs.includes(img) ? 'none' : 'block',
+              // Opacity is now handled by the parent div
             }}
-            onLoad={() => setLoaded(l => l + 1)}
+            onLoad={() => setLoadedCount(l => l + 1)}
             onError={() => {
-              setErrorImgs(ei => [...ei, img])
+              // Avoid adding duplicates if onError fires multiple times for the same image
+              setErrorImgs(ei => ei.includes(img) ? ei : [...ei, img]);
             }}
           />
         ))}

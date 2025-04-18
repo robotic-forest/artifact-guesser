@@ -49,15 +49,18 @@ const GameUI = () => {
     guessed,
     makeGuess,
     artifact,
-    loading,
-    setLoading,
+    loading, // Keep loading for initial game setup? Or remove if fully replaced? Let's keep for now.
+    // setLoading, // We might not need the setter directly anymore
     isViewingSummary,
     nextStepKey,
     handleArtifactLoadError,
     // Timer related state from context
     countdown,
     isTimerActive,
-    timedOut // Get timedOut status
+    timedOut, // Get timedOut status
+    // Image readiness state and setter
+    imagesReadyForTimer,
+    setImagesReadyForTimer
   } = useGame();
   // Use Global Chat hook
   const { joinGlobalChat, leaveGlobalChat } = useGlobalChat();
@@ -126,7 +129,8 @@ const GameUI = () => {
       <MainHeader />
       <AuthHeader />
 
-      {loading && !isViewingSummary && <LoadingArtifact className='fixed' msg={artifact && `Loading ${imgLength} Artifact Image${imgLength > 1 ? 's' : ''}`} />}
+      {/* Show loading overlay until images are ready for the timer */}
+      {!imagesReadyForTimer && !isViewingSummary && <LoadingArtifact className='fixed' msg={artifact && `Loading ${imgLength} Artifact Image${imgLength > 1 ? 's' : ''}`} />}
 
       {isViewingSummary && <GameSummary />}
 
@@ -134,35 +138,42 @@ const GameUI = () => {
         <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
           <ImageView
             imgs={artifact?.images.external}
-            loadingComplete={!loading}
+            // setLoadingComplete handles layout adjustments after images load
             setLoadingComplete={bounds => {
-              const h = bounds.height
-  
-              if (h) {
+              const h = bounds?.height; // Use optional chaining
+              // Only adjust view if images are actually ready (prevents adjustments during initial load flicker)
+              if (h && imagesReadyForTimer) {
                 if (h < windowHeight) {
-                  const newY = (windowHeight - h) / 2
-                  if (loading && value.translation.y !== newY) {
-                    setValue({ scale: 1, translation: { x: 0, y: newY } })
+                  const newY = (windowHeight - h) / 2;
+                  // Check if translation needs update (avoid unnecessary updates)
+                  if (value.translation.y !== newY) {
+                    setValue({ scale: 1, translation: { x: 0, y: newY } });
                   }
                 } else {
-                  const newScale = windowHeight / h
-                  const newX = (windowWidth - (bounds.width * newScale)) / 2
-                  if (loading && value.scale !== newScale) {
-                    setValue({ scale: newScale, translation: { x: newX, y: 0 } })
+                  const newScale = windowHeight / h;
+                  const newX = (windowWidth - (bounds.width * newScale)) / 2;
+                  // Check if scale needs update
+                  if (value.scale !== newScale) {
+                    setValue({ scale: newScale, translation: { x: newX, y: 0 } });
                   }
                 }
-                
-                setLoading(false)
               }
             }}
             onError={handleArtifactLoadError}
-            revealImage
+            // Pass the setter function for single-player callback
+            onAllImagesLoaded={() => setImagesReadyForTimer(true)}
+            // For multiplayer, revealImage comes from server; for single-player, it's effectively true
+            // as opacity is handled internally based on onAllImagesLoaded callback.
+            // Let's pass isSinglePlayer to let ImageView decide internally (though current ImageView logic uses onAllImagesLoaded for opacity)
+            revealImage={isSinglePlayer} // Or just true if multiplayer logic is separate
+            // Pass multiplayer specific prop if needed (assuming it's handled in ImageView)
+            // onImageLoaded={multiplayerOnImageLoadedCallback}
           />
         </MapInteractionCSS>
       )}
 
-      {/* Show controls only if game is active (not loading, not summary, not guessed, not timed out) */}
-      {!loading && !isViewingSummary && !guessed && !timedOut && (
+      {/* Show controls only if game is active (images ready, not summary, not guessed, not timed out) */}
+      {imagesReadyForTimer && !isViewingSummary && !guessed && !timedOut && (
         <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{
           '@media (max-width: 500px)': { width: '100vw' }
         }}>
