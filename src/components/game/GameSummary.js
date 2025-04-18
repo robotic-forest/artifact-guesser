@@ -1,3 +1,4 @@
+import { Button } from "../buttons/Button" // Added Button import
 import { GameButton } from "../buttons/GameButton"
 import { ArtifactInfo } from "../gameui/RoundSummary/components/ArtifactInfo"
 import { RoundScore } from "../gameui/RoundSummary/components/RoundScore"
@@ -22,16 +23,60 @@ import { ModeButton, modes } from "../gameui/ModeButton"
 import { SocialMedia } from "../moloch/components/SocialMedia"
 import toast from "react-hot-toast"
 import { generateInsult } from "@/hooks/useInsult"
+import { GiTimeBomb } from "react-icons/gi"; // Added Timer Icon
 
 // Dynamically import AAAAAAConfetti
 const AAAAAAConfettiDynamic = dynamic(() => import('@/components/art/AAAAAAConfetti'), {
   ssr: false,
 });
 
-export const GameSummary = ({ game: playedGame }) => {
-  const { game: currentGame, startNewGame } = useGame()
+// Define timer options (null represents 'No Timer')
+const timerOptions = [5, 15, 30, 60, null];
 
-  const game = playedGame || currentGame
+// Re-define RoundButton locally for GameSummary (copied from Options.js)
+const RoundButton = ({ css, isActive, disabled, children, ...p }) => (
+  <Button
+    variant='outlined'
+    css={{
+      background: isActive ? 'var(--primaryColor)' : 'var(--backgroundColorBarelyLight)',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      '&:hover': {
+        background: disabled
+          ? isActive ? 'var(--primaryColor)' : 'var(--backgroundColorBarelyLight)'
+          : isActive ? 'var(--primaryColorLight)' : 'var(--backgroundColorLight)',
+        boxShadow: 'none',
+      },
+      border: '1px outset',
+      borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+      boxShadow: 'none',
+      borderRadius: 0,
+      marginRight: 4,
+      padding: '4px 8px',
+      minWidth: '40px',
+      textAlign: 'center',
+      ...css
+    }}
+    {...p}
+    disabled={disabled}
+  >
+    {children}
+  </Button>
+);
+
+
+export const GameSummary = ({ game: playedGame }) => {
+  const { game: currentGame, startNewGame, selectedTimer, handleSetSelectedTimer } = useGame(); // Get timer state and handler
+
+  const game = playedGame || currentGame; // Use playedGame if provided (viewing old summary), else current game state
+
+  // Determine if we are viewing a summary of a *past* game or the *current* game's summary.
+  // startNewGame is only available for the current game summary.
+  const isPlayed = !startNewGame;
+
+  // Pass timer state down only if it's the active game summary screen
+  const gameScoreProps = isPlayed
+    ? { game, isPlayed } // Viewing old summary, don't pass startNewGame or timer handlers
+    : { game, startNewGame, selectedTimer, handleSetSelectedTimer, isPlayed }; // Current summary, pass everything
 
   return (
     <div css={{
@@ -39,20 +84,30 @@ export const GameSummary = ({ game: playedGame }) => {
       '@media (max-width: 800px)': { padding: '64px 6px 6px 6px' },
     }}>
       <Simulator
-        top={<GameScore {...{ game, startNewGame, isPlayed: !startNewGame }} />}
+        top={<GameScore {...gameScoreProps} />}
         bottom={<RoundReview game={game} />}
       />
     </div>
   )
 }
 
-const GameScore = ({ game, startNewGame, isPlayed }) => {
+// Accept timer state and handler
+const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, isPlayed }) => {
   const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
   const { user } = useUser()
+  // Use highscore hook only if it's the current game summary, not viewing an old one
   const { highscore, prevHighscore, gameId } = useHighscore({ skip: isPlayed })
   const [signupOpen, setSignupOpen] = useState(false)
 
-  const newHighscore = !isPlayed && (gameId && game._id) && gameId === game._id
+  // Determine the timer to use for the "Start New Game" button
+  // If viewing an old game summary (isPlayed=true), use its timer setting.
+  // Otherwise (active summary), use the selectedTimer from context.
+  const nextGameTimer = isPlayed ? game.selectedTimer : selectedTimer;
+
+  const newHighscore = !isPlayed && (gameId && game._id) && gameId === game._id;
+
+  // Ensure handleSetSelectedTimer is available before rendering timer options
+  const canSetTimer = typeof handleSetSelectedTimer === 'function';
 
   return (
     <>
@@ -190,104 +245,132 @@ const GameScore = ({ game, startNewGame, isPlayed }) => {
           </div>
         )}
         
-        {startNewGame && (
-          <div className='flex flex-col items-center mb-8 text-base'>
-            <div className='flex items-center' css={{
-              margin: '8px 0 32px',
-            }}>
-              <SimulatorButton
-                css={{
-                  marginRight: 16,
-                  boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
-                  ':hover': {
-                    boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
-                    filter: 'brightness(1.1)',
-                    transition: 'box-shadow 0.2s'
-                  }
-                }}
-                onClick={startNewGame}
-              >
-                <b className='text-lg'>Start New Game</b>
-              </SimulatorButton>
-              <Link href='/multiplayer'>
-                <SimulatorButton css={{
-                  background: '#4f95ff',
-                  boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
-                  ':hover': {
-                    boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
-                    filter: 'brightness(1.1)',
-                    transition: 'box-shadow 0.2s'
-                  }
-                }}>
-                  <b className='text-lg'>Start Multiplayer Game</b>
-                </SimulatorButton>
-              </Link>
-            </div>
-            or try a different mode!
-            <div className='flex flex-wrap justify-center mt-3 mb-2'>
-              {Object.keys(modes).filter(m => m !== game.mode && !modes[m]?.type).map(mode => (
-                <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => startNewGame({ mode })} />
-              ))}
-            </div>
-            <b>Continent Modes!</b>
-            <div className='flex flex-wrap justify-center mt-3 mb-2'>
-              {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Continent').map(mode => (
-                <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => startNewGame({ mode })} />
-              ))}
-            </div>
-            <b>Era Modes!</b>
-            <span className='text-center'>
-              Experimental! {!user?.isLoggedIn && 'Please log in to play.'}
-            </span>
-            <div className='flex flex-wrap justify-center mt-3 mb-2'>
-              {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Era').map(mode => (
-                <ModeButton key={mode} mode={mode} className='mb-2 mr-2 text-base' onClick={() => {
-                  if (user?.isLoggedIn) startNewGame({ mode })
-                  else {
-                    setSignupOpen(true)
-                    // Extract JSX for clarity
-                    const toastText = (
-                      <>
-                        Sign up to try this mode,<br/>
-                        you {generateInsult('name')}!
-                      </>
-                    );
-                    // Use the hook to trigger the toast/confetti
-                    triggerAAAAtoast(
-                      { // Props for AAAAAA component
-                        initialAngry: true,
-                        initialText: toastText, // Use the variable here
-                        initialWidth: 280,
-                        angle: 5,
-                        textColor: '#ffffff',
-                        style: {
-                          padding: '0 12px 12px 0'
-                        }
-                      },
-                      { position: 'bottom-right' } // Toast options
-                    );
-                  }
-                }} />
-              ))}
-            </div>
-          </div>
-        )}
-        <div className='w-full flex items-center justify-between lg:mt-0 mt-4 px-1'>
-          <div className='flex flex-wrap items-center justify-start'>
-            <div className='mr-1'>
-              Created by Sam (protocodex)
-            </div>
-            <SocialMedia />
-          </div>
-          <div className='text-right'>
-            Learn more about the project{' '}
-            <Link href='/about' className='text-blue-300 hover:text-blue-500 hover:underline'>
-              here
-            </Link>
-          </div>
-        </div>
-      </div>
-    </>
+        {/* Only show game controls if startNewGame is available (i.e., not viewing an old summary) */}
+        {!isPlayed && startNewGame && (
+          <div className='flex flex-col items-center mb-8 text-base w-full'>
+            {/* Timer Selection */}
+            {canSetTimer && (
+              <div className='mt-4 mb-6 w-full max-w-md'>
+                <div className='text-sm mb-2 flex items-center justify-center'>
+                  <GiTimeBomb className='mr-2'/> Timer for Next Game (seconds)
+                </div>
+                <div className='p-2 text-sm flex justify-center' css={{ background: 'var(--backgroundColorSlightlyLight)', borderRadius: 6 }}>
+                  {timerOptions.map(timerValue => (
+                    <RoundButton
+                      key={timerValue === null ? 'none' : timerValue}
+                      onClick={() => handleSetSelectedTimer(timerValue)}
+                      isActive={selectedTimer === timerValue}
+                      disabled={false}
+                    >
+                      {timerValue === null ? 'None' : timerValue === 60 ? '1min' : `${timerValue}s`}
+                    </RoundButton>
+                  ))}
+                </div>
+              </div>
+            )}
+
+             {/* Start Game Buttons */}
+             <div className='flex items-center justify-center flex-wrap' css={{
+               margin: '8px 0 32px',
+               gap: '16px',
+             }}>
+               <SimulatorButton
+                 css={{
+                   boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
+                   ':hover': {
+                     boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
+                     filter: 'brightness(1.1)',
+                     transition: 'box-shadow 0.2s'
+                   }
+                 }}
+                 onClick={() => startNewGame({ mode: game.mode, timer: selectedTimer })}
+               >
+                 <b className='text-lg'>Start New Game</b>
+               </SimulatorButton>
+               {/* Removed legacyBehavior, Link should wrap the component directly */}
+               <Link href='/multiplayer'>
+                 <SimulatorButton css={{
+                   background: '#4f95ff',
+                   boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
+                   ':hover': {
+                     boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
+                     filter: 'brightness(1.1)',
+                     transition: 'box-shadow 0.2s'
+                   }
+                 }}>
+                   <b className='text-lg'>Start Multiplayer Game</b>
+                 </SimulatorButton>
+               </Link>
+             </div>
+             {/* Mode Selection */}
+             <div className="text-center w-full">
+               or try a different mode!
+               <div className='flex flex-wrap justify-center mt-3 mb-2'>
+                 {Object.keys(modes).filter(m => m !== game.mode && !modes[m]?.type).map(mode => (
+                   <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => startNewGame({ mode: mode, timer: selectedTimer })} />
+                 ))}
+               </div>
+               <b>Continent Modes!</b>
+               <div className='flex flex-wrap justify-center mt-3 mb-2'>
+                 {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Continent').map(mode => (
+                   <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => startNewGame({ mode: mode, timer: selectedTimer })} />
+                 ))}
+               </div>
+               <b>Era Modes!</b>
+               <span className='text-center block'>
+                 Experimental! {!user?.isLoggedIn && 'Please log in to play.'}
+               </span>
+               <div className='flex flex-wrap justify-center mt-3 mb-2'>
+                 {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Era').map(mode => (
+                   <ModeButton key={mode} mode={mode} className='mb-2 mr-2 text-base' onClick={() => {
+                     if (user?.isLoggedIn) {
+                       startNewGame({ mode: mode, timer: selectedTimer });
+                     } else {
+                       setSignupOpen(true);
+                       // Extract JSX for clarity
+                     const toastText = (
+                       <>
+                         Sign up to try this mode,<br/>
+                         you {generateInsult('name')}!
+                       </>
+                     );
+                     // Use the hook to trigger the toast/confetti
+                     triggerAAAAtoast(
+                       { // Props for AAAAAA component
+                         initialAngry: true,
+                         initialText: toastText, // Use the variable here
+                         initialWidth: 280,
+                         angle: 5,
+                         textColor: '#ffffff',
+                         style: {
+                           padding: '0 12px 12px 0'
+                         }
+                       },
+                       { position: 'bottom-right' } // Toast options
+                     );
+                   }
+                 }} />
+                 ))}
+               </div>
+             </div>
+           </div>
+         )}
+         <div className='w-full flex items-center justify-between lg:mt-0 mt-4 px-1'>
+           <div className='flex flex-wrap items-center justify-start'>
+             <div className='mr-1'>
+               Created by Sam (protocodex)
+             </div>
+             <SocialMedia />
+           </div>
+           <div className='text-right'>
+             Learn more about the project{' '}
+             <Link href='/about' className='text-blue-300 hover:text-blue-500 hover:underline'>
+               here
+             </Link>
+           </div>
+         </div>
+       </div>
+     </>
   )
 }
 

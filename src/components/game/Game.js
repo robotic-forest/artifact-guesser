@@ -15,9 +15,10 @@ import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
 import { GameSummary } from "./GameSummary"
 import { IconButton } from "../buttons/IconButton"
 import { BiChevronDown, BiChevronUp, BiMinus, BiPlus } from "react-icons/bi"
-import { LeaderBoard } from "../gameui/LeaderBoard"
-import { useTheme } from "@/pages/_app"
-import { MainHeader } from "../gameui/MainHeader"
+import { LeaderBoard } from "../gameui/LeaderBoard";
+import { useTheme } from "@/pages/_app";
+import { MainHeader } from "../gameui/MainHeader";
+import { GiTimeBomb } from "react-icons/gi"; // Import timer icon
 import { ImageView, defaultMapValue } from "../artifacts/Artifact"
 import useMeasure from "react-use-measure"
 import { modes } from "../gameui/ModeButton"
@@ -52,22 +53,39 @@ const GameUI = () => {
     setLoading,
     isViewingSummary,
     nextStepKey,
-    handleArtifactLoadError
-  } = useGame()
+    handleArtifactLoadError,
+    // Timer related state from context
+    countdown,
+    isTimerActive,
+    timedOut // Get timedOut status
+  } = useGame();
   // Use Global Chat hook
   const { joinGlobalChat, leaveGlobalChat } = useGlobalChat();
 
   const [ref, bounds] = useMeasure();
   const { height: windowHeight, width: windowWidth } = bounds
   const [value, setValue] = useState(defaultMapValue)
-  const [hoverCountry, setHoverCountry] = useState()
+  const [hoverCountry, setHoverCountry] = useState();
 
   useEffect(() => {
-    if (!isViewingSummary && !guessed) document.body.style.position = "fixed"
-    else document.body.style.position = "static"
+    // Lock body scroll when game is active (not summary, not guessed, not timed out)
+    if (!isViewingSummary && !guessed && !timedOut) {
+      document.body.style.position = "fixed";
+      document.body.style.overflow = "hidden"; // Ensure overflow is hidden too
+      document.body.style.width = "100%"; // Prevent layout shift
+    } else {
+      document.body.style.position = "static";
+      document.body.style.overflow = "auto";
+      document.body.style.width = "auto";
+    }
 
-    return () => document.body.style.position = "static"
-  }, [isViewingSummary, guessed])
+    // Cleanup function
+    return () => {
+      document.body.style.position = "static";
+      document.body.style.overflow = "auto";
+      document.body.style.width = "auto";
+    };
+  }, [isViewingSummary, guessed, timedOut]); // Add timedOut dependency
 
   // Determine if it's a single-player game
   const isSinglePlayer = game?.gameType !== 'multiplayer';
@@ -89,11 +107,12 @@ const GameUI = () => {
     // }
   }, [isSinglePlayer, joinGlobalChat, leaveGlobalChat]);
 
-  const modeInfo = game?.mode ? modes[game.mode] : null
+  const modeInfo = game?.mode ? modes[game.mode] : null;
 
-  if (guessed && !isViewingSummary) return <RoundSummary />
+  // Show RoundSummary if guessed or timed out, but not viewing final GameSummary
+  if ((guessed || timedOut) && !isViewingSummary) return <RoundSummary />;
 
-  const imgLength = artifact?.images?.external.length
+  const imgLength = artifact?.images?.external.length;
 
   return (
     <div ref={ref} css={{
@@ -142,8 +161,9 @@ const GameUI = () => {
         </MapInteractionCSS>
       )}
 
-      {(loading || isViewingSummary) ? null : !guessed && (
-        <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
+      {/* Show controls only if game is active (not loading, not summary, not guessed, not timed out) */}
+      {!loading && !isViewingSummary && !guessed && !timedOut && (
+        <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{
           '@media (max-width: 500px)': { width: '100vw' }
         }}>
           {/* Conditionally render Global Chat ABOVE map for single-player mobile */}
@@ -187,11 +207,24 @@ const GameUI = () => {
                 <BiMinus />
               </IconButton>
             </div>
+            {/* Timer Display */}
+            {isTimerActive && countdown !== null && (
+              <div className={`
+                flex items-center rounded font-bold p-1 px-2 text-sm mr-1
+                ${countdown <= 5
+                  ? 'bg-red-600 text-white animate-pulse' // Urgent style
+                  : 'bg-black text-white' // Default style
+                }
+              `}>
+                <GiTimeBomb className='mr-1' />
+                {countdown}s
+              </div>
+            )}
             <GameInfo />
           </div>
 
           <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full' css={{
-            height: 200,
+            height: 200, // Keep original height
             '@media (max-width: 500px)': { height: 150 }
           }}>
             <Map setHover={setHoverCountry} setSelectedCountry={setSelectedCountry} selectedCountry={selectedCountry} />
