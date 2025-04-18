@@ -109,7 +109,7 @@ const MultiplayerStatus = ({ message }) => {
 // Adapted Round Summary Component
 const MultiplayerRoundSummary = ({ results /* Removed onProceed - handled by server timer */ }) => {
   const { round, correctArtifact, scores: overallScores, results: playerResults } = results;
-  const [countdown, setCountdown] = useState(10); // Countdown state - Updated to 10
+  const [countdown, setCountdown] = useState(15); // Countdown state - Updated to 15
 
   // Find the highest round score
   const highestRoundScore = Math.max(0, ...Object.values(playerResults || {}).map(r => r.roundScore || 0));
