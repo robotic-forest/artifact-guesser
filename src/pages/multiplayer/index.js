@@ -20,25 +20,25 @@ const MultiplayerPageContent = () => {
   }, [isLeaving, setIsLeaving]); // Add dependencies
 
   // 1. Handle initial connection/registration phase
-  if (!isConnected || !isRegistered) {
+  if (!isConnected || !isRegistered || currentLobbyId) {
     return <div className="relative"><div className="flex items-center justify-center h-screen text-black">Connecting...</div></div>;
   }
 
-  // 2. Handle the rejoin scenario after refresh OR normal lobby entry when game is active
-  // (Note: Game UI itself is now primarily handled by [lobbyid].js, but Multiplayer component might still be needed for lobby view)
-  if (currentLobbyId && typeof window !== 'undefined' && sessionStorage.getItem('ag_gameActive') === 'true') {
-    // If we have a lobby ID and the game was marked active in session storage,
-    // render the Multiplayer component. It will show the lobby view until the game state fully loads
-    // or if the game ended. The [lobbyid].js page handles the actual game UI rendering.
-    return <div className="relative"><Multiplayer /></div>;
-  }
+  // // 2. Handle the rejoin scenario after refresh OR normal lobby entry when game is active
+  // // (Note: Game UI itself is now primarily handled by [lobbyid].js, but Multiplayer component might still be needed for lobby view)
+  // if (currentLobbyId && typeof window !== 'undefined' && sessionStorage.getItem('ag_gameActive') === 'true') {
+  //   // If we have a lobby ID and the game was marked active in session storage,
+  //   // render the Multiplayer component. It will show the lobby view until the game state fully loads
+  //   // or if the game ended. The [lobbyid].js page handles the actual game UI rendering.
+  //   return <div className="relative"><Multiplayer /></div>;
+  // }
 
-  // 3. Handle being in a lobby normally (game not started, or joined after game ended)
-  if (currentLobbyId) {
-    // Render Multiplayer which shows lobby details/start button.
-    // The redirect to [lobbyid].js will happen after creation, but this shows the lobby state immediately.
-    return <div className="relative"><Multiplayer /></div>;
-  }
+  // // 3. Handle being in a lobby normally (game not started, or joined after game ended)
+  // if (currentLobbyId) {
+  //   // Render Multiplayer which shows lobby details/start button.
+  //   // The redirect to [lobbyid].js will happen after creation, but this shows the lobby state immediately.
+  //   return <div className="relative"><Multiplayer /></div>;
+  // }
 
   // 4. Default: Connected and registered, but not in any lobby
   return <div className="relative"><LobbyChoice /></div>;
