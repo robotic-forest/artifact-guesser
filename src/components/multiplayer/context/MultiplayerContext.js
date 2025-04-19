@@ -353,6 +353,7 @@ export const MultiplayerProvider = ({ children }) => {
            error: null,
            disconnectCountdown: null,
            isForfeitWin: false,
+           remainingTime: null, // Explicitly reset remainingTime for new round
          }));
        });
       clearCountdownInterval();

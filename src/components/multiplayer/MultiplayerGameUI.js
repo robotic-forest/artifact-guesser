@@ -393,19 +393,26 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
       // Let ImageView handle its own loading state based on props
       // setIsLoadingImage(true); // REMOVED
     }
-    // Reset timer for the new round
-    if (phase === 'guessing' && settings?.timer) {
-      setRemainingTime(settings?.timer ?? null); // Initialize timer based on settings, default null
+
+    // Reset timer for the new round, prioritizing remainingTime from gameState if available (for rejoins)
+    if (phase === 'guessing') {
+      // Use remainingTime from gameState if it's a valid number (>= 0), otherwise use full timer from settings
+      const initialTime = (typeof gameState.remainingTime === 'number' && gameState.remainingTime >= 0)
+        ? gameState.remainingTime
+        : settings?.timer;
+      setRemainingTime(initialTime ?? null); // Initialize timer, default null if neither is valid
+      console.log(`[MultiplayerGameUI] Initializing timer for round ${round}. From gameState: ${gameState.remainingTime}, From settings: ${settings?.timer}. Using: ${initialTime}`);
     } else {
       setRemainingTime(null); // Clear timer if not in guessing phase
     }
+
     // Clear any existing interval when dependencies change
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
-    // Depend on artifact ID to only reset guesses on new artifact, not just context update
-  }, [artifact?._id, phase, modeInfo, user?._id, settings?.timer]);
+    // Depend on artifact ID, phase, and potentially gameState.remainingTime to re-run initialization
+  }, [artifact?._id, phase, modeInfo, user?._id, settings?.timer, gameState.remainingTime, round]); // Added gameState.remainingTime and round
 
 
   // Effect for the round timer countdown - Modified to wait for revealImage
