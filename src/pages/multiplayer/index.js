@@ -1,4 +1,5 @@
-import { useEffect } from 'react'; // Import useEffect
+import { useEffect, useState } from 'react'; // Import useEffect and useState
+import { useRouter } from 'next/router'; // Import useRouter
 import { useTheme } from "@emotion/react";
 import { createStyles } from "@/components/GlobalStyles";
 import { artifactsTheme } from "../artifacts";
@@ -9,6 +10,8 @@ import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerCont
 
 // Inner component to access context after provider is mounted
 const MultiplayerPageContent = () => {
+  const router = useRouter(); // Get router instance
+  const [isNavigating, setIsNavigating] = useState(false); // State for navigation status
   const { currentLobbyId, isConnected, isRegistered, isLeaving, setIsLeaving } = useMultiplayer(); // Get isLeaving and setIsLeaving
 
   // Reset the isLeaving flag when landing on this page
@@ -19,26 +22,37 @@ const MultiplayerPageContent = () => {
     }
   }, [isLeaving, setIsLeaving]); // Add dependencies
 
+  // Effect to track route changes
+  useEffect(() => {
+    const handleRouteChangeStart = () => {
+      console.log('Route change start...');
+      setIsNavigating(true);
+    };
+    const handleRouteChangeComplete = () => {
+      console.log('Route change complete.');
+      setIsNavigating(false);
+    };
+    const handleRouteChangeError = () => {
+      console.error('Route change error.');
+      setIsNavigating(false); // Also reset on error
+    };
+
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    router.events.on('routeChangeError', handleRouteChangeError);
+
+    // Cleanup function to remove listeners
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+      router.events.off('routeChangeError', handleRouteChangeError);
+    };
+  }, [router.events]); // Dependency on router.events
+
   // 1. Handle initial connection/registration phase
-  if (!isConnected || !isRegistered || currentLobbyId) {
+  if (!isConnected || !isRegistered || (currentLobbyId && isNavigating)) {
     return <div className="relative"><div className="flex items-center justify-center h-screen text-black">Connecting...</div></div>;
   }
-
-  // // 2. Handle the rejoin scenario after refresh OR normal lobby entry when game is active
-  // // (Note: Game UI itself is now primarily handled by [lobbyid].js, but Multiplayer component might still be needed for lobby view)
-  // if (currentLobbyId && typeof window !== 'undefined' && sessionStorage.getItem('ag_gameActive') === 'true') {
-  //   // If we have a lobby ID and the game was marked active in session storage,
-  //   // render the Multiplayer component. It will show the lobby view until the game state fully loads
-  //   // or if the game ended. The [lobbyid].js page handles the actual game UI rendering.
-  //   return <div className="relative"><Multiplayer /></div>;
-  // }
-
-  // // 3. Handle being in a lobby normally (game not started, or joined after game ended)
-  // if (currentLobbyId) {
-  //   // Render Multiplayer which shows lobby details/start button.
-  //   // The redirect to [lobbyid].js will happen after creation, but this shows the lobby state immediately.
-  //   return <div className="relative"><Multiplayer /></div>;
-  // }
 
   // 4. Default: Connected and registered, but not in any lobby
   return <div className="relative"><LobbyChoice /></div>;

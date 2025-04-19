@@ -102,7 +102,7 @@ export const LobbyChoice = () => {
         />
       </div>
       <div className='p-6 w-screen flex flex-col max-w-[1200px]'>
-        <Title />
+        <Title noButtons />
         {/* Create Lobby Section */}
         <div className='mt-4 w-[fit-content]'>
           <div css={{ color: 'var(--textLowOpacity)' }}>

@@ -9,7 +9,7 @@ import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import useGloba
 import { MolochButton } from "../buttons/MolochButton";
 import { useRouter } from "next/router";
 
-export const Title = () => {
+export const Title = ({ noButtons }) => {
   const router = useRouter(); // Get router instance
   const { currentLobbyId, leaveLobby, lobbies } = useMultiplayer();
   const { sendGlobalMessage, isInGlobalChat, joinGlobalChat } = useGlobalChat(); // Get chat functions
@@ -58,7 +58,7 @@ export const Title = () => {
         </div>
       </div>
       {/* Container for buttons, aligned to the right */}
-      {currentLobbyId && (
+      {currentLobbyId && !noButtons && (
         <div className="relative mt-2 flex justify-end space-x-2"> {/* Add relative positioning */}
           <MolochButton
             onClick={() => {
