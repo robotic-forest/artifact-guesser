@@ -383,18 +383,19 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
 
   const modeInfo = settings?.mode ? modes[settings.mode] : null;
 
-  // Reset local state when the artifact changes (new round starts)
+  // Reset local state only when the artifact ID changes (new round starts), not just on gameState update
   useEffect(() => {
-    if (phase === 'guessing' && artifact) {
+    if (phase === 'guessing') {
+      // Reset guess-related state for the new round
       setSelectedCountry(null);
       setSelectedDate(modeInfo?.type === 'Era' ? ((modeInfo.start + modeInfo.end) / 2) : 0);
       setMapValue(defaultMapValue); // Reset map zoom/pan
-      setIsLoadingImage(true); // Start loading new image
+      // Let ImageView handle its own loading state based on props
+      // setIsLoadingImage(true); // REMOVED
     }
-    // Reset status message potentially if needed when round changes?
-    // Also reset timer here
+    // Reset timer for the new round
     if (phase === 'guessing' && settings?.timer) {
-      setRemainingTime(settings.timer); // Initialize timer
+      setRemainingTime(settings?.timer ?? null); // Initialize timer based on settings, default null
     } else {
       setRemainingTime(null); // Clear timer if not in guessing phase
     }
@@ -403,7 +404,8 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
-  }, [artifact, phase, modeInfo, user?._id, settings?.timer]); // Add settings.timer dependency
+    // Depend on artifact ID to only reset guesses on new artifact, not just context update
+  }, [artifact?._id, phase, modeInfo, user?._id, settings?.timer]);
 
 
   // Effect for the round timer countdown - Modified to wait for revealImage

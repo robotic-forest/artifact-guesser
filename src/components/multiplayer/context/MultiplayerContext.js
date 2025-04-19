@@ -337,6 +337,7 @@ export const MultiplayerProvider = ({ children }) => {
          });
        }
        startTransition(() => { // Wrap state update
+         setRevealImage(false); // Reset reveal state FIRST for the new round
          setGameState(prev => ({
            ...prev,
            isActive: true,
@@ -353,7 +354,6 @@ export const MultiplayerProvider = ({ children }) => {
            disconnectCountdown: null,
            isForfeitWin: false,
          }));
-         setRevealImage(false); // Reset reveal state for the new round
        });
       clearCountdownInterval();
     };
@@ -515,15 +515,15 @@ export const MultiplayerProvider = ({ children }) => {
         sessionStorage.setItem('ag_gameActive', 'true');
         setLobbyJoinStatus('success'); // Set status on successful rejoin
 
-        // Directly set the context's game state - REMOVE startTransition for immediate update
-        // startTransition(() => {
+        // Directly set the context's game state and reveal state
         setGameState(receivedGameState); // Apply the full state
+        setRevealImage(receivedGameState.imageIsRevealed || false); // Set reveal based on rejoin state
         setChatMessages(receivedGameState.chatHistory || []); // Restore chat
         setCurrentLobbyId(lobbyId);
-        // });
-        console.log('[MultiplayerContext] Applied received game state directly (without startTransition).');
+
+        console.log(`[MultiplayerContext] Applied received game state. Image should be revealed: ${receivedGameState.imageIsRevealed}`);
       } else {
-        console.warn('[MultiplayerContext] Received rejoin-successful event without lobbyId or gameState.');
+        console.warn('[MultiplayerContext] Received rejoin-successful event without lobbyId or valid gameState.');
         setLobbyJoinStatus('idle'); // Reset status on error?
       }
     });
