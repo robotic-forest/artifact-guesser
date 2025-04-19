@@ -39,12 +39,9 @@ const LobbyPage = () => {
   const { submitGuess, proceedAfterSummary } = useMultiplayerGame(_socket, currentLobbyId);
 
   useEffect(() => {
-    // Redirect if not logged in
-    if (!userLoading && !user) {
-      console.log('[LobbyPage] User not logged in, redirecting to /multiplayer');
-      router.push('/multiplayer');
-      return; // Stop further execution in this effect if redirecting
-    }
+    // Removed the redirect block based on !userLoading && !user.
+    // Authentication checks should ideally be handled higher up (e.g., _app.js or Layout)
+    // or rely on the rendering logic below which already checks user state.
 
     // Join the lobby when the component mounts, lobbyid is available, socket is connected,
     // user is loaded and logged in, we are not currently leaving, the current lobby ID doesn't match the URL ID,
@@ -65,10 +62,16 @@ const LobbyPage = () => {
       // and if the navigation is actually taking us away from this lobby page.
       // A simple check might be if the new URL doesn't contain the current lobbyid,
       // but more robust checks might be needed depending on app structure.
-      // For now, we assume any route change means leaving the lobby context.
-      if (currentLobbyId === lobbyid && typeof lobbyid === 'string') {
+      // Check if the navigation is actually taking us away from this specific lobby page.
+      // If the new URL still matches the pattern /multiplayer/[lobbyid] AND the lobbyid is the same,
+      // it might be a refresh or internal navigation within the lobby context we don't want to leave for.
+      // A simple check: if the new URL is different from the current lobby page URL.
+      const currentPath = `/multiplayer/${lobbyid}`;
+      if (currentLobbyId === lobbyid && typeof lobbyid === 'string' && url !== currentPath) {
         console.log(`[LobbyPage] routeChangeStart detected. Leaving lobby: ${lobbyid}. Navigating to: ${url}`);
         leaveLobby();
+      } else if (url === currentPath) {
+         console.log(`[LobbyPage] routeChangeStart detected for the same URL (${url}). Assuming refresh or internal navigation, not leaving lobby.`);
       }
     };
 
