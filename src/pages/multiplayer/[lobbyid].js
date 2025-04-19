@@ -54,15 +54,32 @@ const LobbyPage = () => {
       joinLobby(lobbyid);
     }
 
-    // Optional: Handle leaving the lobby when the component unmounts or lobbyid changes
-    // This might be complex depending on desired UX (e.g., navigating back vs closing tab)
-    // return () => {
-    //   if (currentLobbyId === lobbyid && typeof lobbyid === 'string') {
-    //     console.log(`Leaving lobby: ${lobbyid}`);
-    //     leaveLobby(); // Consider if this is the desired behavior on component unmount
-    //   }
-    // };
-  }, [lobbyid, isConnected, joinLobby, currentLobbyId, leaveLobby, isLeaving, lobbyJoinStatus, user, userLoading, router]); // Add user, userLoading, router to dependencies
+    // Cleanup for the join logic effect (no longer handles leaving)
+    return () => {};
+  }, [lobbyid, isConnected, joinLobby, currentLobbyId, isLeaving, lobbyJoinStatus, user, userLoading, router]); // Removed leaveLobby from dependencies here
+
+  // Effect to handle leaving the lobby on route change
+  useEffect(() => {
+    const handleRouteChangeStart = (url) => {
+      // Check if we are currently in the lobby corresponding to the URL's lobbyid
+      // and if the navigation is actually taking us away from this lobby page.
+      // A simple check might be if the new URL doesn't contain the current lobbyid,
+      // but more robust checks might be needed depending on app structure.
+      // For now, we assume any route change means leaving the lobby context.
+      if (currentLobbyId === lobbyid && typeof lobbyid === 'string') {
+        console.log(`[LobbyPage] routeChangeStart detected. Leaving lobby: ${lobbyid}. Navigating to: ${url}`);
+        leaveLobby();
+      }
+    };
+
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+
+    // Cleanup function to remove the event listener
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+    };
+  }, [router.events, leaveLobby, currentLobbyId, lobbyid]); // Dependencies for the leave logic
+
 
   // --- Loading / Error States ---
   // Show loading if user status is still loading

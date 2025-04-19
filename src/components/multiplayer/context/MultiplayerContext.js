@@ -734,17 +734,17 @@ export const MultiplayerProvider = ({ children }) => {
     setChatMessages([]);
     setLobbyClients([]);
 
-    // Start navigation
-    console.log('Redirecting back to /multiplayer...');
-    router.push('/multiplayer').then(() => {
-      // After navigation promise resolves, the flag will be reset by the destination page.
-      console.log(`Navigation to /multiplayer complete. Flag will be reset by destination page.`);
-      // No need to setIsLeaving(false) here anymore, but keep catch block
-    }).catch(err => {
-      // Handle navigation errors if necessary
-      console.error("Navigation failed after trying to leave lobby:", err);
-      setIsLeaving(false); // Reset flag on navigation error just in case
-    });
+    // // Start navigation
+    // console.log('Redirecting back to /multiplayer...');
+    // router.push('/multiplayer').then(() => {
+    //   // After navigation promise resolves, the flag will be reset by the destination page.
+    //   console.log(`Navigation to /multiplayer complete. Flag will be reset by destination page.`);
+    //   // No need to setIsLeaving(false) here anymore, but keep catch block
+    // }).catch(err => {
+    //   // Handle navigation errors if necessary
+    //   console.error("Navigation failed after trying to leave lobby:", err);
+    //   setIsLeaving(false); // Reset flag on navigation error just in case
+    // });
 
   }, [currentLobbyId, user, socketInstance, isConnected, router, setIsLeaving, setLobbyJoinStatus]); // Keep setIsLeaving, add setLobbyJoinStatus dependency
 

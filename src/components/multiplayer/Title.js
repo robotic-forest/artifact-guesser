@@ -7,9 +7,10 @@ import toast from 'react-hot-toast';
 import { useMultiplayer } from "./context/MultiplayerContext";
 import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import useGlobalChat
 import { MolochButton } from "../buttons/MolochButton";
+import { useRouter } from "next/router";
 
 export const Title = () => {
-  // Destructure lobbies instead of gameState
+  const router = useRouter(); // Get router instance
   const { currentLobbyId, leaveLobby, lobbies } = useMultiplayer();
   const { sendGlobalMessage, isInGlobalChat, joinGlobalChat } = useGlobalChat(); // Get chat functions
 
@@ -60,7 +61,10 @@ export const Title = () => {
       {currentLobbyId && (
         <div className="relative mt-2 flex justify-end space-x-2"> {/* Add relative positioning */}
           <MolochButton
-            onClick={leaveLobby} // Call the leaveLobby function from context
+            onClick={() => {
+              leaveLobby(); // Call the leaveLobby function from context
+              router.push('/multiplayer'); // Redirect to multiplayer page
+            }}
             css={{
               background: 'var(--backgroundColorSlightlyLight)',
               '&:hover': {

@@ -246,7 +246,7 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
   let titleText = "Game Over"; // Default
   if (isForfeitWin) {
     // Forfeit logic remains the same, draw doesn't apply if someone forfeited to end the game
-    titleText = isCurrentUserWinner ? "You Win! Opponent Forfeited." : "Opponent Forfeited.";
+    titleText = isCurrentUserWinner ? "You Win! Opponent Forfeited." : "";
   } else if (isDraw) {
     titleText = "It's a Draw!"; // New Draw condition
   } else {
@@ -500,7 +500,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
       if (socket) {
         console.log('Emitting manual-forfeit to server...');
         socket.emit('manual-forfeit');
-        router.push('/multiplayer'); // Redirect to multiplayer index after forfeit
+        // router.push('/multiplayer'); // Redirect to multiplayer index after forfeit
         // Optionally, disable further actions immediately on the client-side?
         // The server will eventually update the player status.
       } else {
