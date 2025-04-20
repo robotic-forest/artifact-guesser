@@ -58,7 +58,7 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
   }, [isActive]); // Re-run this effect when isActive changes
 
   // Filter messages for inactive view (last 3 user messages)
-  const inactiveMessages = chatMessages.filter(msg => msg.username).slice(-5);
+  const inactiveMessages = chatMessages.filter(msg => msg.username).slice(isMobileLayout ? -3 : -5);
 
   // --- Handlers for Active/Inactive State ---
   const handleMouseEnter = () => setIsActive(true);
@@ -120,7 +120,7 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
         <div
           ref={containerRef}
           // Use GlobalChat's inactive styling approach
-          className="relative inline-block mb-1 cursor-pointer"
+          className="flex flex-col items-start"
           onClick={() => setIsActive(true)} // Activate on click/tap
         >
           {inactiveMessages.length > 0 ? (
@@ -132,9 +132,6 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
                 css={{
                   background: 'var(--backgroundColor)',
                   color: 'var(--textColor)',
-                  border: '1px solid var(--borderColor)',
-                  marginTop: '2px',
-                  borderRadius: '3px'
                 }}
               >
                 {msg.username && <b className="mr-1">{msg.username}:</b>} {msg.message}
@@ -171,9 +168,6 @@ export const FixedChat = ({ lightContext = false, isMobileLayout = false }) => {
                 css={{
                   background: 'var(--backgroundColor)',
                   color: 'var(--textColor)', // Use theme text color
-                  border: '1px solid var(--borderColor)', // Use theme border color
-                  marginTop: '2px', // Add slight spacing
-                  borderRadius: '3px' // Add slight rounding
                 }}
               >
                 {msg.username && <b className="mr-1">{msg.username}:</b>} {msg.message}

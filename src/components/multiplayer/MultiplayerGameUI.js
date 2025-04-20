@@ -575,7 +575,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
           {/* Top Row: Mobile Chat, Player Status, Mobile Zoom, Status (Mobile), Round Info */}
           {/* Mobile Chat (Only visible on mobile) */}
           <div className="w-full md:hidden"> {/* Container to ensure full width on mobile */}
-             <FixedChat isMobileLayout={true} />
+             <FixedChat isMobileLayout />
           </div>
           {/* Player Status (Mobile Only) */}
           <div className="flex md:hidden flex-wrap justify-start w-full mb-1">
