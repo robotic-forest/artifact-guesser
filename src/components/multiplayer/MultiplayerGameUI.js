@@ -344,8 +344,6 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
     playerStatuses, disconnectCountdown, isForfeitWin
   } = gameState;
 
-  console.log(settings)
-
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [mapValue, setMapValue] = useState(defaultMapValue); // For MapInteractionCSS
