@@ -13,16 +13,6 @@ export const RoundSummary = () => {
   const { countryPoints, datePoints, points } = currentRound
   const isLastRound = game.round === game.rounds
 
-  console.log({
-    game,
-    artifact,
-    selectedDate,
-    selectedCountry,
-    datePoints,
-    countryPoints,
-    points
-  })
-
   return (
     <div>
       <MainHeader />
