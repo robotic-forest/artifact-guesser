@@ -13,6 +13,7 @@ Single Player Schema: {
   score: number // Final score for the player
   mode: string // Game mode (e.g., 'classic')
   startedAt: Date
+  selectedTimer: number // Timer value for the game
 }
 
 Multiplayer Schema: {
@@ -26,6 +27,7 @@ Multiplayer Schema: {
   startedAt: Date,         // Timestamp game started.
   endedAt: Date,           // Timestamp game ended (set when ongoing: false).
   winnerId: string,        // User ID of the winner (null if ongoing or tie).
+  timer: number,           // Timer value for the game.
   roundData: [             // Modified structure
     {
       round: number,         // Round number.
