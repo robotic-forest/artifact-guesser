@@ -334,7 +334,6 @@ const MultiplayerGameSummary = ({ finalScores, settings, players, currentUserId,
 };
 
 export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary }) => {
-  const router = useRouter()
   useTheme()
   const { user } = useUser(); // Get user object
   // Get socket and revealImage state from context
@@ -342,8 +341,10 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
   // Destructure new state variables
   const {
     phase, round, artifact, players, guesses, settings, roundResults, finalScores, error,
-    playerStatuses, disconnectCountdown, isForfeitWin, isActive
+    playerStatuses, disconnectCountdown, isForfeitWin
   } = gameState;
+
+  console.log(settings)
 
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedCountry, setSelectedCountry] = useState(null);
@@ -549,7 +550,7 @@ export const MultiplayerGameUI = ({ gameState, submitGuess, proceedAfterSummary 
         <DisconnectCountdownBanner countdownData={disconnectCountdown} />
 
         {/* Added Headers */}
-        <MainHeader />
+        <MainHeader settings={settings} />
         <AuthHeader />
 
         {(isLoadingImage) && <LoadingArtifact className='fixed' msg={`Loading Round ${round} Artifact Image${imgLength > 1 ? 's' : ''}`} />}
