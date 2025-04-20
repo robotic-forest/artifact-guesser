@@ -109,7 +109,31 @@ export const LobbyChoice = () => {
             Create a new Lobby
           </div>
            <div className='mt-2 p-0 pb-2 pr-2 flex flex-wrap'>
-             <LobbyTypeButton theme={dashboardTheme} onClick={() => handleCreateLobby(false)}>
+             <LobbyTypeButton theme={dashboardTheme} onClick={() => {
+                 if (!user?.isLoggedIn) {
+                   // Extract JSX for clarity
+                   const toastText = (
+                     <>
+                       Sign up to create a lobby,<br/>
+                       you {generateInsult('adjective')} {generateInsult('name')}!
+                     </>
+                   );
+                   // Use the hook
+                   triggerAAAAtoast(
+                     { // Props for AAAAAA
+                       initialAngry: true,
+                       initialText: toastText,
+                       initialWidth: 320,
+                       angle: -3,
+                       backgroundColor: 'transparent',
+                       textColor: '#000000',
+                       style: { padding: '0 12px 12px 0' }
+                     },
+                     { position: 'bottom-center' } // Toast options
+                   );
+                 } else if (isConnected && isRegistered) {
+                   handleCreateLobby(false);
+                 }}}>
                <div><b>Create Private Lobby</b></div>
                <div className="text-xs opacity-80">
                  Only players with a link can join

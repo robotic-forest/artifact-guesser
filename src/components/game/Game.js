@@ -14,8 +14,7 @@ import { GameButton } from "../buttons/GameButton"
 import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
 import { GameSummary } from "./GameSummary"
 import { IconButton } from "../buttons/IconButton"
-import { BiChevronDown, BiChevronUp, BiMinus, BiPlus } from "react-icons/bi"
-import { LeaderBoard } from "../gameui/LeaderBoard";
+import { BiMinus, BiPlus } from "react-icons/bi"
 import { useTheme } from "@/pages/_app";
 import { MainHeader } from "../gameui/MainHeader";
 import { GiTimeBomb } from "react-icons/gi"; // Import timer icon
@@ -25,7 +24,6 @@ import { modes } from "../gameui/ModeButton"
 import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
 import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
 import { LobbyBrowser } from "../multiplayer/LobbyBrowser"; // Import Lobby Browser component
-import Link from "next/link";
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -49,7 +47,6 @@ const GameUI = () => {
     guessed,
     makeGuess,
     artifact,
-    loading, // Keep loading for initial game setup? Or remove if fully replaced? Let's keep for now.
     // setLoading, // We might not need the setter directly anymore
     isViewingSummary,
     nextStepKey,

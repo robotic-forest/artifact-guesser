@@ -1,14 +1,30 @@
-import { useHighscores } from "@/hooks/games/useHighscores"
-import { IconGenerator } from "../art/IconGenerator"
-import { FaTrophy } from "react-icons/fa"
-import { Tag } from "../tag/Tag"
-import { useClickedOutside } from "@/hooks/useClickedOutside"
-import { IconButton } from "../buttons/IconButton"
-import { MdClose } from "react-icons/md"
+import { useHighscores } from "@/hooks/games/useHighscores";
+import { IconGenerator } from "../art/IconGenerator";
+import { FaTrophy } from "react-icons/fa";
+import { Tag } from "../tag/Tag";
+import { useClickedOutside } from "@/hooks/useClickedOutside";
+import { IconButton } from "../buttons/IconButton";
+import { MdClose } from "react-icons/md";
+import { capitalizeFirstLetter } from "@/lib/utils"; // Assuming a utility function exists
 
-export const LeaderBoard = ({ onClose }) => {
-  const highscores = useHighscores()
-  const { ref } = useClickedOutside(onClose)
+export const LeaderBoard = ({ onClose, mode, timer, rounds }) => {
+  // Pass the game configuration to the hook
+  const highscores = useHighscores({ mode, timer, rounds });
+  const { ref } = useClickedOutside(onClose);
+
+  // Generate a dynamic title based on the provided configuration
+  let title = "High Scores";
+  const configDetails = [];
+  if (mode) configDetails.push(capitalizeFirstLetter(mode));
+  if (timer) configDetails.push(`${timer}s`);
+  if (rounds) configDetails.push(`${rounds} Rounds`);
+
+  if (configDetails.length > 0) {
+    title += ` (${configDetails.join(', ')})`;
+  } else {
+    title += " (Overall)"; // Default if no specific config provided
+  }
+
 
   return (
     <div ref={ref} className='fixed p-1 top-[30px] left-1 z-[100] w-[400px] bg-black rounded-lg border border-white/30' css={{ 
@@ -17,7 +33,7 @@ export const LeaderBoard = ({ onClose }) => {
       <div className='p-1 px-1.5 mb-1 flex items-center justify-between'>
         <div className='flex items-center'>
           <FaTrophy className='mr-2' />
-          High Scores
+          {title}
         </div>
         <IconButton onClick={onClose} css={{ position: 'relative' }}>
           <MdClose />
@@ -37,10 +53,14 @@ export const LeaderBoard = ({ onClose }) => {
             </div>
           </div>
           <div>
-            {game.score} / 1000
+            {/* Display score relative to max possible score based on rounds */}
+            {game.score} {game.rounds ? `/ ${game.rounds * 200}` : ''}
           </div>
         </div>
       ))}
+      {highscores?.length === 0 && (
+        <div className="p-4 text-center text-white/70">No high scores found for this configuration.</div>
+      )}
     </div>
   )
 }

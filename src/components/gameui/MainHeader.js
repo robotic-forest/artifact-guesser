@@ -72,7 +72,14 @@ export const MainHeader = () => {
         </div>
       </div>
 
-      {leaderBoardOpen && <LeaderBoard onClose={() => setLeaderBoardOpen(false)} />}
+      {leaderBoardOpen && (
+        <LeaderBoard
+          onClose={() => setLeaderBoardOpen(false)}
+          mode={game?.mode}
+          timer={game?.timer}
+          rounds={game?.rounds}
+        />
+      )}
     </>
   )
 }
