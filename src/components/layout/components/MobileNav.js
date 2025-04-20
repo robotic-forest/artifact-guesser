@@ -16,7 +16,7 @@ import { gamesTheme } from "@/pages/games"
 import { BsDiscord } from "react-icons/bs"
 import Link from "next/link"
 import { accountTheme } from "@/pages/accounts"
-import { dashbaordTheme } from "@/pages/dashboard"
+import { dashboardTheme } from "@/pages/dashboard"
 import { SignupDialog } from "@/components/dialogs/SignupDialog"
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
 import { PiRedditLogoFill } from "react-icons/pi"
@@ -105,8 +105,12 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       <GiGreekSphinx className='mr-2' />
                       {game ? 'Resume' : 'Play'} Game
                     </MenuButton>
+                    <MenuButton theme={dashboardTheme} url='/multiplayer'>
+                      <GiGreekSphinx className='mr-2' />
+                      Multiplayer
+                    </MenuButton>
                     {isAdmin && (
-                      <MenuButton theme={dashbaordTheme} url='/dashboard'>
+                      <MenuButton theme={dashboardTheme} url='/dashboard'>
                         <MdDashboard className='mr-2' />
                         Dashboard
                       </MenuButton>
@@ -187,6 +191,10 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                      }}>
                       <GiGreekSphinx className='mr-2' />
                       Resume Game
+                    </MenuButton>
+                    <MenuButton theme={dashboardTheme} url='/multiplayer'>
+                      <GiGreekSphinx className='mr-2' />
+                      Multiplayer
                     </MenuButton>
                     <MenuButton theme={artifactsTheme} url='/artifacts?imageMode=true'>
                       <GiAmphora className='mr-2' />

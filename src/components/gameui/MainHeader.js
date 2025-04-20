@@ -11,7 +11,7 @@ import { useGame } from "../game/GameProvider"
 import { useState } from "react"
 import { LeaderBoard } from "./LeaderBoard"
 
-export const MainHeader = () => {
+export const MainHeader = ({ settings }) => {
   const { game } = useGame()
   const [leaderBoardOpen, setLeaderBoardOpen] = useState(false)
 
@@ -72,7 +72,14 @@ export const MainHeader = () => {
         </div>
       </div>
 
-      {leaderBoardOpen && <LeaderBoard onClose={() => setLeaderBoardOpen(false)} />}
+      {leaderBoardOpen && (
+        <LeaderBoard
+          onClose={() => setLeaderBoardOpen(false)}
+          mode={game?.mode || settings?.mode}
+          timer={game?.selectedTimer || settings?.timer}
+          rounds={game?.rounds || settings?.rounds}
+        />
+      )}
     </>
   )
 }

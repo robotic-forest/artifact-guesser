@@ -45,7 +45,7 @@ export const themeCSS = theme => css`
   --primaryColorBlinding: ${lighten(0.3, theme.primaryColor)};
 
   --textColor: ${theme.textColor};
-  --textLowOpacity: ${`${theme.textColor}77`};
+  --textLowOpacity: ${`${theme.textColor}88`};
   --textKindaLowOpacity: ${`${theme.textColor}55`};
   --textVeryLowOpacity: ${`${theme.textColor}33`};
   --textVeryLowOpacity27: ${`${theme.textColor}27`};

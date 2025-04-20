@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"; // Keep useEffect
 import { MapInteractionCSS } from 'react-map-interaction'
 import { AuthHeader } from "@/components/layout/AuthHeader"
 import { IoMdEye } from "react-icons/io"
@@ -14,13 +14,16 @@ import { GameButton } from "../buttons/GameButton"
 import { RoundSummary } from "../gameui/RoundSummary/RoundSummary"
 import { GameSummary } from "./GameSummary"
 import { IconButton } from "../buttons/IconButton"
-import { BiChevronDown, BiChevronUp, BiMinus, BiPlus } from "react-icons/bi"
-import { LeaderBoard } from "../gameui/LeaderBoard"
-import { useTheme } from "@/pages/_app"
-import { MainHeader } from "../gameui/MainHeader"
+import { BiMinus, BiPlus } from "react-icons/bi"
+import { useTheme } from "@/pages/_app";
+import { MainHeader } from "../gameui/MainHeader";
+import { GiTimeBomb } from "react-icons/gi"; // Import timer icon
 import { ImageView, defaultMapValue } from "../artifacts/Artifact"
 import useMeasure from "react-use-measure"
 import { modes } from "../gameui/ModeButton"
+import { useGlobalChat } from "@/contexts/GlobalChatContext"; // Import Global Chat hook
+import { GlobalChat } from "../chat/GlobalChat"; // Import Global Chat component
+import { LobbyBrowser } from "../multiplayer/LobbyBrowser"; // Import Lobby Browser component
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -44,30 +47,79 @@ const GameUI = () => {
     guessed,
     makeGuess,
     artifact,
-    loading,
-    setLoading,
+    // setLoading, // We might not need the setter directly anymore
     isViewingSummary,
     nextStepKey,
-    handleArtifactLoadError
-  } = useGame()
-  
-  const [ref, bounds] = useMeasure()
+    handleArtifactLoadError,
+    // Timer related state from context
+    countdown,
+    isTimerActive,
+    timedOut, // Get timedOut status
+    // Image readiness state and setter
+    imagesReadyForTimer,
+    setImagesReadyForTimer
+  } = useGame();
+  // Use Global Chat hook
+  const { joinGlobalChat, leaveGlobalChat } = useGlobalChat();
+
+  const [ref, bounds] = useMeasure();
   const { height: windowHeight, width: windowWidth } = bounds
   const [value, setValue] = useState(defaultMapValue)
-  const [hoverCountry, setHoverCountry] = useState()
+  const [hoverCountry, setHoverCountry] = useState();
+  const [initialCenteringDone, setInitialCenteringDone] = useState(false); // Track initial centering
+
+  // Reset centering flag when round changes
+  useEffect(() => {
+    setInitialCenteringDone(false);
+    setValue(defaultMapValue); // Also reset zoom/pan state for the new round
+  }, [game?.round]);
 
   useEffect(() => {
-    if (!isViewingSummary && !guessed) document.body.style.position = "fixed"
-    else document.body.style.position = "static"
+    // Lock body scroll when game is active (not summary, not guessed, not timed out)
+    if (!isViewingSummary && !guessed && !timedOut) {
+      document.body.style.position = "fixed";
+      document.body.style.overflow = "hidden"; // Ensure overflow is hidden too
+      document.body.style.width = "100%"; // Prevent layout shift
+    } else {
+      document.body.style.position = "static";
+      document.body.style.overflow = "auto";
+      document.body.style.width = "auto";
+    }
 
-    return () => document.body.style.position = "static"
-  }, [isViewingSummary, guessed])
+    // Cleanup function
+    return () => {
+      document.body.style.position = "static";
+      document.body.style.overflow = "auto";
+      document.body.style.width = "auto";
+    };
+  }, [isViewingSummary, guessed, timedOut]); // Add timedOut dependency
 
-  const modeInfo = game?.mode ? modes[game.mode] : null
+  // Determine if it's a single-player game
+  const isSinglePlayer = game?.gameType !== 'multiplayer';
 
-  if (guessed && !isViewingSummary) return <RoundSummary />
+  // Join/Leave global chat room based on single-player status
+  useEffect(() => {
+    if (isSinglePlayer) {
+      console.log('[GameUI] Joining global chat (single-player)...');
+      joinGlobalChat();
+      return () => {
+        console.log('[GameUI] Leaving global chat (single-player)...');
+        leaveGlobalChat();
+      };
+    }
+    // If not single player, ensure we leave (e.g., if game type changes unexpectedly)
+    // This might be redundant if leaveGlobalChat is called elsewhere, but safe.
+    // else {
+    //   leaveGlobalChat();
+    // }
+  }, [isSinglePlayer, joinGlobalChat, leaveGlobalChat]);
 
-  const imgLength = artifact?.images?.external.length
+  const modeInfo = game?.mode ? modes[game.mode] : null;
+
+  // Show RoundSummary if guessed or timed out, but not viewing final GameSummary
+  if ((guessed || timedOut) && !isViewingSummary) return <RoundSummary />;
+
+  const imgLength = artifact?.images?.external.length;
 
   return (
     <div ref={ref} css={{
@@ -81,7 +133,8 @@ const GameUI = () => {
       <MainHeader />
       <AuthHeader />
 
-      {loading && !isViewingSummary && <LoadingArtifact className='fixed' msg={artifact && `Loading ${imgLength} Artifact Image${imgLength > 1 ? 's' : ''}`} />}
+      {/* Show loading overlay until images are ready for the timer */}
+      {!imagesReadyForTimer && !isViewingSummary && <LoadingArtifact className='fixed' msg={artifact && `Loading ${imgLength} Artifact Image${imgLength > 1 ? 's' : ''}`} />}
 
       {isViewingSummary && <GameSummary />}
 
@@ -89,36 +142,60 @@ const GameUI = () => {
         <MapInteractionCSS value={value} onChange={v => setValue(v)} maxScale={100}>
           <ImageView
             imgs={artifact?.images.external}
-            loadingComplete={!loading}
-            setLoadingComplete={bounds => {
-              const h = bounds.height
-  
-              if (h) {
+            // setLoadingComplete is called when images finish loading and bounds are available
+            setLoadingComplete={imageBounds => { // Renamed param for clarity
+              const h = imageBounds?.height;
+              // Only perform initial centering ONCE when images are ready
+              if (h && imagesReadyForTimer && !initialCenteringDone) {
+                let newScale = 1;
+                let newX = 0;
+                let newY = 0;
+
                 if (h < windowHeight) {
-                  const newY = (windowHeight - h) / 2
-                  if (loading && value.translation.y !== newY) {
-                    setValue({ scale: 1, translation: { x: 0, y: newY } })
-                  }
+                  // Image is shorter than window, center vertically
+                  newY = (windowHeight - h) / 2;
                 } else {
-                  const newScale = windowHeight / h
-                  const newX = (windowWidth - (bounds.width * newScale)) / 2
-                  if (loading && value.scale !== newScale) {
-                    setValue({ scale: newScale, translation: { x: newX, y: 0 } })
-                  }
+                  // Image is taller than window, scale down to fit height and center horizontally
+                  newScale = windowHeight / h;
+                  newX = (windowWidth - (imageBounds.width * newScale)) / 2;
                 }
-                
-                setLoading(false)
+
+                // Check if the calculated state is different from the current state
+                // to avoid unnecessary updates if already centered somehow.
+                if (value.scale !== newScale || value.translation.x !== newX || value.translation.y !== newY) {
+                  setValue({ scale: newScale, translation: { x: newX, y: newY } });
+                } // <-- Added missing closing brace here
+                setInitialCenteringDone(true); // Mark centering as done for this round
               }
             }}
             onError={handleArtifactLoadError}
+            // Pass the setter function for single-player callback
+            onAllImagesLoaded={() => {
+              setImagesReadyForTimer(true);
+              // Note: Centering happens in setLoadingComplete now, triggered by image readiness
+            }}
+            // For multiplayer, revealImage comes from server; for single-player, it's effectively true
+            // as opacity is handled internally based on onAllImagesLoaded callback.
+            // Let's pass isSinglePlayer to let ImageView decide internally (though current ImageView logic uses onAllImagesLoaded for opacity)
+            revealImage={isSinglePlayer} // Or just true if multiplayer logic is separate
+            // Pass multiplayer specific prop if needed (assuming it's handled in ImageView)
+            // onImageLoaded={multiplayerOnImageLoadedCallback}
           />
         </MapInteractionCSS>
       )}
 
-      {(loading || isViewingSummary) ? null : !guessed && (
-        <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{ 
+      {/* Show controls only if game is active (images ready, not summary, not guessed, not timed out) */}
+      {imagesReadyForTimer && !isViewingSummary && !guessed && !timedOut && (
+        <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{
           '@media (max-width: 500px)': { width: '100vw' }
         }}>
+          {/* Conditionally render Global Chat ABOVE map for single-player mobile */}
+          {isSinglePlayer && (
+            <div className='block md:hidden w-full mb-1'>
+              <GlobalChat notFixed showHeader />
+            </div>
+          )}
+
           <div className='flex items-end mb-1'>
             <div
               className='flex items-end'
@@ -153,10 +230,25 @@ const GameUI = () => {
                 <BiMinus />
               </IconButton>
             </div>
+            {/* Timer Display */}
+            {/* Only show timer if timing is enabled, active, and countdown is a valid number */}
+            {game?.timing !== 'None' && isTimerActive && countdown !== null && !isNaN(countdown) && (
+              <div className={`
+                flex items-center rounded font-bold p-1 px-2 text-sm mr-1
+                ${countdown <= 5
+                  ? 'bg-red-600 text-white animate-pulse' // Urgent style
+                  : 'bg-black text-white' // Default style
+                }
+              `}>
+                <GiTimeBomb className='mr-1' />
+                {countdown}s
+              </div>
+            )}
             <GameInfo />
           </div>
+
           <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full' css={{
-            height: 200,
+            height: 200, // Keep original height
             '@media (max-width: 500px)': { height: 150 }
           }}>
             <Map setHover={setHoverCountry} setSelectedCountry={setSelectedCountry} selectedCountry={selectedCountry} />
@@ -167,7 +259,7 @@ const GameUI = () => {
             )}
           </div>
           <div className='w-full'>
-            <div className='flex items-center bg-black p-[4.5px_6px_4px] rounded-[3px] border border-white/30 text-sm h-[24px] mb-1 w-full'>
+            <div className='flex items-center bg-black p-[4.5px_6px_5px] rounded-[3px] border border-white/30 text-sm h-[25px] mb-1 w-full'>
               <Range
                 min={modeInfo?.type === 'Era' ? modeInfo.start : -3000}
                 max={modeInfo?.type === 'Era' ? modeInfo.end : new Date().getFullYear()}
@@ -211,6 +303,14 @@ const GameUI = () => {
               </GameButton>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Conditionally render Global Chat and Lobby Browser for single-player games (Desktop position) */}
+      {isSinglePlayer && (
+        <div className='hidden md:block fixed bottom-2 left-2 z-50 max-w-[450px]'> {/* Added positioning and width */}
+          <GlobalChat showHeader notFixed />
+          <LobbyBrowser /> {/* Add Lobby Browser below Global Chat */}
         </div>
       )}
     </div>

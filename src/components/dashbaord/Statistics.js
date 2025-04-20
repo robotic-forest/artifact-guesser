@@ -2,27 +2,33 @@ import { DashInfo } from "@/components/info/DashInfo"
 import { GoatStats } from "@/components/info/GoatCounter"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
-import { useGames } from "@/hooks/games/useGames"
+// useGames and GiAbstract034 moved to Games.js
 import { FaUser } from "react-icons/fa"
-import { GiAbstract034, GiAmphora } from "react-icons/gi"
+import { GiAmphora } from "react-icons/gi" // GiAbstract034 removed
 import { AllAccountActions } from "@/components/dashbaord/AllAcountActions"
-import useSWR from "swr"
+// useSWR moved to Games.js for platform stats
 // import Link from "next/link"
 // import { IconButton } from "@/components/buttons/IconButton"
 // import { IoMdEye } from "react-icons/io"
-import { gamesTheme } from "@/pages/games"
+// gamesTheme moved to Games.js
 import { accountTheme } from "@/pages/accounts"
 import { artifactsTheme } from "@/pages/artifacts"
 import { ArtifactCountMap } from "./ArtifactCountMap"
 import { Behistun } from "./Behistun"
-import { Notes } from "./Notes"
+// import { Notes } from "./Notes" // Notes component seems unused, commenting out
 import { Collosi } from "./Collosi"
+// modes and Dropdown moved to Games.js
+import { Games } from "./Games/Games" // Updated import path
+
+// adjustLightness helper function moved to Games/utils.js
 
 export const Statistics = () => {
+  // Hooks for artifacts and accounts remain
   const { artifacts } = useArtifacts({ stats: true })
   const { accounts } = useAccounts({ stats: true })
-  const { games } = useGames({ stats: true })
-  const { data: stats } = useSWR('/api/platform/stats')
+  // Hooks for games and platform stats moved to Games.js
+
+  // Mode data processing moved to Games.js
 
   return (
     <div className='grid grid-cols-1 md:gap-2 md:grid-cols-2'>
@@ -36,21 +42,13 @@ export const Statistics = () => {
           actions={<AllAccountActions />}
         />
         {/* <Behistun /> */}
-        <Notes />
+        {/* <Notes /> */}
       </div>
       <div>
-        <DashInfo
-          title={<><GiAbstract034 className='text-sm mr-3'/>Games played</>}
-          count={(stats?.noauthGames && games) && (games + stats?.noauthGames)}
-          extraInfo={(
-            <div className='p-3 text-sm'>
-              <span className='mr-2'><span className='opacity-60 mr-1'>Auth</span> {games}</span>
-              <span className='opacity-60 mr-1'>Anon</span> {stats?.noauthGames}
-            </div>
-          )}
-          url='/games?__sortfield=startedAt&__sortdirection=-1'
-          theme={gamesTheme}
-        />
+        {/* Replace the old DashInfo with the new Games component */}
+        <Games />
+
+        {/* Artifacts DashInfo remains */}
         <DashInfo
           title={<><GiAmphora className='mr-3'/>Artifacts</>}
           count={artifacts?.total}
@@ -71,6 +69,7 @@ export const Statistics = () => {
           )}
         />
         {/* <Collosi className='flex justify-end mb-2' /> */}
+
       </div>
     </div>
   )

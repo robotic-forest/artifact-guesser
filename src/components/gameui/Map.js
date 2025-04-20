@@ -1,9 +1,9 @@
-import { centroids } from "@/lib/getProximity"
-import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from "react-simple-maps"
+import { centroids } from "@/lib/getProximity";
+import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from "react-simple-maps";
 
-export const Map = ({ selectedCountry, setSelectedCountry, setHover }) => {
+export const Map = ({ selectedCountry, setSelectedCountry, setHover, disabled }) => { // Added disabled prop
   return (
-    <ComposableMap width={800} height={480}>
+    <ComposableMap width={800} height={480} style={{ cursor: disabled ? 'not-allowed' : 'default' }}> {/* Add cursor style to map */}
       <ZoomableGroup center={[0, 0]} zoom={1}>
         <Geographies geography="/features.json">
           {({ geographies }) =>
@@ -11,21 +11,27 @@ export const Map = ({ selectedCountry, setSelectedCountry, setHover }) => {
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
-                onClick={() => setSelectedCountry(geo.properties.name)}
-                onMouseOver={() => setHover(geo.properties.name)}
-                onMouseLeave={() => setHover(null)}
+                // Only allow click if not disabled
+                onClick={() => !disabled && setSelectedCountry(geo.properties.name)}
+                // Only allow hover effect if not disabled
+                onMouseOver={() => !disabled && setHover(geo.properties.name)}
+                onMouseLeave={() => setHover(null)} // Keep leave handler to clear hover state
                 style={{
                   default: {
                     outline: "none",
                     fill: selectedCountry === geo.properties.name ? '#90d6f8' : "#eee",
+                    // Add opacity if disabled
+                    opacity: disabled ? 0.7 : 1,
                   },
                   hover: {
                     outline: "none",
-                    fill: "#90d6f8",
-                    cursor: "pointer",
+                    // Only apply hover fill and cursor if not disabled
+                    fill: disabled ? (selectedCountry === geo.properties.name ? '#90d6f8' : "#eee") : "#90d6f8",
+                    cursor: disabled ? "not-allowed" : "pointer",
                   },
                   pressed: {
-                    fill: "#90d6f8",
+                    // Only apply pressed fill if not disabled
+                    fill: disabled ? (selectedCountry === geo.properties.name ? '#90d6f8' : "#eee") : "#90d6f8",
                     outline: "none"
                   },
                 }}

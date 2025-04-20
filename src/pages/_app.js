@@ -5,9 +5,14 @@ import { SWRConfig } from 'swr'
 import { GlobalStyles } from "@/components/GlobalStyles"
 import { PromiseDialog } from '@/components/dialogs/Dialog'
 import { createContext, useContext, useEffect, useState } from 'react'
-import { usePreviousRoute } from '@/hooks/usePreviousRoute'
+import { usePreviousRoute } from '@/hooks/usePreviousRoute';
+import { MultiplayerProvider } from '@/components/multiplayer/context/MultiplayerContext'; // Import MultiplayerProvider
+import { GlobalChatProvider } from '@/contexts/GlobalChatContext'; // Import GlobalChatProvider
+import io from "socket.io-client"
 
 const fetcher = url => axios.get(url).then(res => res.data)
+
+export const socket = io('http://localhost:9667', { withCredentials: false })
 
 export const theme =  {
   backgroundColor: '#000000',
@@ -42,11 +47,15 @@ let CyberInvocation; export default CyberInvocation = ({ Component, pageProps })
   return (
     <SWRConfig value={{ fetcher, onError: err => console.error(err) }}>
       <GlobalStyles theme={t} />
-      <PromiseDialog>
-        <ThemeContext.Provider value={{ theme: t, setTheme }}>
-          <Component {...pageProps} previousRoute={previousRoute} />
-        </ThemeContext.Provider>
-      </PromiseDialog>
+      <MultiplayerProvider> {/* Wrap entire app */}
+        <GlobalChatProvider> {/* Wrap inside MultiplayerProvider */}
+          <PromiseDialog>
+            <ThemeContext.Provider value={{ theme: t, setTheme }}>
+              <Component {...pageProps} previousRoute={previousRoute} />
+            </ThemeContext.Provider>
+          </PromiseDialog>
+        </GlobalChatProvider>
+      </MultiplayerProvider>
       <Toaster position='bottom-center' />
     </SWRConfig>
   ) // -- mamud | dream -- // http://psd.museum.upenn.edu/nepsd-frame.html

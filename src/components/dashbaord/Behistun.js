@@ -40,7 +40,7 @@ export const Behistun = () => {
             Post Queue
           </div>
         </div>
-        {artifacts?.length> 0 && (
+        {artifacts?.length > 0 && (
           <div className='m-1 mt-0 p-1 pb-0 pr-0 text-xs flex flex-wrap' css={{
             background: `var(--backgroundColorGhostDark)`,
             borderRadius: 3

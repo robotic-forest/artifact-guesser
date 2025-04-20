@@ -32,7 +32,8 @@ export const LoginDialog = ({ open, onClose }) => {
 
   const resetPassword = async (data, e) => {
     e.preventDefault() // prevent submit on clicking enter
-    const { data: res } = await axios.post('/api/reset-password-email', data)
+    // Send the identifier as 'email' for the reset password endpoint
+    const { data: res } = await axios.post('/api/reset-password-email', { email: data.identifier })
     if (res?.success) {
       toast.success('Reset Password Email sent. Please check your inbox.')
       setResettingPassword(false)
@@ -51,8 +52,8 @@ export const LoginDialog = ({ open, onClose }) => {
       <FormProvider {...formProps}>
         <Form onSubmit={handleSubmit(resettingPassword ? resetPassword : login)}>
           <FormInput
-            label='Email'
-            name='email'
+            label='Email / Username'
+            name='identifier'
             required
             style={{ marginTop: '1em' }}
             spellCheck={false}
@@ -104,4 +105,3 @@ export const LoginDialog = ({ open, onClose }) => {
     </Dialog>
   )
 }
-

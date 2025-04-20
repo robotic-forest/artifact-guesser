@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { useState } from "react"
 import { useMediaQuery } from "react-responsive"
-import Tooltip from 'react-tooltip'
+import { Tooltip } from 'react-tooltip'
 import { v4 as uuidv4 } from 'uuid'
 
 const colorDefaults = {
@@ -63,7 +63,7 @@ export const Tag = ({
 const TagUI = styled.span`
   display: inline-block;
   border-radius: 5px;
-  border: ${p => p.noBorder ? 'none' : '1px solid var(--textVeryLowOpacity)'};
+  border: ${p => p.noBorder ? 'none' : '1px solid var(--textSuperLowOpacity)'};
   background: var(--primaryColorVeryLight);
   text-transform: uppercase;
   position: relative;

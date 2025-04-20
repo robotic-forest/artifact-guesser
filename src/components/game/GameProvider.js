@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useState, useRef } from "react" // Added useRef
 import useUser from "../../hooks/useUser"
 import axios from "axios"
 import { convertCountries } from "@/lib/artifactUtils"
@@ -27,12 +27,28 @@ export const GameProvider = ({ children }) => {
   const [selectedDate, setSelectedDate] = useState()
   const [selectedCountry, setSelectedCountry] = useState()
   const [loading, setLoading] = useState(true)
+  const [selectedTimer, setSelectedTimer] = useState(null); // Default: No timer
+  const [countdown, setCountdown] = useState(null);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [imagesReadyForTimer, setImagesReadyForTimer] = useState(false); // New state for image readiness
+  const timerIntervalRef = useRef(null); // Ref to store interval ID
+
   const { data, mutate } = useSWR(user?.isLoggedIn && '/api/games/current')
 
   const initGame = g => {
-    setGame(g)
-    setSelectedDate(g.roundData[g.round - 1].selectedDate || modes[g.mode]?.type === 'Era' ? ((modes[g.mode].start + modes[g.mode].end) / 2) : 0)
-    setSelectedCountry(g.roundData[g.round - 1].selectedCountry || null)
+    setGame(g);
+    setSelectedDate(g.roundData[g.round - 1].selectedDate || modes[g.mode]?.type === 'Era' ? ((modes[g.mode].start + modes[g.mode].end) / 2) : 0);
+    setSelectedCountry(g.roundData[g.round - 1].selectedCountry || null);
+    // Initialize selectedTimer from game data if available, else default null
+    setSelectedTimer(g.selectedTimer !== undefined ? g.selectedTimer : null);
+    // Reset timer and image readiness state for the new/loaded game
+    setIsTimerActive(false);
+    setImagesReadyForTimer(false); // Reset image readiness
+    setCountdown(g.selectedTimer);
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
   }
 
   // Sync with DB
@@ -54,8 +70,10 @@ export const GameProvider = ({ children }) => {
 
         if (localG) initGame(localG)
         else {
-          const lsMode = localStorage.getItem('mode')
-          const newMode = lsMode || 'Balanced'
+          const lsMode = localStorage.getItem('mode') || 'Balanced';
+          const lsTimer = localStorage.getItem('timer'); // Get timer from localStorage
+          const newMode = lsMode;
+          const newTimer = lsTimer !== null && lsTimer !== 'null' ? parseInt(lsTimer, 10) : null; // Parse timer, default null
 
           const newArtifact = await getRandomArtifact(null, newMode)
           const newGame = {
@@ -64,6 +82,7 @@ export const GameProvider = ({ children }) => {
             rounds: 5,
             score: 0,
             mode: newMode,
+            selectedTimer: newTimer, // Store selected timer
             roundData: [
               {
                 round: 1,
@@ -77,42 +96,151 @@ export const GameProvider = ({ children }) => {
           setGame(newGame)
           setSelectedDate(modes[newMode]?.type === 'Era' ? ((modes[newMode].start + modes[newMode].end) / 2) : 0)
           // sync localstorage
-          localStorage.setItem('game', JSON.stringify(newGame))
+          localStorage.setItem('game', JSON.stringify(newGame));
+          setSelectedTimer(newTimer); // Update state as well
         }
       }
     }
 
     !game && localGame()
-  }, [user, game])
+  }, [user, game]) // Removed 'selectedTimer' from dependency array to avoid loop
 
-  const updateGame = async (updatedGame, startNew, newMode) => {
-    !startNew && setGame(updatedGame)
-
+  const updateGame = async (updatedGame, startNew, newGameSettings) => {
     if (user?.isLoggedIn) {
-      const dbGame = { ...updatedGame, newMode }
-      await axios.post('/api/games/edit', dbGame)
-      if (startNew) {
-        await mutate()
+      // Prepare payload for the API, explicitly mapping settings
+      const payloadToSend = { ...updatedGame };
+      if (newGameSettings) {
+        if (newGameSettings.newMode !== undefined) payloadToSend.mode = newGameSettings.newMode;
+        // Explicitly map newTimer from settings to selectedTimer for the API
+        if (newGameSettings.newTimer !== undefined) payloadToSend.selectedTimer = newGameSettings.newTimer;
       }
+
+      try {
+        // Send the update to the backend
+        await axios.post('/api/games/edit', payloadToSend);
+
+        if (startNew) {
+          // If starting a new game, refetch the definitive state from the server.
+          // The useEffect watching 'data' will then call initGame -> setGame.
+          await mutate();
+        } else {
+          // For regular in-game updates (like guesses), update local state immediately
+          // for responsiveness. We assume the API call succeeded.
+          // Alternatively, use mutate() here too if the API returns the updated game.
+          setGame(payloadToSend); // Update local state with the data we intended to save
+        }
+      } catch (error) {
+        console.error("Error updating game:", error);
+        toast.error("Failed to save game progress.");
+        // Consider error handling, e.g., reverting local state if needed
+      }
+
     } else {
+      // --- Non-logged-in user logic ---
       if (startNew) {
-        localStorage.removeItem('game')
-        if (newMode) localStorage.setItem('mode', newMode)
-        setGame(null)
-      } else localStorage.setItem('game', JSON.stringify(updatedGame))
+        localStorage.removeItem('game');
+        if (newGameSettings?.newMode) localStorage.setItem('mode', newGameSettings.newMode);
+        // Persist timer setting for non-logged-in users when starting new game
+        if (newGameSettings?.newTimer !== undefined) localStorage.setItem('timer', String(newGameSettings.newTimer)); // Store as string
+        else localStorage.removeItem('timer'); // Clear if not set
+        setGame(null); // Reset local state for new game
+        // Ensure local timer state reflects the choice for the new game
+        setSelectedTimer(newGameSettings?.newTimer !== undefined ? newGameSettings.newTimer : null);
+      } else {
+        // Update existing game in local storage
+        localStorage.setItem('game', JSON.stringify(updatedGame));
+        setGame(updatedGame); // Update local state
+      }
     }
-  }
+  };
+
+
+  // --- Timer Logic ---
+
+  useEffect(() => {
+    // Clear any existing interval when dependencies change
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+
+    const currentRoundData = game?.roundData?.find(r => r.round === game.round);
+    const timerDuration = game?.selectedTimer; // Use timer from game state
+
+    // Conditions to start the timer:
+    // 1. Timer duration is set (not null)
+    // 2. Game is loaded (not loading)
+    // 3. Current round exists and is not guessed/timedOut
+    // 4. Timer is not already active (prevent multiple intervals)
+    // 5. Images are ready (for timed mode)
+    const shouldStartTimer = timerDuration !== null &&
+                              // !loading && // REMOVED: Initial loading shouldn't block timer once images are ready
+                              currentRoundData &&
+                              !currentRoundData.guessed &&
+                              !currentRoundData.timedOut &&
+                              !isTimerActive &&
+                              imagesReadyForTimer; // <-- New condition
+
+    if (shouldStartTimer) {
+      console.log(`[Timer] Starting timer for round ${game.round}. Duration: ${timerDuration}s. Images ready.`);
+      setCountdown(timerDuration); // Initialize countdown
+      setIsTimerActive(true);
+
+      timerIntervalRef.current = setInterval(() => {
+        setCountdown(prevCountdown => {
+          if (prevCountdown === null || prevCountdown <= 1) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+            setIsTimerActive(false);
+            console.log(`[Timer] Timeout for round ${game.round}`);
+            handleTimeout(); // Handle timeout
+            return 0;
+          }
+          return prevCountdown - 1;
+        });
+      }, 1000);
+    } else {
+        // Ensure timer is marked as inactive if conditions aren't met
+        if (isTimerActive) {
+          console.log("[Timer] Conditions not met or round ended, ensuring timer is inactive.");
+          setIsTimerActive(false);
+        }
+    }
+
+    // Cleanup function to clear interval on component unmount or before effect re-runs
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+        console.log("[Timer] Cleanup: Interval cleared.");
+      }
+    };
+    // Dependencies: game round, guessed status, selectedTimer from game state, AND image readiness
+  }, [game?.round, game?.selectedTimer, game?.roundData, imagesReadyForTimer]); // REMOVED loading from dependencies
+
+
+  // --- End Timer Logic ---
+
 
   // random useful variables
-  const currentRound = game?.roundData?.find(round => round.round === game.round)
-  const artifact = currentRound?.artifact
-  const guessed = currentRound?.guessed
-  const modeInfo = modes[game?.mode]
+  const currentRound = game?.roundData?.find(r => r.round === game.round);
+  const artifact = currentRound?.artifact;
+  const guessed = currentRound?.guessed;
+  const timedOut = currentRound?.timedOut; // Check for timeout status
+  const modeInfo = modes[game?.mode];
 
   const makeGuess = () => {
-    if (!selectedCountry) return toast.error('You have to select a country!')
+    // Stop the timer if it's active
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+      setIsTimerActive(false);
+      console.log("[Timer] Guess made, interval cleared.");
+    }
+
+    if (!selectedCountry) return toast.error('You have to select a country!');
     // Date stuff
-    const dateIsCorrect = artifact?.time.start <= selectedDate && artifact?.time.end >= selectedDate
+    const dateIsCorrect = artifact?.time.start <= selectedDate && artifact?.time.end >= selectedDate;
     const distanceToDate = Math.min(Math.abs(artifact?.time.start - selectedDate), Math.abs(artifact?.time.end - selectedDate))
     const datePoints = dateIsCorrect ? 100 : Math.round(distanceToDate > 300 ? 0 : 100 - (distanceToDate / 3))
 
@@ -126,15 +254,16 @@ export const GameProvider = ({ children }) => {
     if (!countryIsCorrect) {
       const { distance, isNeighbor, couldNotResolve } = getProximity(selectedCountry, artifactCountry)
       const distanceScore = couldNotResolve ? 0 : Math.round(distance > 1000 ? 0 : 100 - distance / 10)
-      countryPoints = isNeighbor ? Math.max(50, distanceScore) : distanceScore
+      countryPoints = isNeighbor ? Math.max(50, distanceScore) : distanceScore;
     }
 
-    const points = datePoints + countryPoints
+    const points = datePoints + countryPoints;
 
-    const newGame = { ...game }
+    const newGame = { ...game };
     newGame.roundData[game.round - 1] = {
       ...newGame.roundData[game.round - 1],
-      guessed: true,
+      guessed: true, // Mark as guessed
+      timedOut: false, // Ensure timedOut is false if guessed manually
       selectedDate: Number(selectedDate),
       selectedCountry,
       dateIsCorrect,
@@ -142,22 +271,60 @@ export const GameProvider = ({ children }) => {
       datePoints,
       countryPoints,
       points,
-      loading
+      loading // Keep original loading state if needed, though timer handles its own loading aspect
+    };
+
+    newGame.score += points;
+
+    updateGame(newGame); // Update game state
+  };
+
+  const handleTimeout = () => {
+    // Ensure this runs only once per round timeout
+    const currentRoundIndex = game.round - 1;
+    if (game.roundData[currentRoundIndex]?.guessed || game.roundData[currentRoundIndex]?.timedOut) {
+      console.log("[Timer] Round already guessed or timed out. Skipping timeout logic.");
+      return;
     }
 
-    newGame.score += points
+    console.log(`[GameProvider] Handling timeout for round ${game.round}`);
+    toast.error("Time's up! 0 points for this round.", { icon: '⏰' });
 
-    updateGame(newGame)
-  }
+    const newGame = { ...game };
+    newGame.roundData[currentRoundIndex] = {
+      ...newGame.roundData[currentRoundIndex],
+      guessed: false, // Not technically guessed by user
+      timedOut: true, // Mark as timed out
+      selectedDate: null, // Or keep the last selected? Null seems better.
+      selectedCountry: null,
+      datePoints: 0,
+      countryPoints: 0,
+      points: 0,
+    };
+
+    // No score change for timeout
+    // newGame.score += 0;
+
+    updateGame(newGame); // Update game state
+    // Note: The UI (Game.js) should react to 'timedOut' state to show the summary/next button.
+  };
+
 
   const startNextRound = async () => {
-    if (game.round === game.rounds) return
-    setLoading(true)
+    if (game.round === game.rounds) return;
+    setLoading(true);
+    setImagesReadyForTimer(false); // Reset image readiness for next round
+    setIsTimerActive(false); // Ensure timer is inactive before loading next round
+    if (timerIntervalRef.current) { // Clear any lingering interval
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
 
-    setSelectedCountry(null)
-    setSelectedDate(modeInfo?.type === 'Era' ? ((modeInfo.start + modeInfo.end) / 2) : 0)
+    setSelectedCountry(null);
+    setSelectedDate(modeInfo?.type === 'Era' ? ((modeInfo.start + modeInfo.end) / 2) : 0);
+    setCountdown(game.selectedTimer); // Reset countdown for the next round based on game setting
 
-    const newArtifact = await getRandomArtifact(game, game.mode)
+    const newArtifact = await getRandomArtifact(game, game.mode);
     const newGame = {
       ...game,
       round: game.round + 1,
@@ -167,29 +334,61 @@ export const GameProvider = ({ children }) => {
           round: game.round + 1,
           artifactId: newArtifact._id,
           artifact: newArtifact,
-          guessed: false
+          guessed: false,
+          timedOut: false // Reset timedOut status for the new round
         }
       ]
+    };
+
+    updateGame(newGame);
+  };
+
+  // Modified to accept timer setting
+  const startNewGame = ({ mode, timer }) => {
+    setLoading(true);
+    setIsTimerActive(false); // Ensure timer is off
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
+    setSelectedCountry(null);
+    setSelectedDate(modes[mode]?.type === 'Era' ? ((modes[mode].start + modes[mode].end) / 2) : 0);
+    setSelectedTimer(timer); // Update the timer state for the new game
+    setCountdown(timer); // Reset countdown display
+    setImagesReadyForTimer(false); // Reset image readiness for new game
 
-    updateGame(newGame)
-  }
+    // Pass mode and timer in the newGameSettings object
+    updateGame({ ...game, ongoing: false }, true, { newMode: mode, newTimer: timer });
+  };
 
-  const startNewGame = ({ mode }) => {
-    setLoading(true)
-    setSelectedCountry(null)
-    setSelectedDate(modes[mode]?.type === 'Era' ? ((modes[mode].start + modes[mode].end) / 2) : 0)
-    updateGame({ ...game, ongoing: false }, true, mode)
-  }
+  // Function to be called from GameSummary to set the timer for the *next* game
+  const handleSetSelectedTimer = (timerValue) => {
+      setSelectedTimer(timerValue);
+      // Persist choice for non-logged-in users immediately for next game start
+      if (user && !user.isLoggedIn) {
+          localStorage.setItem('timer', timerValue);
+      }
+      // For logged-in users, the timer setting will be saved when startNewGame is called.
+  };
 
-  const isViewingSummary = game?.isViewingSummary
+
+  const isViewingSummary = game?.isViewingSummary;
   const viewSummary = () => {
-    if (!user.isLoggedIn) axios.post('/api/games/noauth/log')
-    updateGame({ ...game, isViewingSummary: true })
-  }
+    // Clear timer when viewing summary
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    setIsTimerActive(false);
+
+    if (!user.isLoggedIn) axios.post('/api/games/noauth/log');
+    updateGame({ ...game, isViewingSummary: true });
+  };
 
   const handleArtifactLoadError = async () => {
-    setLoading(true)
+    console.error("Error loading artifact image, fetching a new one.");
+    setImagesReadyForTimer(false); // <-- Reset image readiness before fetching new
+    setLoading(true);
     const newArtifact = await getRandomArtifact(game, game.mode)
     const newGame = {
       ...game,
@@ -213,23 +412,30 @@ export const GameProvider = ({ children }) => {
   }
 
   const nextStepKey = useCallback(() => {
-    const isLastRound = game?.round === game?.rounds
+    const isLastRound = game?.round === game?.rounds;
+    const currentRoundData = game?.roundData?.find(r => r.round === game.round);
+    const isGuessedOrTimedOut = currentRoundData?.guessed || currentRoundData?.timedOut;
 
-    if (guessed) {
+    if (isGuessedOrTimedOut) {
       if (isLastRound) {
-        if (isViewingSummary) startNewGame()
-        else viewSummary()
-      } else startNextRound()
-    } else makeGuess()
+        // On summary screen, Enter/Space starts a new game with current settings
+        if (isViewingSummary) startNewGame({ mode: game.mode, timer: game.selectedTimer });
+        else viewSummary(); // Show summary after last round guess/timeout
+      } else {
+        startNextRound(); // Start next round if not the last one
+      }
+    } else {
+      makeGuess(); // Make guess if not already guessed or timed out
+    }
   }, [
     game,
+    game, // Full game state needed for mode/timer on new game start
     makeGuess,
     startNextRound,
-    guessed,
     isViewingSummary,
     viewSummary,
-    startNewGame
-  ])
+    startNewGame // startNewGame now uses game state for settings
+  ]);
 
   useHotkeys(
     ['enter', 'space'],
@@ -250,16 +456,25 @@ export const GameProvider = ({ children }) => {
       selectedCountry,
       setSelectedCountry,
       artifact,
-      guessed,
+      guessed, // Keep original guessed state if needed elsewhere
+      timedOut, // Expose timedOut status
       makeGuess,
       startNextRound,
-      startNewGame,
+      startNewGame, // Updated startNewGame
       loading,
-      setLoading,
+      setLoading, // Keep setLoading if used by Game.js for image loading
       viewSummary,
       isViewingSummary,
       nextStepKey,
-      handleArtifactLoadError
+      handleArtifactLoadError,
+      // Timer related context values
+      selectedTimer, // The setting for the *next* game
+      handleSetSelectedTimer, // Function to set the timer for the next game
+      countdown, // Current countdown value
+      isTimerActive, // Boolean indicating if timer is running
+      // Image readiness state and setter
+      imagesReadyForTimer,
+      setImagesReadyForTimer
     }}>
       {children}
     </GameContext.Provider>

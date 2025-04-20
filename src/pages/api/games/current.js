@@ -12,11 +12,16 @@ const current = async (req, res) => {
 
   // If an ongoing game does not exist, create a new one
   if (!game) {
-    const artifact = await getRandomArtifact(user.currentMode || 'Balanced')
+    // Fetch the first artifact using the user's preferred mode
+    const artifact = await getRandomArtifact(user.currentMode || 'Balanced');
+    // Get the user's preferred timer setting (ensure it's stored on the user document)
+    // Use null if undefined or explicitly null on the user doc
+    const preferredTimer = (user.currentTimer !== undefined && user.currentTimer !== null) ? user.currentTimer : null;
 
     const newGame = {
       startedAt: new Date(),
       userId: user._id.toString(),
+      selectedTimer: preferredTimer, // <-- Add selectedTimer here
       ongoing: true,
       round: 1,
       rounds: 5,

@@ -130,10 +130,11 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
                 </div>
               </div>
             )}
-            <div className='relative'>
+            <div className='relative h-full'>
               {!loadingComplete && <LoadingArtifact className='absolute' />}
               <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
                 <ImageView
+                  revealImage
                   imgs={a.images.external}
                   loadingComplete={loadingComplete}
                   setLoadingComplete={bounds => {
@@ -437,27 +438,75 @@ export const defaultMapValue = {
   translation: { x: 0, y: 0 }
 }
 
-export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError }) => {
+// Added onImageLoaded and revealImage props for multiplayer sync
+// Added onAllImagesLoaded for single-player "all loaded" signal
+export const ImageView = ({
+  imgs,
+  setLoadingComplete, // For layout adjustments
+  onError,
+  onImageLoaded, // For multiplayer server emit
+  revealImage, // For multiplayer server signal
+  onAllImagesLoaded // For single-player signal
+}) => {
   const [ref, bounds] = useMeasure()
-  const [loaded, setLoaded] = useState(0)
+  const [loadedCount, setLoadedCount] = useState(0)
   const [errorImgs, setErrorImgs] = useState([])
+  const [imageLoadEventSent, setImageLoadEventSent] = useState(false); // Multiplayer flag
+  const [allLoaded, setAllLoaded] = useState(false); // Single-player flag/state
 
-  const renderImgs = imgs.filter(img => !errorImgs.includes(img))
+  const renderImgs = imgs?.filter(img => !errorImgs.includes(img)) || [];
+  const totalImages = renderImgs.length;
 
+  // Reset state when images change (new round)
   useEffect(() => {
-    if (bounds && renderImgs?.length === loaded && setLoadingComplete) {
-      setLoadingComplete(bounds)
+    setLoadedCount(0);
+    setErrorImgs([]);
+    setImageLoadEventSent(false);
+    setAllLoaded(false); // Reset all loaded state
+  }, [imgs]); // Dependency on imgs array reference
+
+  // Effect to handle completion
+  useEffect(() => {
+    // Ensure we have images and all have attempted to load (success or error)
+    if (totalImages > 0 && (loadedCount + errorImgs.length) === totalImages) {
+      // Call setLoadingComplete for layout adjustments (can be called multiple times if bounds change)
+      setLoadingComplete && setLoadingComplete(bounds);
+
+      // Set internal state for single-player opacity transition
+      setAllLoaded(true);
+      // Call single-player callback if provided
+      onAllImagesLoaded && onAllImagesLoaded();
+
+      // Multiplayer: Only call onImageLoaded (server emit) ONCE per image set load
+      if (!imageLoadEventSent) {
+        onImageLoaded && onImageLoaded(); // Signal multiplayer server
+        setImageLoadEventSent(true); // Prevent re-emitting
+      }
     }
-  }, [loaded, renderImgs, bounds])
+    // Dependencies: counts, total, bounds, callbacks
+  }, [loadedCount, errorImgs.length, totalImages, bounds, setLoadingComplete, onAllImagesLoaded, onImageLoaded, imageLoadEventSent]);
 
+  // Effect to handle all images failing
   useEffect(() => {
-    if (imgs?.length === errorImgs.length) {
+    if (imgs?.length > 0 && imgs.length === errorImgs.length) {
       onError && onError()
     }
-  }, [imgs, errorImgs])
+  }, [imgs, errorImgs, onError])
+
+  // Determine opacity: Use internal `allLoaded` state for single-player,
+  // fallback to `revealImage` prop for multiplayer if `onAllImagesLoaded` isn't provided.
+  const containerOpacity = onAllImagesLoaded ? (allLoaded ? 1 : 0) : (revealImage ? 1 : 0);
 
   return (
-    <div ref={ref} css={{ padding: 32 }}>
+    // Apply opacity and transition to the container
+    <div
+      ref={ref}
+      css={{
+        padding: 32,
+        opacity: containerOpacity,
+        transition: 'opacity 0.5s ease-in-out', // Smooth transition
+      }}
+    >
       <MasonryLayout
         gutter={0}
         breaks={{
@@ -473,12 +522,14 @@ export const ImageView = ({ imgs, setLoadingComplete, loadingComplete, onError }
             key={img}
             src={img}
             css={{
-              opacity: (loadingComplete || !setLoadingComplete) ? 1 : 0,
+              // Individual image display is handled by Masonry, hide only if error
               display: errorImgs.includes(img) ? 'none' : 'block',
+              // Opacity is now handled by the parent div
             }}
-            onLoad={() => setLoaded(l => l + 1)}
+            onLoad={() => setLoadedCount(l => l + 1)}
             onError={() => {
-              setErrorImgs(ei => [...ei, img])
+              // Avoid adding duplicates if onError fires multiple times for the same image
+              setErrorImgs(ei => ei.includes(img) ? ei : [...ei, img]);
             }}
           />
         ))}

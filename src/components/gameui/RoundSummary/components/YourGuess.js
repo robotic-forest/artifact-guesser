@@ -20,13 +20,14 @@ export const YourGuess = ({ artifact, selectedDate, selectedCountry, datePoints,
           className='p-[0px_4px] rounded text-black flex w-[fit-content]'
           css={{ background: calcColors(datePoints) }}
         >
-          {Math.abs(selectedDate)} {selectedDate > 0 ? 'AD' : 'BC'}
+          
+          {isNaN(selectedDate) ? 'No guess' : `${Math.abs(selectedDate)} ${selectedDate > 0 ? 'AD' : 'BC'}`}
         </div>
         <div
           className='p-[0px_4px] rounded text-black mt-1 w-[fit-content]'
           css={{ background: calcColors(countryPoints) }}
         >
-          {selectedCountry}
+          {selectedCountry || 'No guess'}
         </div>
       </div>
 

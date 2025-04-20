@@ -1,16 +1,17 @@
-export const ModeButton = ({ mode, onClick, className }) => {
+export const ModeButton = ({ mode, onClick, className, css }) => {
   const { color, description } = modes[mode]
 
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-start px-2 py-1 text-lg rounded-lg border-4 border-white/40 ${className}`}
+      className={`flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg border-4 border-white/40 ${className}`}
       css={{
         background: color,
         color: 'black',
         '&:hover': {
           filter: 'brightness(1.15)'
-        }
+        },
+        ...css
       }}
     >
       <b>{mode}</b>

@@ -49,21 +49,30 @@ export const Range = forwardRef(({ width, style, inputStyle, ...props }, ref) =>
 
 const InputStyles = styled.div`
   position: relative;
+  top: 5px;
   width: ${p => p.width};
+  // Add styles for disabled state
+  opacity: ${p => p.disabled ? 0.7 : 1};
+  cursor: ${p => p.disabled ? 'not-allowed' : 'default'};
 
   input[type=range] {
+    cursor: ${p => p.disabled ? 'not-allowed' : 'pointer'}; // Cursor for the input itself
     -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
     width: ${p => p.width}; /* Specific width is required for Firefox. */
     background: transparent; /* Otherwise white in Chrome */
     position: relative;
-    top: -5px;
+    /* Adjust height and vertical position to cover the visual track */
+    height: 20px; 
+    top: -8px; 
+    margin: 0; /* Reset margin */
+    padding: 0; /* Reset padding */
   }
 
   div#track {
     width: ${p => p.width}; /* Specific width is required for Firefox. */
     background: transparent; /* Otherwise white in Chrome */
     position: absolute;
-    top: -1px;
+    top: -2px;
     z-index: 0;
     height: 10px;
     border-bottom: 1px solid white;
@@ -76,7 +85,7 @@ const InputStyles = styled.div`
       height: 7px;
       width: 7px;
       border-radius: 50%;
-      background: var(--textColor);
+      background: white;
     }
 
     &::before {
@@ -94,8 +103,8 @@ const InputStyles = styled.div`
     height: 15px;
     width: 15px;
     border-radius: 50px;
-    background: var(--backgroundColor);
-    border: 1px solid var(--textColor);
+    background: black;
+    border: 1px solid white;
     cursor: pointer;
     box-shadow: 0 0 0 1px transparent;
     margin: 0 0px 0 1px;
@@ -104,8 +113,16 @@ const InputStyles = styled.div`
     top: 3px;
 
     &:hover {
-      background: #424242;
+      // Prevent hover effect when disabled
+      background: ${p => p.disabled ? 'var(--backgroundColor)' : '#424242'};
     }
+  }
+
+  // Style thumb when disabled
+  input[type=range]:disabled::-webkit-slider-thumb {
+    background: #aaa; // Grey out thumb
+    border-color: #888;
+    cursor: not-allowed;
   }
 
   input[type=range]::-webkit-slider-runnable-track {
@@ -128,4 +145,9 @@ const InputStyles = styled.div`
     border-color: transparent;
     color: transparent;
   }
+
+  // Style track when disabled (optional, might just rely on overall opacity)
+  // div#track {
+  //   opacity: ${p => p.disabled ? 0.5 : 1};
+  // }
 `

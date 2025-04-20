@@ -2,6 +2,11 @@ import axios from "axios"
 
 // Don't put server-side code here
 
+export const capitalizeFirstLetter = (string) => {
+  if (!string) return string;
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export const isBrowser = () => typeof window !== 'undefined'
 
 export const getUser = async req => {
