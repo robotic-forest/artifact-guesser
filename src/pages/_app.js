@@ -12,7 +12,7 @@ import io from "socket.io-client"
 
 const fetcher = url => axios.get(url).then(res => res.data)
 
-export const socket = io('http://localhost:9667', { withCredentials: false })
+export const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:9667', { withCredentials: false })
 
 export const theme =  {
   backgroundColor: '#000000',
