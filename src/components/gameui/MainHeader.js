@@ -76,7 +76,7 @@ export const MainHeader = () => {
         <LeaderBoard
           onClose={() => setLeaderBoardOpen(false)}
           mode={game?.mode}
-          timer={game?.timer}
+          timer={game?.selectedTimer}
           rounds={game?.rounds}
         />
       )}

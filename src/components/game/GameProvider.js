@@ -106,96 +106,117 @@ export const GameProvider = ({ children }) => {
   }, [user, game]) // Removed 'selectedTimer' from dependency array to avoid loop
 
   const updateGame = async (updatedGame, startNew, newGameSettings) => {
-    // Always update local state immediately for responsiveness
-    setGame(updatedGame);
-
     if (user?.isLoggedIn) {
-      // Include newMode and newTimer if provided in newGameSettings
-      const dbGame = { ...updatedGame, ...newGameSettings };
-      await axios.post('/api/games/edit', dbGame);
-      if (startNew) {
-        await mutate(); // Refetch game data after starting anew
+      // Prepare payload for the API, explicitly mapping settings
+      const payloadToSend = { ...updatedGame };
+      if (newGameSettings) {
+        if (newGameSettings.newMode !== undefined) payloadToSend.mode = newGameSettings.newMode;
+        // Explicitly map newTimer from settings to selectedTimer for the API
+        if (newGameSettings.newTimer !== undefined) payloadToSend.selectedTimer = newGameSettings.newTimer;
       }
+
+      try {
+        // Send the update to the backend
+        await axios.post('/api/games/edit', payloadToSend);
+
+        if (startNew) {
+          // If starting a new game, refetch the definitive state from the server.
+          // The useEffect watching 'data' will then call initGame -> setGame.
+          await mutate();
+        } else {
+          // For regular in-game updates (like guesses), update local state immediately
+          // for responsiveness. We assume the API call succeeded.
+          // Alternatively, use mutate() here too if the API returns the updated game.
+          setGame(payloadToSend); // Update local state with the data we intended to save
+        }
+      } catch (error) {
+        console.error("Error updating game:", error);
+        toast.error("Failed to save game progress.");
+        // Consider error handling, e.g., reverting local state if needed
+      }
+
     } else {
-      // Handle local storage for non-logged-in users
+      // --- Non-logged-in user logic ---
       if (startNew) {
         localStorage.removeItem('game');
         if (newGameSettings?.newMode) localStorage.setItem('mode', newGameSettings.newMode);
         // Persist timer setting for non-logged-in users when starting new game
-        if (newGameSettings?.newTimer !== undefined) localStorage.setItem('timer', newGameSettings.newTimer);
+        if (newGameSettings?.newTimer !== undefined) localStorage.setItem('timer', String(newGameSettings.newTimer)); // Store as string
         else localStorage.removeItem('timer'); // Clear if not set
         setGame(null); // Reset local state for new game
-        setSelectedTimer(newGameSettings?.newTimer !== undefined ? newGameSettings.newTimer : null); // Update timer state
+        // Ensure local timer state reflects the choice for the new game
+        setSelectedTimer(newGameSettings?.newTimer !== undefined ? newGameSettings.newTimer : null);
       } else {
         // Update existing game in local storage
         localStorage.setItem('game', JSON.stringify(updatedGame));
+        setGame(updatedGame); // Update local state
       }
     }
   };
 
 
-    // --- Timer Logic ---
+  // --- Timer Logic ---
 
-    useEffect(() => {
-      // Clear any existing interval when dependencies change
+  useEffect(() => {
+    // Clear any existing interval when dependencies change
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+
+    const currentRoundData = game?.roundData?.find(r => r.round === game.round);
+    const timerDuration = game?.selectedTimer; // Use timer from game state
+
+    // Conditions to start the timer:
+    // 1. Timer duration is set (not null)
+    // 2. Game is loaded (not loading)
+    // 3. Current round exists and is not guessed/timedOut
+    // 4. Timer is not already active (prevent multiple intervals)
+    // 5. Images are ready (for timed mode)
+    const shouldStartTimer = timerDuration !== null &&
+                              // !loading && // REMOVED: Initial loading shouldn't block timer once images are ready
+                              currentRoundData &&
+                              !currentRoundData.guessed &&
+                              !currentRoundData.timedOut &&
+                              !isTimerActive &&
+                              imagesReadyForTimer; // <-- New condition
+
+    if (shouldStartTimer) {
+      console.log(`[Timer] Starting timer for round ${game.round}. Duration: ${timerDuration}s. Images ready.`);
+      setCountdown(timerDuration); // Initialize countdown
+      setIsTimerActive(true);
+
+      timerIntervalRef.current = setInterval(() => {
+        setCountdown(prevCountdown => {
+          if (prevCountdown === null || prevCountdown <= 1) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+            setIsTimerActive(false);
+            console.log(`[Timer] Timeout for round ${game.round}`);
+            handleTimeout(); // Handle timeout
+            return 0;
+          }
+          return prevCountdown - 1;
+        });
+      }, 1000);
+    } else {
+        // Ensure timer is marked as inactive if conditions aren't met
+        if (isTimerActive) {
+          console.log("[Timer] Conditions not met or round ended, ensuring timer is inactive.");
+          setIsTimerActive(false);
+        }
+    }
+
+    // Cleanup function to clear interval on component unmount or before effect re-runs
+    return () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
+        console.log("[Timer] Cleanup: Interval cleared.");
       }
-
-      const currentRoundData = game?.roundData?.find(r => r.round === game.round);
-      const timerDuration = game?.selectedTimer; // Use timer from game state
-
-      // Conditions to start the timer:
-      // 1. Timer duration is set (not null)
-      // 2. Game is loaded (not loading)
-      // 3. Current round exists and is not guessed/timedOut
-      // 4. Timer is not already active (prevent multiple intervals)
-      // 5. Images are ready (for timed mode)
-      const shouldStartTimer = timerDuration !== null &&
-                               // !loading && // REMOVED: Initial loading shouldn't block timer once images are ready
-                               currentRoundData &&
-                               !currentRoundData.guessed &&
-                               !currentRoundData.timedOut &&
-                               !isTimerActive &&
-                               imagesReadyForTimer; // <-- New condition
-
-      if (shouldStartTimer) {
-        console.log(`[Timer] Starting timer for round ${game.round}. Duration: ${timerDuration}s. Images ready.`);
-        setCountdown(timerDuration); // Initialize countdown
-        setIsTimerActive(true);
-
-        timerIntervalRef.current = setInterval(() => {
-          setCountdown(prevCountdown => {
-            if (prevCountdown === null || prevCountdown <= 1) {
-              clearInterval(timerIntervalRef.current);
-              timerIntervalRef.current = null;
-              setIsTimerActive(false);
-              console.log(`[Timer] Timeout for round ${game.round}`);
-              handleTimeout(); // Handle timeout
-              return 0;
-            }
-            return prevCountdown - 1;
-          });
-        }, 1000);
-      } else {
-         // Ensure timer is marked as inactive if conditions aren't met
-         if (isTimerActive) {
-            console.log("[Timer] Conditions not met or round ended, ensuring timer is inactive.");
-            setIsTimerActive(false);
-         }
-      }
-
-      // Cleanup function to clear interval on component unmount or before effect re-runs
-      return () => {
-        if (timerIntervalRef.current) {
-          clearInterval(timerIntervalRef.current);
-          timerIntervalRef.current = null;
-          console.log("[Timer] Cleanup: Interval cleared.");
-        }
-      };
-      // Dependencies: game round, guessed status, selectedTimer from game state, AND image readiness
-    }, [game?.round, game?.selectedTimer, game?.roundData, imagesReadyForTimer]); // REMOVED loading from dependencies
+    };
+    // Dependencies: game round, guessed status, selectedTimer from game state, AND image readiness
+  }, [game?.round, game?.selectedTimer, game?.roundData, imagesReadyForTimer]); // REMOVED loading from dependencies
 
 
   // --- End Timer Logic ---
