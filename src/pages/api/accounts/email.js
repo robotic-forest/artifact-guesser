@@ -14,10 +14,6 @@ async function accountEmail(req, res) {
     if (req.body.test && a.username !== 'protocodex') return
 
     console.log(`Sending email to ${a.username} (${a.email})`)
-    if (req.body.test) {
-      console.log(`Test email to ${a.username} (${a.email}), not sending.`)
-      return
-    }
 
     sendEmail({
       email: a.email,
