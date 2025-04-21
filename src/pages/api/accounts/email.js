@@ -10,9 +10,8 @@ async function accountEmail(req, res) {
   const db = await initDB()
   const accounts = await db.collection('accounts').find().toArray()
 
-  for (const a of accounts) {
-    if (req.body.test && a.username !== 'protocodex') continue
-
+  await Promise.all(accounts.map(async (a) => {
+    if (req.body.test && a.username !== 'protocodex') return
     console.log(`Sending email to ${a.username} (${a.email})`)
 
     await sendEmail({
@@ -25,7 +24,7 @@ async function accountEmail(req, res) {
         Name: "Artifact Guesser"
       }
     })
-  }
+  }))
 
   res.send({ success: true })
 }
