@@ -41,6 +41,9 @@ export const sendEmail = async ({ email, name, subject, html, bcc = [], noBcc, f
     ]
   }
 
+  console.log(body)
+  console.log('Sending...')
+
   const request = mailjet
     .post("send", { version: 'v3.1' })
     .request(body)
