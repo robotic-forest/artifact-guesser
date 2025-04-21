@@ -10,12 +10,12 @@ async function accountEmail(req, res) {
   const db = await initDB()
   const accounts = await db.collection('accounts').find().toArray()
 
-  accounts.forEach(a => {
-    if (req.body.test && a.username !== 'protocodex') return
+  for (const a of accounts) {
+    if (req.body.test && a.username !== 'protocodex') continue
 
     console.log(`Sending email to ${a.username} (${a.email})`)
 
-    sendEmail({
+    await sendEmail({
       email: a.email,
       subject: req.body.subject,
       html: renderHtml(req.body.message, a.username),
@@ -25,7 +25,7 @@ async function accountEmail(req, res) {
         Name: "Artifact Guesser"
       }
     })
-  })
+  }
 
   res.send({ success: true })
 }
