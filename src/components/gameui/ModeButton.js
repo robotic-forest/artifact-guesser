@@ -1,22 +1,45 @@
+import Image from 'next/image'; // Import the Next.js Image component
+import { useState } from 'react';
+
 export const ModeButton = ({ mode, onClick, className, css }) => {
   const { color, description } = modes[mode]
+  const isEaNasirMode = mode === 'Ea Nasir Mode';
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg border-4 border-white/40 ${className}`}
-      css={{
-        background: color,
-        color: 'black',
-        '&:hover': {
-          filter: 'brightness(1.15)'
-        },
-        ...css
-      }}
-    >
-      <b>{mode}</b>
-      {description && <div className='text-sm'>{description}</div>}
-    </button>
+    <div className="relative">
+      {/* Ea Nasir Image - Conditionally render only for the specific mode */}
+      {isEaNasirMode && (
+        <Image
+          src="/ea-nasir-cropped.png"
+          alt="A small figure of Ea-Nasir"
+          width={120} // Adjust size as needed
+          height={120} // Adjust size as needed
+          className="ea-nasir-image absolute right-[30px] transition-top duration-300 ease-in-out pointer-events-none" // Positioning, transition, initial state, REMOVED z-10
+          style={{ top: hovered ? '-90px' : '-75px' }} // Adjust the top position on hover
+          unoptimized // If the image is static and doesn't need Next.js optimization
+        />
+      )}
+      <button
+        onClick={onClick}
+        className={`relative flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg border-4 border-white/40 ${className}`} // Added relative and overflow-hidden
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        css={{
+          background: color,
+          color: 'black',
+          '&:hover': {
+            filter: 'brightness(1.15)'
+          },
+          ...css
+        }}
+      >
+        <div>
+          <b>{mode}</b>
+          {description && <div className='text-sm'>{description}</div>}
+        </div>
+      </button>
+    </div>
   )
 }
 
@@ -33,6 +56,10 @@ export const modes = {
   'Balanced': {
     color: '#8ed2b9',
     description: 'Equal chance of highlights and random artifacts.'
+  },
+  'Ea Nasir Mode': {
+    color: '#D2691E', // Copper color
+    description: 'Can you tell if these copper artifacts are of inferior quality?'
   },
 
   // Continent Modes

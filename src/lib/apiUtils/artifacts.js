@@ -34,6 +34,10 @@ const getArtifactRecursive = async (mode, db) => {
     criteria['time.start'] = { $lte: modeInfo.end }
     criteria['time.end'] = { $gte: modeInfo.start }
   }
+  if (mode === 'Ea Nasir Mode') {
+    // Case-insensitive regex search for "copper" in the medium field
+    criteria['medium'] = { $regex: /copper/i }
+  }
 
   const artifact = (await db.collection('artifacts').aggregate([
     { $match: criteria },
