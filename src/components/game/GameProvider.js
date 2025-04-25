@@ -113,10 +113,12 @@ export const GameProvider = ({ children }) => {
       // Prepare payload for the API, explicitly mapping settings
       const payloadToSend = { ...updatedGame };
       if (newGameSettings) {
-        if (newGameSettings.newMode !== undefined) payloadToSend.mode = newGameSettings.newMode;
+        if (newGameSettings.newMode !== undefined) payloadToSend.newMode = newGameSettings.newMode;
         // Explicitly map newTimer from settings to selectedTimer for the API
         if (newGameSettings.newTimer !== undefined) payloadToSend.selectedTimer = newGameSettings.newTimer;
       }
+
+      console.log({ payloadToSend })
 
       try {
         // Send the update to the backend
