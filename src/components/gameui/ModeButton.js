@@ -1,5 +1,6 @@
 import Image from 'next/image'; // Import the Next.js Image component
 import { useState } from 'react';
+import { EaNasirSplash } from '../splash/EaNasirSplash';
 
 export const ModeButton = ({ mode, onClick, className, css }) => {
   const { color, description } = modes[mode]
@@ -59,7 +60,9 @@ export const modes = {
   },
   'Ea Nasir Mode': {
     color: '#D2691E', // Copper color
-    description: 'Can you tell if these copper artifacts are of inferior quality?'
+    description: 'Can you tell if these copper artifacts are of inferior quality?',
+    splash: EaNasirSplash
+    // splashDuration removed
   },
 
   // Continent Modes

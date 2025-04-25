@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, useRef } from "react" // Added useRef
+import { createContext, useCallback, useContext, useEffect, useState, useRef, createElement } from "react" // Added useRef and createElement
 import useUser from "../../hooks/useUser"
 import axios from "axios"
 import { convertCountries } from "@/lib/artifactUtils"
@@ -32,6 +32,9 @@ export const GameProvider = ({ children }) => {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [imagesReadyForTimer, setImagesReadyForTimer] = useState(false); // New state for image readiness
   const timerIntervalRef = useRef(null); // Ref to store interval ID
+  // --- Splash Screen State ---
+  const [splashToShow, setSplashToShow] = useState(null); // Component type for splash
+  const [actualStartGameFunction, setActualStartGameFunction] = useState(null); // Function to run after splash
 
   const { data, mutate } = useSWR(user?.isLoggedIn && '/api/games/current')
 
@@ -153,6 +156,16 @@ export const GameProvider = ({ children }) => {
       }
     }
   };
+
+
+  // --- Splash Screen Logic ---
+  const startGameFromSplash = useCallback(() => {
+    if (actualStartGameFunction) {
+      actualStartGameFunction(); // Execute the stored game start logic
+    }
+    setSplashToShow(null); // Clear the splash
+    setActualStartGameFunction(null); // Clear the stored function
+  }, [actualStartGameFunction]);
 
 
   // --- Timer Logic ---
@@ -343,23 +356,44 @@ export const GameProvider = ({ children }) => {
     updateGame(newGame);
   };
 
-  // Modified to accept timer setting
-  const startNewGame = ({ mode, timer }) => {
-    setLoading(true);
-    setIsTimerActive(false); // Ensure timer is off
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-    setSelectedCountry(null);
-    setSelectedDate(modes[mode]?.type === 'Era' ? ((modes[mode].start + modes[mode].end) / 2) : 0);
-    setSelectedTimer(timer); // Update the timer state for the new game
-    setCountdown(timer); // Reset countdown display
-    setImagesReadyForTimer(false); // Reset image readiness for new game
+  // Modified to accept timer setting AND handle splash screens
+  const startNewGame = useCallback(({ mode, timer }) => {
+    const modeDefinition = modes[mode];
 
-    // Pass mode and timer in the newGameSettings object
-    updateGame({ ...game, ongoing: false }, true, { newMode: mode, newTimer: timer });
-  };
+    // Define the core logic for starting a new game
+    const coreNewGameLogic = async () => {
+      setLoading(true);
+      setIsTimerActive(false); // Ensure timer is off
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      setSelectedCountry(null);
+      setSelectedDate(modes[mode]?.type === 'Era' ? ((modes[mode].start + modes[mode].end) / 2) : 0);
+      setSelectedTimer(timer); // Update the timer state for the new game
+      setCountdown(timer); // Reset countdown display
+      setImagesReadyForTimer(false); // Reset image readiness for new game
+
+      // Pass mode and timer in the newGameSettings object
+      // This triggers the useEffect that fetches/creates the game
+      updateGame({ ...game, ongoing: false }, true, { newMode: mode, newTimer: timer });
+    };
+
+    // Check if the selected mode has a splash screen
+    if (modeDefinition?.splash) {
+      console.log(`[Splash] Mode '${mode}' has a splash screen. Setting up splash.`);
+      // Store the core logic to be executed later
+      setActualStartGameFunction(() => coreNewGameLogic);
+      // Set the splash component to be displayed
+      setSplashToShow(() => modeDefinition.splash); // Store the component type
+      // Do NOT execute coreNewGameLogic immediately
+    } else {
+      console.log(`[Splash] Mode '${mode}' does not have a splash screen. Starting game directly.`);
+      // No splash screen, execute the core logic directly
+      coreNewGameLogic();
+    }
+  }, [game, updateGame]); // Added dependencies: game, updateGame
+
 
   // Function to be called from GameSummary to set the timer for the *next* game
   const handleSetSelectedTimer = (timerValue) => {
@@ -474,7 +508,10 @@ export const GameProvider = ({ children }) => {
       isTimerActive, // Boolean indicating if timer is running
       // Image readiness state and setter
       imagesReadyForTimer,
-      setImagesReadyForTimer
+      setImagesReadyForTimer,
+      // Splash screen context values
+      splashToShow,
+      startGameFromSplash
     }}>
       {children}
     </GameContext.Provider>
