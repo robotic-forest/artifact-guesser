@@ -118,8 +118,6 @@ export const GameProvider = ({ children }) => {
         if (newGameSettings.newTimer !== undefined) payloadToSend.selectedTimer = newGameSettings.newTimer;
       }
 
-      console.log({ payloadToSend })
-
       try {
         // Send the update to the backend
         await axios.post('/api/games/edit', payloadToSend);
