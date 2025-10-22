@@ -11,9 +11,19 @@ export const BuyMerch = ({ artifact, style, className }) => {
 
   console.log(window.location, artifact)
 
+  const handleClick = () => {
+    if (images.length === 1) {
+      const img = images[0]
+      const href = `http://protocodex.com/merch-gen?media-url=${encodeURIComponent(img)}&qr-link=${encodeURIComponent(`${window.location.origin}/artifacts/${artifact._id}`)}&text=${artifact.name}`
+      window.open(href, '_blank', 'noopener,noreferrer')
+      return
+    }
+    setOpen(true)
+  }
+
   return (
     <div css={style} className={className}>
-      <Button onClick={() => setOpen(true)} css={{
+      <Button onClick={handleClick} css={{
         background: 'var(--primaryColor)',
         '&:hover': {
           background: 'var(--primaryColorLight)',
