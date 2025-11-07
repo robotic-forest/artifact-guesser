@@ -21,6 +21,7 @@ import useMeasure from "react-use-measure"
 import { Artifact3D } from "../art/Artifact3D"
 import { Immersive2D } from "./components/Immersive2D"
 import { Immersive3D } from "./components/Immersive3D"
+import { BuyMerch } from "./components/BuyMerch"
 
 export const Artifact = ({ artifact: a, roundSummary }) => {
   const [ref, bounds] = useMeasure()
@@ -85,7 +86,7 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
     <div className='flex flex-col min-h-screen'>
       <div>
         <div
-          className='flex flex-wrap w-full min-h-[500px] bg-black relative'
+          className='flex flex-wrap w-full min-h-[500px] bg-black relative overflow-hidden'
           css={{
             height: is3D ? '40vh' : immersive ? '90vh' : '50vh',
           }}
@@ -162,31 +163,32 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
             </div>
           </div>
 
-          <div className='absolute bottom-1 right-1 z-10 flex items-center' css={{
-            ...(roundSummary ? { left: 4 } : { right: 4 })
+          <div className='absolute pb-1 pr-1 bottom-0 left-0 z-10 flex items-end w-[fit-content]' css={{
+            ...(roundSummary ? { paddingLeft: 4 } : { paddingRight: 4 })
           }}>
-            <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
-              {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
-            </div>
-            <IconButton tooltip='Reset View' onClick={() => setValue(defaultMapValue)} css={{
-              background: 'black',
-              color: 'white',
-              border: '1px solid #ffffff55',
-              '&:hover': {
-                background: '#343434',
-                color: 'white'
-              },
-              outline: 0
-            }}>
-              <BiRefresh />
-            </IconButton>
+            <BuyMerch artifact={a} className='ml-2 mb-2' type='babel' />
+            {/* <div className='flex items-center'>
+              <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
+                {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
+              </div>
+              <IconButton tooltip='Reset View' onClick={() => setValue(defaultMapValue)} css={{
+                background: 'black',
+                color: 'white',
+                border: '1px solid #ffffff55',
+                '&:hover': {
+                  background: '#343434',
+                  color: 'white'
+                },
+                outline: 0
+              }}>
+                <BiRefresh />
+              </IconButton>
+            </div> */}
           </div>
 
-          {roundSummary && (
-            <div className='absolute bottom-1 right-1 z-10' css={themeCSS(theme)}>
+            <div className='absolute bottom-1 right-1 z-10 flex items-end' css={themeCSS(theme)}>
               {roundSummary}
             </div>
-          )}
         </div>
 
         <div className='grid grid-cols-[3fr_2fr] w-full h-full flex-grow' css={{

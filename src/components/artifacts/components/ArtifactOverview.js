@@ -7,7 +7,6 @@ import { IconButton } from "@/components/buttons/IconButton"
 import { FaRedditAlien } from "react-icons/fa"
 import toast from "react-hot-toast"
 import { IoCheckmarkSharp } from "react-icons/io5"
-import { BuyMerch } from "./BuyMerch"
 
 export const ArtifactOverview = ({ artifact, style }) => {
   const { updateArtifact } = useArtifact({ artifact })
@@ -53,7 +52,6 @@ export const ArtifactOverview = ({ artifact, style }) => {
               {artifact.inPostQueue ? <IoCheckmarkSharp /> :  <FaRedditAlien />}
             </IconButton>
           )}
-          <BuyMerch artifact={artifact} className='mr-2' />
           <FavoritesToggle artifactId={artifact?._id} />
         </div>
       </div>
