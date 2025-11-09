@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
+import { keyframes } from '@emotion/react'
 import { Button } from '@/components/buttons/Button'
 import { Dialog } from '@/components/dialogs/Dialog'
 import { MasonryLayout } from '@/components/layout/MasonryLayout'
@@ -83,7 +84,7 @@ export const BuyMerch = ({ artifact, style, className, type, useImage }) => {
       )}
 
       {renderType === 'babel' && (
-        <BabelPreview onClick={handleClick} cyclingExternalImage={cyclingExternalImage} />
+        <BabelPreview onClick={handleClick} images={images} />
       )}
 
       <Dialog
@@ -151,16 +152,103 @@ function MerchPreview({ onClick, cyclingExternalImage }) {
   )
 }
 
-function BabelPreview({ onClick, cyclingExternalImage }) {
+function BabelPreview({ onClick, images }) {
   const size= 1
+  // Tweaks for shirt stream positioning and spacing
+  const shirtStartTop = 45            // raise/lower where shirts emerge (larger = lower)
+  const shirtLeftPx = -10               // how far left from center shirts start
+  const shirtRightPx = 70            // how far to travel to the right (larger = more spacing)
+  const shirtSizePx = size * 16       // shirt size (matches input image size above)
+  const shirtConcurrentCount = 4      // how many shirts visible at once
+  const shirtSpawnIntervalSec = 1.5  // time between shirt spawns (smaller = faster stream)
+  // Tweaks for input artwork stream (small images entering the building)
+  const inputStartLeft = '40%'        // horizontal position (stay centered-left)
+  const inputStartTop = -80           // initial vertical start
+  const inputEndTop = 40             // end height (between bg and fg)
+  const inputHeightPx = size * 24     // input image height
+  const inputDurationSec = 20         // animation duration for inputs (speed)
+  const inputSpawnIntervalSec = 2.0   // time between input spawns
+
+  const streamIn = keyframes`
+    0% {
+      top: ${inputStartTop}px;
+      opacity: 0;
+    }
+    12% {
+      opacity: 1;
+    }
+    30% {
+      top: ${inputEndTop}px;
+      opacity: 1;
+    }
+    99% {
+      top: ${inputEndTop}px;
+      opacity: 1;
+    }
+    100% {
+      top: ${inputEndTop}px;
+      opacity: 1;
+    }
+  `
+  const shirtStream = keyframes`
+    0% {
+      left: calc(50% - ${shirtLeftPx}px);
+      top: ${shirtStartTop}px;
+      opacity: 1;
+    }
+    20% {
+      left: calc(50% - ${shirtLeftPx}px);
+      top: ${shirtStartTop}px;
+      opacity: 1;
+    }
+    60% {
+      left: calc(50% - ${shirtLeftPx}px + ${shirtRightPx * 0.7}px);
+      top: ${shirtStartTop}px;
+      opacity: 0.8;
+    }
+    80% {
+      left: calc(50% - ${shirtLeftPx}px + ${shirtRightPx}px);
+      top: ${shirtStartTop}px;
+      opacity: 0.5;
+    }
+    100% {
+      left: calc(50% - ${shirtLeftPx}px + ${shirtRightPx * 1.2}px);
+      top: ${shirtStartTop}px;
+      opacity: 0;
+    }
+  `
+
+  // choose stable sources per trail so each image remains constant
+  const trailSources = useMemo(() => {
+    if (!images || images.length === 0) return []
+    // use all images for the stream
+    return images
+  }, [images])
+  // inputs: ensure continuous stream by rendering a fixed number of concurrent instances
+  const inputConcurrentCount = useMemo(() => {
+    return Math.max(1, Math.ceil(inputDurationSec / inputSpawnIntervalSec))
+  }, [inputDurationSec, inputSpawnIntervalSec])
+  const inputSources = useMemo(() => {
+    if (!trailSources.length) return []
+    return Array.from({ length: inputConcurrentCount }, (_, i) => trailSources[i % trailSources.length])
+  }, [trailSources, inputConcurrentCount])
+  const shirtDurationSec = useMemo(() => {
+    // exact multiple of spawn interval to keep a continuous stream
+    return shirtConcurrentCount * shirtSpawnIntervalSec
+  }, [shirtConcurrentCount, shirtSpawnIntervalSec])
+  // limit concurrent shirts but keep a continuous stream using constant spawn interval
+  const shirtSources = useMemo(() => {
+    if (!trailSources.length) return []
+    return Array.from({ length: shirtConcurrentCount }, (_, i) => trailSources[i % trailSources.length])
+  }, [trailSources, shirtConcurrentCount])
 
   return (
     <div className='flex items-center justify-center relative top-[35px]' onClick={onClick} css={{
       userSelect: 'none',
       cursor: 'pointer',
       position: 'relative',
-      '&:hover': { transform: 'translateY(-3px)', filter: 'brightness(1.2)' },
-      '&:hover .generate-text': { opacity: 1 },
+      '&:hover': { filter: 'brightness(1.2)' },
+      '&:hover .generate-text': { opacity: 1, top: '12px' },
       transition: 'transform 0.3s ease, filter 0.3s ease',
     }}>
       {/* <div className='absolute' css={{
@@ -177,44 +265,122 @@ function BabelPreview({ onClick, cyclingExternalImage }) {
 
 
 
-      <img src='/merch/babel.webp' css={{
+      <img src='/merch/babel-fg.webp' css={{
+        width: size * 100,
+        height: size * 100,
+        objectFit: 'cover',
+        zIndex: 4,
+        filter: 'drop-shadow(0 0 20px rgba(0,0,0,1))',
+      }} />
+      <img src='/merch/babel-bg.webp' className='absolute' css={{
         width: size * 100,
         height: size * 100,
         objectFit: 'cover',
         zIndex: 3,
-        filter: 'drop-shadow(0 0 20px rgba(0,0,0,1))',
+        filter: 'drop-shadow(0 0 20px rgba(0,0,0,1)) brightness(1.2)',
       }} />
 
-      {cyclingExternalImage && (
-        <img className='absolute' src={cyclingExternalImage} css={{
-          height: size * 44,
-          objectFit: 'cover',
-          left: '50%',
-          top: -size * 55,
-          transform: 'translateX(-50%)',
-          filter: 'brightness(1.2)',
-          border: '1px solid #ffffff',
-          boxShadow: '0 0 20px 5px rgba(0,0,0,0.7)',
-          zIndex: 3,
-        }} />
+      {inputSources.length > 0 && (
+        <>
+          {inputSources.map((src, i) => {
+            const durationSec = inputDurationSec
+            const staggerSec = inputSpawnIntervalSec
+            return (
+            <img
+              key={`input-${i}`}
+              className='absolute'
+              src={src}
+              css={{
+                height: inputHeightPx,
+                objectFit: 'cover',
+                left: inputStartLeft,
+                top: inputStartTop,
+                transform: 'translateX(-50%)',
+                filter: 'brightness(1.2)',
+                // border: '1px solid #ffffff',
+                zIndex: 3,
+                opacity: 1,
+                animation: `${streamIn} ${durationSec}s linear infinite`,
+                animationDelay: `-${i * staggerSec}s`,
+                animationFillMode: 'both',
+                willChange: 'left, top, opacity',
+              }}
+            />
+            )
+          })}
+        </>
       )}
 
       {/* hover text to the right */}
-      <div className='generate-text absolute text-nowrap' css={{
+      <div className='generate-text absolute text-nowrap flex items-center' css={{
         pointerEvents: 'none',
         zIndex: 4,
-        left: 'calc(50% + 60px)',
-        top: '65%',
+        left: 'calc(50% + 50px)',
+        top: '15%',
         transform: 'translateY(-50%)',
         opacity: 0,
-        transition: 'opacity 0.25s ease',
-        background: 'rgba(0,0,0)',
+        transition: 'all 0.45s ease',
         color: '#fff',
-        padding: '0 4px',
         fontSize: '12px'
       }}>
-        Generate Merch
+        <img src='/merch/moloch.webp' className='w-10 brightness-150 border border-cyan-500 invert' />
+        <div>
+          <div className='bg-black px-1'>Feed the <span className='text-red-500'>Capitalist Machine</span>!</div>
+          <div className='bg-black w-[min-content] px-1'>Buy this artifact as merch.</div>
+        </div>
       </div>
+
+      {/* Shirt stream emerging from the building center, moving right, then fading */}
+      {shirtSources.length > 0 && (
+        <>
+          {shirtSources.map((src, i) => {
+            const durationSec = shirtDurationSec
+            const staggerSec = shirtSpawnIntervalSec
+            return (
+              <div
+                key={`shirt-${i}`}
+                className='absolute'
+                css={{
+                  width: shirtSizePx,
+                  height: shirtSizePx,
+                  left: `calc(50% - ${shirtLeftPx}px)`,
+                  top: shirtStartTop,
+                  transform: 'translateX(-50%)',
+                  zIndex: 3,
+                  opacity: 0,
+                  animation: `${shirtStream} ${durationSec}s linear infinite`,
+                  animationDelay: `-${i * staggerSec}s`,
+                  animationFillMode: 'both',
+                  willChange: 'left, top, opacity',
+                }}
+              >
+                <img
+                  src='/merch/shirt.webp'
+                  css={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    filter: 'brightness(0.95)',
+                  }}
+                />
+                <img
+                  src={src}
+                  className='absolute'
+                  css={{
+                    width: '45%',
+                    height: '45%',
+                    objectFit: 'cover',
+                    left: '50%',
+                    top: '44%',
+                    transform: 'translate(-50%, -50%)',
+                    border: '1px solid #ffffff',
+                  }}
+                />
+              </div>
+            )
+          })}
+        </>
+      )}
     </div>
   )
 }

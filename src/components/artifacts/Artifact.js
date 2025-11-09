@@ -166,7 +166,7 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
           <div className='absolute pb-1 pr-1 bottom-0 left-0 z-10 flex items-end w-[fit-content]' css={{
             ...(roundSummary ? { paddingLeft: 4 } : { paddingRight: 4 })
           }}>
-            <BuyMerch artifact={a} className='ml-2 mb-2' type='babel' />
+            <BuyMerch artifact={a} className='relative left-[-15px] top-[-0px]' type='babel' />
             {/* <div className='flex items-center'>
               <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
                 {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}
