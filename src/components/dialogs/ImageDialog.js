@@ -101,7 +101,7 @@ export const ExpandedStyles = styled.div`
   width: 100vw;
   height: 100vh;
   min-height: 100vh;
-  min-height: -webkit-fill-available;
+  min-height: stretch;
 
   .meta-information-left {
     position: fixed;
@@ -158,7 +158,7 @@ export const ExpandedStyles = styled.div`
   @media (max-width: 500px), (min-aspect-ratio: 16/9) {
     width: 100%;
     min-height: 120vh;
-    min-height: -webkit-fill-available;
+    min-height: stretch;
     border-radius: 0;
   }
 `

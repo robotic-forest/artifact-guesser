@@ -136,6 +136,21 @@ export const BuyMerch = ({ artifact, style, className, type, useImage, babelSize
   )
 }
 
+// Exportable Merch component for external use (e.g., full-screen dialog)
+export const Merch = ({ images, artifact, size = 1.5, onClick, noHover = false }) => {
+  const resolvedImages = useMemo(() => {
+    if (Array.isArray(images) && images.length > 0) {
+      return images.map((it) => typeof it === 'string' ? it : (it?.src || it))
+    }
+    if (artifact?.images?.external?.length) return artifact.images.external
+    return []
+  }, [images, artifact])
+
+  return (
+    <Babel onClick={onClick} images={resolvedImages} size={size} noHover={noHover} />
+  )
+}
+
 function MerchPreview({ onClick, cyclingExternalImage }) {
   return (
     <div className='flex items-center justify-center' onClick={onClick} css={{
@@ -164,7 +179,7 @@ function MerchPreview({ onClick, cyclingExternalImage }) {
   )
 }
 
-function Babel({ onClick, images, size = 1 }) {
+function Babel({ onClick, images, size = 1.5, noHover = false }) {
   // Scale all pixel-based distances with `size` to keep proportions stable
   const shirtStartTop = 45 * size           // where shirts emerge (scaled)
   const shirtLeftPx = -10 * size            // how far left from center shirts start (scaled)
@@ -262,11 +277,11 @@ function Babel({ onClick, images, size = 1 }) {
   return (
     <div className='flex items-center justify-center relative' onClick={onClick} css={{
       userSelect: 'none',
-      cursor: 'pointer',
+      cursor: noHover ? 'default' : 'pointer',
       position: 'relative',
       top: containerTopOffsetPx,
-      '&:hover': { filter: 'brightness(1.2)' },
-      '&:hover .generate-text': { opacity: 1, top: `${hoverTextHoverTopPx}px` },
+      ...(noHover ? {} : { '&:hover': { filter: 'brightness(1.2)' } }),
+      ...(noHover ? {} : { '&:hover .generate-text': { opacity: 1, top: `${hoverTextHoverTopPx}px` } }),
       transition: 'transform 0.3s ease, filter 0.3s ease',
     }}>
       {/* <div className='absolute' css={{
@@ -329,7 +344,9 @@ function Babel({ onClick, images, size = 1 }) {
         </>
       )}
 
-      {/* hover text to the right */}
+      {!noHover && (
+        <>
+        {/* hover text to the right */}
       <div className='generate-text absolute text-nowrap flex items-center' css={{
         pointerEvents: 'none',
         zIndex: 4,
@@ -351,9 +368,11 @@ function Babel({ onClick, images, size = 1 }) {
         />
         <div className='ml-2 relative top-[-2px] font-mono'>
           <div className='bg-black'>Feed the <span className='text-red-500 font-bold'>Capitalist Machine</span>!</div>
-          <div className='bg-black w-[min-content]'>Buy this artifact as merch.</div>
+            <div className='bg-black w-[min-content]'>Buy this artifact as merch.</div>
+          </div>
         </div>
-      </div>
+        </>
+      )}
 
       {/* Shirt stream emerging from the building center, moving right, then fading */}
       {shirtSources.length > 0 && (

@@ -4,7 +4,7 @@ import { ArtifactInfo } from "../gameui/RoundSummary/components/ArtifactInfo"
 import { RoundScore } from "../gameui/RoundSummary/components/RoundScore"
 import { YourGuess } from "../gameui/RoundSummary/components/YourGuess"
 import { useGame } from "./GameProvider"
-import { useState } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import useUser from "@/hooks/useUser"
 import { SignupDialog } from "../dialogs/SignupDialog"
 import { Img } from "../html/Img"
@@ -29,6 +29,7 @@ import { createStyles } from "../GlobalStyles"
 import { MolochButton } from "../buttons/MolochButton"
 import { css } from "@emotion/react"
 import { GiTimeBomb } from "react-icons/gi"; // Added Timer Icon
+import { MoneyDialog } from "../art/Money"
 
 // Dynamically import AAAAAAConfetti
 const AAAAAAConfettiDynamic = dynamic(() => import('@/components/art/AAAAAAConfetti'), {
@@ -80,6 +81,30 @@ export const GameSummary = ({ game: playedGame }) => {
   // startNewGame is only available for the current game summary.
   const isPlayed = !startNewGame;
 
+  // Open merch dialog on load for single-player current game summaries
+  const isMultiplayer = game?.gameType === 'multiplayer'
+  const [merchOpen, setMerchOpen] = useState(false)
+  useEffect(() => {
+    if (!isPlayed && !isMultiplayer) {
+      setMerchOpen(true)
+    }
+  }, [isPlayed, isMultiplayer])
+
+  // Aggregate images from all rounds for richer merch stream
+  const merchImages = useMemo(() => {
+    const rounds = Array.isArray(game?.roundData) ? game.roundData : []
+    return rounds.flatMap(r => {
+      const externalImages = r?.artifact?.images?.external || []
+      const artifactId = r?.artifact?._id
+      const artifactName = r?.artifact?.name
+      return externalImages.map(img => ({
+        src: img,
+        artifactId,
+        artifactName
+      }))
+    })
+  }, [game?.roundData])
+
   // Pass timer state down only if it's the active game summary screen
   const gameScoreProps = isPlayed
     ? { game, isPlayed } // Viewing old summary, don't pass startNewGame or timer handlers
@@ -90,6 +115,7 @@ export const GameSummary = ({ game: playedGame }) => {
       padding: '56px 48px 48px 48px',
       '@media (max-width: 800px)': { padding: '64px 6px 6px 6px' },
     }}>
+      <MoneyDialog visible={merchOpen} onClose={() => setMerchOpen(false)} images={merchImages} />
       <Simulator
         top={<GameScore {...gameScoreProps} />}
         bottom={<RoundReview game={game} />}
@@ -228,7 +254,7 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
         )}
 
         {!isPlayed && !user?.isLoggedIn && (
-          <div className='mb-8 mt-3 text-center text-lg' css={{
+          <div className='mb-8 mt-3 text-center text-md' css={{
             '@media (max-width: 800px)': { margin: '0 0 8px 0' }
           }}>
             <GameButton
@@ -243,31 +269,19 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
             >
               <b>Sign Up</b>
             </GameButton>
-            to save your games, highscores, favorite artifacts, and boost the develepor's ego.
-            <div className='mt-2'>
-              Join our community on{' '}
-              <a href='https://discord.gg/MvkqPTdcwm' className='text-blue-300 hover:text-blue-500 hover:underline mx-1'>
-                Discord
-                <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
-              </a>{' '}and/or{' '}
-              <a href='https://reddit.com/r/artifactguesser' className='text-blue-300 hover:text-blue-500 hover:underline mx-1'>
-                Reddit
-                <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
-              </a>{' '}
-              for updates, feature requests, and to chat about the neat artifacts you find!
-            </div>
+            to save your games, highscores and favorite artifacts.
           </div>
         )}
 
-        {user?.isLoggedIn && !isPlayed && (
+        {/* {user?.isLoggedIn && !isPlayed && (
           <div className='w-full flex justify-center p-3 text-black'>
             <div className='my-3 p-2 pb-0 rounded w-[fit-content] inline-flex items-center flex-wrap justify-end'
             css={{ background: '#f1d18b' }}>
               <span className='mr-2 mb-2 pl-1'>
                 Want to help support this project?{' '}
-                All income goes toward development, server costs, and goat-treats.{' '}
+                All donations go toward development, server costs, and goat-treats.{' '}
               </span>
-              {/* <MolochButton
+              <MolochButton
                 variant='outlined'
                 onClick={() => setSupportOpen(true)}
                 style={{
@@ -277,7 +291,7 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
                 }}
               >
                 Learn more
-              </MolochButton> */}
+              </MolochButton>
               <Link href='https://ko-fi.com/protocodex' passHref target='_blank'>
                 <MolochButton
                   variant='outlined'
@@ -287,12 +301,30 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
                     color: 'black'
                   }}
                 >
-                  Learn more
+                  Visit KOFI Page
                 </MolochButton>
               </Link>
             </div>
           </div>
-        )}
+        )} */}
+
+        <div className='mb-6 text-center'>
+          Join our community on{' '}
+          <a href='https://discord.gg/MvkqPTdcwm' className='text-blue-300 hover:text-blue-500 hover:underline'>
+            Discord
+            <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
+          </a>,
+          check out my other projects:{' '}
+          <a href='https://protocodex.com' target='_blank' className='text-blue-300 hover:text-blue-500 hover:underline'>
+            Protocodex
+            <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
+          </a>,
+          follow me on{' '}
+          <a href='https://www.instagram.com/technomoloch/' target='_blank' className='text-blue-300 hover:text-blue-500 hover:underline'>
+            Instagram
+            <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
+          </a>
+        </div>
         
         {/* Only show game controls if startNewGame is available (i.e., not viewing an old summary) */}
         {!isPlayed && startNewGame && (
@@ -497,3 +529,5 @@ export const calcScoreColors = (points) => {
   if (points >= 500) return '#ffc045'
   return '#ff8a45'
 }
+
+// Boops moved to ../art/Money
