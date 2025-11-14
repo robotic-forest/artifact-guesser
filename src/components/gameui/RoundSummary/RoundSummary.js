@@ -22,7 +22,7 @@ export const RoundSummary = () => {
           artifact={artifact}
           roundSummary={(
             <div className='p-1 z-10 w-[350px] select-none flex flex-col items-end' css={{
-              '@media (max-width: 800px)': { width: '100vw' },
+              '@media (max-width: 600px)': { width: 'calc(100vw - 6px)' },
               color: 'var(--textColor)'
             }}>
               <div className='mb-1'>

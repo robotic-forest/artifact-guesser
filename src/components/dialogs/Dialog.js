@@ -175,6 +175,16 @@ const DialogComponent = ({
   noBoxBg,
   seeNoBG,
   noClose,
+  // ported props for compatibility with protocodex Dialog
+  noTitle,
+  boxBg,
+  radialEffect,
+  containerBg,
+  transparentFullscreen,
+  entryAnimation,
+  entryDuration,
+  clickThrough,
+  shouldCloseOnBackdropClick,
   children
 }) => {
   const { height: windowHeight, width: windowWidth } = useWindowDimensions()
@@ -182,6 +192,7 @@ const DialogComponent = ({
   const [dialogBoxPosition, setDialogBoxPosition] = useState('start')
   const [box, bounds] = useMeasure()
   const [boxVisible, setBoxVisible] = useState(false)
+  const [backdropPointer, setBackdropPointer] = useState(false)
 
   useHotkeys('esc', () => closeDialog())
 
@@ -206,52 +217,126 @@ const DialogComponent = ({
     }
   }, [containerRef, visible])
 
+  // Derive optional entry animation from radialEffect[0]
+  const entryAnimEffect = (Array.isArray(radialEffect) ? radialEffect : []).find(e => e && (e.animation || e.entryAnimation || e.entryDuration))
+  const derivedEntryAnimation = entryAnimEffect
+    ? (entryAnimEffect.animation?.type || entryAnimEffect.entryAnimation || 'fade')
+    : undefined
+  const derivedEntryDuration = entryAnimEffect
+    ? (entryAnimEffect.animation?.duration || entryAnimEffect.entryDuration || '0.25s')
+    : undefined
+
+  // Prefer explicitly provided props over radialEffect-derived values
+  const finalEntryAnimation = entryAnimation ?? derivedEntryAnimation ?? 'fadeUp'
+  const finalEntryDuration = entryDuration ?? derivedEntryDuration
+
   return !visible ? null : (
     <>
-      {(seeNoBG || (!inContent && isMobile)) && visible && <DialogBackground />}
+      {(transparentFullscreen || seeNoBG || (!inContent && isMobile)) && visible && (() => {
+        const hasArray = Array.isArray(radialEffect) && radialEffect.length > 0
+        const effects = hasArray ? radialEffect.filter(e => e && e.type === 'blur') : []
+        const baseMin = hasArray ? effects.reduce((m, e) => Math.max(m, typeof e.min === 'number' ? e.min : parseFloat(e.min || 0) || 0), 0) : 0
+        return (
+          <DialogBackground>
+            {hasArray && baseMin > 0 && (
+              <BackdropLayer blur={baseMin} />
+            )}
+            {hasArray && effects.map((e, i) => {
+              const max = typeof e.max === 'number' ? e.max : parseFloat(e.max || 0) || 0
+              const extra = Math.max(0, Math.sqrt(Math.max(0, max*max - baseMin*baseMin)))
+              return (
+                <RadialMaskLayer
+                  key={i}
+                  extraBlur={extra}
+                  centerX={e.centerX || '50%'}
+                  centerY={e.centerY || '50%'}
+                  inner={e.inner || '30%'}
+                  taper={e.taper || '15%'}
+                  outer={e.outer || '60%'}
+                  invert={!!e.invert}
+                />
+              )
+            })}
+          </DialogBackground>
+        )
+      })()}
       <DialogContainer
         { ...{ fullScreen, style, visible } }
         onMouseDown={e => {
-          if (!isMobile && e.clientX < windowWidth - 10) closeDialog()
+          if (clickThrough) return
+          if (transparentFullscreen) {
+            if (typeof shouldCloseOnBackdropClick === 'function') {
+              const { clientX, clientY } = e
+              const shouldClose = !!shouldCloseOnBackdropClick(clientX, clientY)
+              if (shouldClose) closeDialog()
+            } else {
+              closeDialog()
+            }
+          } else if (!isMobile && e.clientX < windowWidth - 10) closeDialog()
+        }}
+        onMouseMove={e => {
+          if (transparentFullscreen && typeof shouldCloseOnBackdropClick === 'function') {
+            const { clientX, clientY } = e
+            setBackdropPointer(!!shouldCloseOnBackdropClick(clientX, clientY))
+          } else {
+            setBackdropPointer(false)
+          }
         }}
         position={dialogBoxPosition}
         inContent={inContent && isMobile}
         hidden={!boxVisible} // Prevent scrollbar flash - wait until ref is rendered
         ref={containerRef}
+        containerBg={containerBg}
+        clickThrough={!!clickThrough}
+        transparentFullscreen={transparentFullscreen}
+        backdropPointer={backdropPointer}
       >
-        <DialogBox
-          className='active-dialog'
-          ref={box}
-          onMouseDown={boxClick}
-          { ...{
-            fullScreen,
-            width,
-            height,
-            maxHeight,
-            centerMobile,
-            noBoxBg,
-            css: boxStyle
-          } }
-        >
-          {noBoxBg ? null : title
-            ? <TitleContainer { ...{ fullScreen } }>
-                <span className='title'>{title}</span>
-                {!noClose && <Close { ...{ fullScreen } }>
-                  <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--backgroundColorDark)' } }}>
-                    <IoMdClose />
-                  </IconButton>
-                </Close>}
-              </TitleContainer>
-            : noClose ? null : <Close { ...{ fullScreen } }>
-                <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--backgroundColorDark)' } }}>
-                  <IoMdClose />
-                </IconButton>
-              </Close>
-          }
-          <DialogContent { ...{ fullScreen } }>
-            {children}
-          </DialogContent>
-        </DialogBox>
+        {transparentFullscreen
+          ? (
+            <div
+              onMouseDown={clickThrough ? undefined : (shouldCloseOnBackdropClick ? undefined : boxClick)}
+              style={{ width: '100%', height: '100%', pointerEvents: clickThrough ? 'none' : undefined }}
+            >
+              {children}
+            </div>
+          )
+          : (
+            <DialogBox
+              className='active-dialog'
+              ref={box}
+              onMouseDown={boxClick}
+              { ...{
+                fullScreen,
+                width,
+                height,
+                maxHeight,
+                centerMobile,
+                noBoxBg,
+                css: boxStyle,
+                entryAnimation: finalEntryAnimation,
+                entryDuration: finalEntryDuration
+              } }
+            >
+              {noBoxBg ? null : title
+                ? <TitleContainer { ...{ fullScreen } }>
+                    <span className='title'>{title}</span>
+                    {!noClose && <Close { ...{ fullScreen } }>
+                      <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--backgroundColorDark)' } }}>
+                        <IoMdClose />
+                      </IconButton>
+                    </Close>}
+                  </TitleContainer>
+                : (noClose || noTitle) ? null : <Close { ...{ fullScreen } }>
+                    <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--backgroundColorDark)' } }}>
+                      <IoMdClose />
+                    </IconButton>
+                  </Close>
+              }
+              <DialogContent { ...{ fullScreen } }>
+                {children}
+              </DialogContent>
+            </DialogBox>
+          )}
       </DialogContainer>
     </>
   )
@@ -281,14 +366,53 @@ const DialogBackground = styled.div`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: var(--backgroundColor);
+  background-color: transparent;
+  pointer-events: none;
+`
+
+const BackdropLayer = styled.div`
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  backdrop-filter: ${p => `blur(${typeof p.blur === 'number' ? p.blur + 'px' : p.blur})`};
+  -webkit-backdrop-filter: ${p => `blur(${typeof p.blur === 'number' ? p.blur + 'px' : p.blur})`};
+`
+
+const RadialMaskLayer = styled.div`
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  backdrop-filter: ${p => `blur(${typeof p.extraBlur === 'number' ? p.extraBlur + 'px' : p.extraBlur})`};
+  -webkit-backdrop-filter: ${p => `blur(${typeof p.extraBlur === 'number' ? p.extraBlur + 'px' : p.extraBlur})`};
+  ${p => {
+    const cx = p.centerX || '50%'
+    const cy = p.centerY || '50%'
+    const inner = p.inner || '30%'
+    const taper = p.taper || '15%'
+    const outer = p.outer || '60%'
+    const maskInside = `radial-gradient(circle at ${cx} ${cy}, rgba(0,0,0,1) ${inner}, rgba(0,0,0,1) calc(${inner} + ${taper}), rgba(0,0,0,0) ${outer})`
+    const maskOutside = `radial-gradient(circle at ${cx} ${cy}, rgba(0,0,0,0) ${inner}, rgba(0,0,0,1) calc(${inner} + ${taper}), rgba(0,0,0,1) ${outer}, rgba(0,0,0,0) calc(${outer} + 1%))`
+    return `
+      mask-image: ${p.invert ? maskOutside : maskInside};
+      -webkit-mask-image: ${p.invert ? maskOutside : maskInside};
+      mask-size: 100% 100%;
+      -webkit-mask-size: 100% 100%;
+      mask-position: 0 0;
+      -webkit-mask-position: 0 0;
+      mask-repeat: no-repeat;
+      -webkit-mask-repeat: no-repeat;
+    `
+  }}
 `
 
 const DialogContainer = styled.div`
   display: ${p => p.visible ? 'flex' : 'none'};
-  background-color: var(--backgroundVeryLowOpacity);
+  /* background-color: var(--backgroundVeryLowOpacity); */
   color: var(--textColor);
   opacity: ${p => p.hidden && !p.inContent ? 0 : 1};
+  background-color: ${p => p.containerBg || 'transparent'};
+  pointer-events: ${p => p.clickThrough ? 'none' : 'auto'};
+  cursor: ${p => p.backdropPointer ? 'pointer' : 'default'};
 
   ${p => !p.inContent && `
     position: fixed;
@@ -300,10 +424,10 @@ const DialogContainer = styled.div`
   `}
 
   @media (max-width: ${p => p.fullScreen ? '5000000' : '500'}px), (min-aspect-ratio: ${p => p.fullScreen ? '16/9' : ''}) {
-    background-color: var(--backgroundColor);
+    background-color: ${p => p.containerBg || 'var(--backgroundColor)'};
   }
 
-  z-index: 100;
+  z-index: 1000000;
   justify-content: center;
   align-items: ${p => p.position};
 `
@@ -338,12 +462,29 @@ const DialogBox = styled.div`
   z-index: 100;
   position: relative;
 
+  ${p => {
+    const duration = p.entryDuration || '0.6s'
+    if (p.entryAnimation === 'fade') return `animation: fadeIn ${duration};`
+    if (p.entryAnimation === 'fadeUp') return `animation: fadeInUp ${duration};`
+    if (p.entryAnimation === 'none') return ''
+    return ''
+  }}
+
   @media (min-width: 500px) {
     /* animation: ${p => !p.fullScreen && !p.isMobile && 'slideDialogUp 0.2s, fadeIn 0.2s'};
     @keyframes slideDialogUp {
       0%   { margin-top: 72px; }
       100% { margin-top: 36px; }
     } */
+  }
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(18px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 `
 

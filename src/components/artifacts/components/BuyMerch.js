@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { keyframes } from '@emotion/react'
 import { Button } from '@/components/buttons/Button'
 import { Dialog } from '@/components/dialogs/Dialog'
+import { CosmicInitiation } from '@/components/dialogs/CosmicInitiation'
 import { MasonryLayout } from '@/components/layout/MasonryLayout'
 import { FaShoppingCart } from 'react-icons/fa'
 
@@ -31,8 +32,9 @@ const useCyclingArray = (items, intervalMs = 1000) => {
 
 // (moved below BuyMerch as function declarations to allow hoisting)
 
-export const BuyMerch = ({ artifact, style, className, type, useImage }) => {
+export const BuyMerch = ({ artifact, style, className, type, useImage, babelSize = 1 }) => {
   const [open, setOpen] = useState(false)
+  const [cosmicOpen, setCosmicOpen] = useState(false)
 
   const images = useMemo(() => artifact?.images?.external || [], [artifact])
 
@@ -45,7 +47,8 @@ export const BuyMerch = ({ artifact, style, className, type, useImage }) => {
       window.open(href, '_blank', 'noopener,noreferrer')
       return
     }
-    setOpen(true)
+    // Show cosmic initiation first; on close, open the selection dialog
+    setCosmicOpen(true)
   }
 
   // Determine what to render based on new `type` prop
@@ -84,8 +87,16 @@ export const BuyMerch = ({ artifact, style, className, type, useImage }) => {
       )}
 
       {renderType === 'babel' && (
-        <BabelPreview onClick={handleClick} images={images} />
+        <Babel onClick={handleClick} images={images} size={babelSize} />
       )}
+
+      {/* <CosmicInitiation
+        open={cosmicOpen}
+        onClose={() => {
+          setCosmicOpen(false)
+          setOpen(true)
+        }}
+      /> */}
 
       <Dialog
         visible={open}
@@ -152,22 +163,27 @@ function MerchPreview({ onClick, cyclingExternalImage }) {
   )
 }
 
-function BabelPreview({ onClick, images }) {
-  const size= 1
-  // Tweaks for shirt stream positioning and spacing
-  const shirtStartTop = 45            // raise/lower where shirts emerge (larger = lower)
-  const shirtLeftPx = -10               // how far left from center shirts start
-  const shirtRightPx = 70            // how far to travel to the right (larger = more spacing)
-  const shirtSizePx = size * 16       // shirt size (matches input image size above)
-  const shirtConcurrentCount = 4      // how many shirts visible at once
-  const shirtSpawnIntervalSec = 1.5  // time between shirt spawns (smaller = faster stream)
-  // Tweaks for input artwork stream (small images entering the building)
-  const inputStartLeft = '40%'        // horizontal position (stay centered-left)
-  const inputStartTop = -80           // initial vertical start
-  const inputEndTop = 40             // end height (between bg and fg)
-  const inputHeightPx = size * 24     // input image height
-  const inputDurationSec = 20         // animation duration for inputs (speed)
-  const inputSpawnIntervalSec = 2.0   // time between input spawns
+function Babel({ onClick, images, size = 1 }) {
+  // Scale all pixel-based distances with `size` to keep proportions stable
+  const shirtStartTop = 45 * size           // where shirts emerge (scaled)
+  const shirtLeftPx = -10 * size            // how far left from center shirts start (scaled)
+  const shirtRightPx = 70 * size            // how far to travel to the right (scaled)
+  const shirtSizePx = size * 20             // shirt size
+  const shirtConcurrentCount = 4            // how many shirts visible at once
+  const shirtSpawnIntervalSec = 1.5         // time between shirt spawns
+  // Tweaks for input artwork stream
+  const inputStartLeft = '40%'              // percentage-based, keep constant
+  const inputStartTop = -80 * size          // initial vertical start (scaled)
+  const inputEndTop = 40 * size             // end height (scaled)
+  const inputHeightPx = size * 24           // input image height
+  const inputDurationSec = 20               // animation duration for inputs (speed)
+  const inputSpawnIntervalSec = 2.0         // time between input spawns
+  // Hover text positioning and sizing
+  const hoverTextLeftOffsetPx = 50 * size   // distance to the right of center (scaled)
+  const hoverTextFontSizePx = 12 * size     // font size (scaled)
+  const hoverTextHoverTopPx = 12 * size     // target top on hover (scaled)
+  // Container vertical nudge to align component (scaled)
+  const containerTopOffsetPx = 35 * size
 
   const streamIn = keyframes`
     0% {
@@ -243,12 +259,13 @@ function BabelPreview({ onClick, images }) {
   }, [trailSources, shirtConcurrentCount])
 
   return (
-    <div className='flex items-center justify-center relative top-[35px]' onClick={onClick} css={{
+    <div className='flex items-center justify-center relative' onClick={onClick} css={{
       userSelect: 'none',
       cursor: 'pointer',
       position: 'relative',
+      top: containerTopOffsetPx,
       '&:hover': { filter: 'brightness(1.2)' },
-      '&:hover .generate-text': { opacity: 1, top: '12px' },
+      '&:hover .generate-text': { opacity: 1, top: `${hoverTextHoverTopPx}px` },
       transition: 'transform 0.3s ease, filter 0.3s ease',
     }}>
       {/* <div className='absolute' css={{
@@ -315,15 +332,22 @@ function BabelPreview({ onClick, images }) {
       <div className='generate-text absolute text-nowrap flex items-center' css={{
         pointerEvents: 'none',
         zIndex: 4,
-        left: 'calc(50% + 50px)',
+        left: `calc(50% + ${hoverTextLeftOffsetPx}px)`,
         top: '15%',
         transform: 'translateY(-50%)',
         opacity: 0,
         transition: 'all 0.45s ease',
         color: '#fff',
-        fontSize: '12px'
+        fontSize: `${hoverTextFontSizePx}px`
       }}>
-        <img src='/merch/moloch.webp' className='w-10 brightness-150 border border-cyan-500 invert' />
+        <img
+          src='/merch/moloch.webp'
+          className='brightness-150 border border-cyan-500 invert'
+          css={{
+            width: `${40 * size}px !important`,
+            height: 'auto',
+          }}
+        />
         <div>
           <div className='bg-black px-1'>Feed the <span className='text-red-500'>Capitalist Machine</span>!</div>
           <div className='bg-black w-[min-content] px-1'>Buy this artifact as merch.</div>
