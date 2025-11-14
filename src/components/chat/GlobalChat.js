@@ -329,7 +329,7 @@ const scrollbarCSS = {
                   style={{ backgroundColor: '#91c3cb' }}
                   onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click, allow Link navigation
                 >
-                  Go to Multiplayer Lobby
+                  Go to Multiplayer Area
                 </button>
               </Link>
             </div>

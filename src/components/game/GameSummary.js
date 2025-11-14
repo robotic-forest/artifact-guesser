@@ -347,7 +347,7 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
                      transition: 'box-shadow 0.2s'
                    }
                  }}>
-                   <b className='text-lg'>Go to Multiplayer Lobby</b>
+                   <b className='text-lg'>Go to Multiplayer Area</b>
                  </SimulatorButton>
                </Link>
              </div>
