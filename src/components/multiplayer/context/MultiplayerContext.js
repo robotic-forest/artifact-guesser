@@ -17,7 +17,7 @@ export const useMultiplayer = () => {
 
 export const MultiplayerProvider = ({ children }) => {
   const router = useRouter(); // Get router instance
-  const { user } = useUser();
+  const { user, isAdmin } = useUser();
   const [lobbies, setLobbies] = useState([]);
   // Initialize currentLobbyId from session storage on mount
   const [currentLobbyId, setCurrentLobbyId] = useState(() => {
@@ -92,7 +92,7 @@ export const MultiplayerProvider = ({ children }) => {
       // Use user._id instead of user.id
       if (user?.isLoggedIn && user._id && user.username) {
         console.log(`Emitting register-client for ${user.username}`);
-        newSocket.emit('register-client', { userId: user._id, username: user.username });
+        newSocket.emit('register-client', { userId: user._id, username: user.username, isAdmin });
       } else {
          // Handle anonymous user registration
          let anonymousId = sessionStorage.getItem('ag_anonymousUserId');

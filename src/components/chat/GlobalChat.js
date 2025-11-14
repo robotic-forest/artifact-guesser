@@ -50,7 +50,7 @@ const scrollbarCSS = {
     // sendGlobalMessage // We use ChatInput which calls context internally via socket prop
   } = useGlobalChat();
   const { _socket, isConnected, isRegistered, globalUserCount } = useMultiplayer(); // Need socket, connection status, and user count
-  const { user } = useUser(); // Get user state
+  const { user, isAdmin } = useUser(); // Get user state and admin flag
   // Removed signupOpen state
   const router = useRouter(); // Get router instance
   const chatDisplayRef = useRef(null); // Ref for auto-scrolling
@@ -59,6 +59,31 @@ const scrollbarCSS = {
 
   // Determine if chat should be functional
   const canChat = _socket && isConnected && isRegistered;
+
+  // Admin context menu state
+  const [contextMenu, setContextMenu] = useState({ open: false, x: 0, y: 0, id: null, timestamp: null, username: null, message: null });
+  const menuRef = useRef(null);
+
+  const onMessageContextMenu = (event, message) => {
+    if (!isAdmin) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setContextMenu({
+      open: true,
+      x: event.clientX,
+      y: event.clientY,
+      id: message?.id || null,
+      timestamp: message?.timestamp || null,
+      username: message?.username || null,
+      message: message?.message || null
+    });
+  };
+
+  const closeContextMenu = useCallback(() => {
+    if (contextMenu.open) {
+      setContextMenu({ open: false, x: 0, y: 0, id: null });
+    }
+  }, [contextMenu.open]);
 
   // Join global chat on mount if possible, or when connection becomes available
   useEffect(() => {
@@ -95,6 +120,19 @@ const scrollbarCSS = {
       document.removeEventListener('pointerdown', handleClickOutside, true);
     };
   }, [isActive]); // Re-run this effect when isActive changes
+
+  // Close admin context menu on any pointerdown outside the menu
+  useEffect(() => {
+    if (!contextMenu.open) return;
+    const handleAnyPointerDown = (e) => {
+      if (menuRef.current && menuRef.current.contains(e.target)) return;
+      closeContextMenu();
+    };
+    document.addEventListener('pointerdown', handleAnyPointerDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', handleAnyPointerDown, true);
+    };
+  }, [contextMenu.open, closeContextMenu]);
 
   // Filter messages for inactive view (last 3 user messages)
   const inactiveMessages = globalChatMessages.filter(msg => msg.username).slice(-5);
@@ -167,10 +205,10 @@ const scrollbarCSS = {
                </div>
             )}
              {/* Show message preview only if connected */}
-            {canChat && inactiveMessages.length > 0 && inactiveMessages.map((msg, index) => (
+           {canChat && inactiveMessages.length > 0 && inactiveMessages.map((msg, index) => (
               // Apply lobby theme styles consistently
               <div
-                key={index}
+               key={msg.id || index}
                  className="p-1 px-2 text-sm" // Removed conditional classes
                  css={{
                    background: backgroundColor || 'var(--backgroundColor)',
@@ -178,7 +216,8 @@ const scrollbarCSS = {
                    border: '1px solid var(--borderColor)', // Use theme border color
                    marginTop: '2px', // Add slight spacing
                   borderRadius: '3px' // Add slight rounding
-                }}
+               }}
+               onContextMenu={(e) => onMessageContextMenu(e, msg)}
               >
                 {/* Render inactive messages with Markdown */}
                 {msg.username && <b className="mr-1">{msg.username}:</b>}
@@ -208,6 +247,55 @@ const scrollbarCSS = {
           )}
           
         </div>
+        {/* Admin context menu (inactive view) */}
+        {isAdmin && contextMenu.open && (
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: contextMenu.y,
+              left: contextMenu.x,
+              background: 'var(--backgroundColor)',
+              border: '1px solid var(--borderColor)',
+              borderRadius: 4,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+              zIndex: 9999
+            }}
+          >
+            <button
+              className="px-3 py-2 text-sm hover:bg-black/10 w-full text-left"
+              onClick={(e) => {
+                console.log('called')
+                e.stopPropagation();
+                if (_socket) {
+                  console.log('[GlobalChat] Deleting global message...', {
+                    id: contextMenu.id,
+                    timestamp: contextMenu.timestamp,
+                    username: contextMenu.username,
+                    message: contextMenu.message
+                  });
+                  _socket.emit(
+                    'delete-global-chat-message',
+                    {
+                      id: contextMenu.id,
+                      timestamp: contextMenu.timestamp,
+                      username: contextMenu.username,
+                      message: contextMenu.message
+                    },
+                    (res) => {
+                      console.log('[GlobalChat] Delete ACK:', res);
+                    }
+                  );
+                } else {
+                  console.warn('[GlobalChat] No socket instance available to delete.');
+                }
+                closeContextMenu();
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        )}
       </div>
     );
   } else {
@@ -263,7 +351,7 @@ const scrollbarCSS = {
             }}
           >
             {globalChatMessages.map((c, i) => (
-              <div key={i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }}>
+              <div key={c.id || i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }} onContextMenu={(e) => onMessageContextMenu(e, c)}>
                 {c.username && <b className="mr-1">{c.username}:</b>}
                 {/* Use ReactMarkdown to render the message */}
                 <ReactMarkdown
@@ -314,6 +402,40 @@ const scrollbarCSS = {
             <ChatInput socket={_socket} lobbyId="global" readOnly={!user?.isLoggedIn} />
           </div>
 
+          {/* Admin context menu (active view) */}
+          {isAdmin && contextMenu.open && (
+            <div
+              ref={menuRef}
+              style={{
+                position: 'fixed',
+                top: contextMenu.y,
+                left: contextMenu.x,
+                background: 'var(--backgroundColor)',
+                border: '1px solid var(--borderColor)',
+                borderRadius: 4,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                zIndex: 9999
+              }}
+            >
+              <button
+                className="px-3 py-2 text-sm hover:bg-black/10 w-full text-left"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (_socket) {
+                    _socket.emit('delete-global-chat-message', {
+                      id: contextMenu.id,
+                      timestamp: contextMenu.timestamp,
+                      username: contextMenu.username,
+                      message: contextMenu.message
+                    });
+                  }
+                  closeContextMenu();
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          )}
           {/* Note: The "Connecting..." overlay is handled in the inactive state now */}
         </div>
         {/* Removed Signup Dialog */}

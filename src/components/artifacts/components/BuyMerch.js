@@ -48,7 +48,8 @@ export const BuyMerch = ({ artifact, style, className, type, useImage, babelSize
       return
     }
     // Show cosmic initiation first; on close, open the selection dialog
-    setCosmicOpen(true)
+    // setCosmicOpen(true)
+    setOpen(true)
   }
 
   // Determine what to render based on new `type` prop
@@ -180,8 +181,8 @@ function Babel({ onClick, images, size = 1 }) {
   const inputSpawnIntervalSec = 2.0         // time between input spawns
   // Hover text positioning and sizing
   const hoverTextLeftOffsetPx = 50 * size   // distance to the right of center (scaled)
-  const hoverTextFontSizePx = 12 * size     // font size (scaled)
-  const hoverTextHoverTopPx = 12 * size     // target top on hover (scaled)
+  const hoverTextFontSizePx = 17 * size     // font size (scaled)
+  const hoverTextHoverTopPx = 2 * size     // target top on hover (scaled)
   // Container vertical nudge to align component (scaled)
   const containerTopOffsetPx = 35 * size
 
@@ -342,15 +343,15 @@ function Babel({ onClick, images, size = 1 }) {
       }}>
         <img
           src='/merch/moloch.webp'
-          className='brightness-150 border border-cyan-500 invert'
+          className='brightness-150 invert'
           css={{
-            width: `${40 * size}px !important`,
+            width: `${50 * size}px !important`,
             height: 'auto',
           }}
         />
-        <div>
-          <div className='bg-black px-1'>Feed the <span className='text-red-500'>Capitalist Machine</span>!</div>
-          <div className='bg-black w-[min-content] px-1'>Buy this artifact as merch.</div>
+        <div className='ml-2 relative top-[-2px] font-mono'>
+          <div className='bg-black'>Feed the <span className='text-red-500 font-bold'>Capitalist Machine</span>!</div>
+          <div className='bg-black w-[min-content]'>Buy this artifact as merch.</div>
         </div>
       </div>
 

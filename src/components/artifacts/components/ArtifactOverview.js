@@ -35,7 +35,7 @@ export const ArtifactOverview = ({ artifact, style }) => {
           </div>
         </div>
         <div className='flex items-center'>
-          {isAdmin && (
+          {/* {isAdmin && (
             <IconButton tooltip={artifact.inPostQueue ? 'Remove from post queue' : 'Add to post queue'} css={{
               background: '#ffffff55',
               '&:hover': {
@@ -51,7 +51,7 @@ export const ArtifactOverview = ({ artifact, style }) => {
             }}>
               {artifact.inPostQueue ? <IoCheckmarkSharp /> :  <FaRedditAlien />}
             </IconButton>
-          )}
+          )} */}
           <FavoritesToggle artifactId={artifact?._id} />
         </div>
       </div>

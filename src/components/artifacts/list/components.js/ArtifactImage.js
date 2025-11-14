@@ -74,7 +74,7 @@ export const ArtifactImage = ({ artifact, immersive, newTab }) => {
               <BiLinkExternal />
             </IconButton>
           </a>
-          {isAdmin && (
+          {/* {isAdmin && (
             <IconButton size={20} tooltip={artifact.inPostQueue ? 'Remove from post queue' : 'Add to post queue'} css={{
               background: '#ffffff55',
               '&:hover': {
@@ -92,7 +92,7 @@ export const ArtifactImage = ({ artifact, immersive, newTab }) => {
             }}>
               {artifact.inPostQueue ? <IoCheckmarkSharp /> :  <FaRedditAlien />}
             </IconButton>
-          )}
+          )} */}
         </div>
         <div css={{
           color: 'white',
