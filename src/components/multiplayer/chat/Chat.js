@@ -19,7 +19,7 @@ export const Chat = ({ lobbyId, _socket, chatMessages }) => {
         <div>Chat</div>
       </div>
       {/* Pass messages down to display */}
-      <ChatDisplay chat={chatMessages} />
+      <ChatDisplay chat={chatMessages} socket={_socket} lobbyId={lobbyId} />
       {/* Pass socket and lobbyId down to input */}
       <ChatInput socket={_socket} lobbyId={lobbyId} />
     </div>
