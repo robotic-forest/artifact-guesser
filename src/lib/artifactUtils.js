@@ -17,7 +17,7 @@ export const convertCountries = country => {
   return country
 }
 
-export const formatDateRange = (start, end) => start == end ? formatDate(start) : `${formatDate(start)} → ${formatDate(end)}`
+export const formatDateRange = (start, end, arrow = '→') => start == end ? formatDate(start) : `${formatDate(start)} ${arrow} ${formatDate(end)}`
 
 export const formatDate = d => {
   const date = String(d)

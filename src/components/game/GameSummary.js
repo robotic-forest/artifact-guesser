@@ -97,10 +97,14 @@ export const GameSummary = ({ game: playedGame }) => {
       const externalImages = r?.artifact?.images?.external || []
       const artifactId = r?.artifact?._id
       const artifactName = r?.artifact?.name
+      const artifactLocation = r?.artifact?.location
+      const artifactTime = r?.artifact?.time
       return externalImages.map(img => ({
         src: img,
         artifactId,
-        artifactName
+        artifactName,
+        artifactLocation,
+        artifactTime
       }))
     })
   }, [game?.roundData])

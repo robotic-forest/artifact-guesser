@@ -5,6 +5,7 @@ import { Dialog } from '@/components/dialogs/Dialog'
 import { CosmicInitiation } from '@/components/dialogs/CosmicInitiation'
 import { MasonryLayout } from '@/components/layout/MasonryLayout'
 import { FaShoppingCart } from 'react-icons/fa'
+import { formatDateRange, formatLocation } from '@/lib/artifactUtils'
 
 const useCyclingArray = (items, intervalMs = 1000) => {
   const [index, setIndex] = useState(0)
@@ -37,13 +38,39 @@ export const BuyMerch = ({ artifact, style, className, type, useImage, babelSize
   const [cosmicOpen, setCosmicOpen] = useState(false)
 
   const images = useMemo(() => artifact?.images?.external || [], [artifact])
+  const title = useMemo(() => artifact?.name || 'Artifact', [artifact?.name])
+  const findspot = useMemo(() => {
+    try {
+      return artifact?.location ? formatLocation(artifact.location) : undefined
+    } catch (_) {
+      return undefined
+    }
+  }, [artifact?.location])
+  const dates = useMemo(() => {
+    try {
+      return artifact?.time ? formatDateRange(artifact.time.start, artifact.time.end, 'to') : undefined
+    } catch (_) {
+      return undefined
+    }
+  }, [artifact?.time?.start, artifact?.time?.end])
+  const artifactDescription = useMemo(() => {
+    const descriptionParts = []
+    if (findspot) descriptionParts.push(findspot)
+    if (dates) descriptionParts.push(dates)
+    return `${descriptionParts.join(', ')}${descriptionParts.length ? '. ' : ''}found on artifactguesser.com`
+  }, [findspot, dates])
 
   const cyclingExternalImage = useCyclingArray(images, 2000)
 
   const handleClick = () => {
     if (images.length === 1) {
       const img = images[0]
-      const href = `http://protocodex.com/merch-gen?media-url=${encodeURIComponent(img)}&qr-link=${encodeURIComponent(`${window.location.origin}/artifacts/${artifact._id}`)}&text=${artifact.name}`
+      const href =
+        `http://protocodex.com/merch-gen?media-url=${encodeURIComponent(img)}` +
+        `&qr-link=${encodeURIComponent(`https://artifactguesser.com/artifacts/${artifact._id}`)}` +
+        `&title=${encodeURIComponent(title)}` +
+        `&description=${encodeURIComponent(artifactDescription)}` +
+        `&text=${encodeURIComponent(artifactDescription)}`
       window.open(href, '_blank', 'noopener,noreferrer')
       return
     }
@@ -108,7 +135,12 @@ export const BuyMerch = ({ artifact, style, className, type, useImage, babelSize
         <div css={{ padding: 10 }}>
           <MasonryLayout breaks={{ default: 6, 600: 2, 900: 3, 1200: 4, 1600: 5 }} gutter={0}>
             {images.map((img) => {
-              const href = `http://protocodex.com/merch-gen?media-url=${encodeURIComponent(img)}&qr-link=${encodeURIComponent(`${window.location.origin}/artifacts/${artifact._id}`)}&text=${artifact.name}`
+              const href =
+                `http://protocodex.com/merch-gen?media-url=${encodeURIComponent(img)}` +
+                `&qr-link=${encodeURIComponent(`https://artifactguesser.com/artifacts/${artifact._id}`)}` +
+                `&title=${encodeURIComponent(title)}` +
+                `&description=${encodeURIComponent(artifactDescription)}` +
+                `&text=${encodeURIComponent(artifactDescription)}`
               return (
                 <a
                   key={img}

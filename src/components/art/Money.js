@@ -6,6 +6,7 @@ import { Button } from '@/components/buttons/Button'
 import { useMediaQuery } from 'react-responsive'
 import { IconGenerator } from './IconGenerator'
 import { MasonryLayout } from '@/components/layout/MasonryLayout'
+import { formatDateRange, formatLocation } from '@/lib/artifactUtils'
 
 export const MoneyDialog = ({ visible, onClose, images }) => {
   const isMobile = useMediaQuery({ maxWidth: 600 })
@@ -64,9 +65,21 @@ export const MoneyDialog = ({ visible, onClose, images }) => {
                     const src = media?.startsWith('http') || media?.startsWith('/') ? media : `/boops/${media}`
                     const artifactId = typeof img === 'object' ? img?.artifactId : undefined
                     const artifactName = typeof img === 'object' ? img?.artifactName : undefined
+                    const artifactLocation = typeof img === 'object' ? img?.artifactLocation : undefined
+                    const artifactTime = typeof img === 'object' ? img?.artifactTime : undefined
+                    const findspot = artifactLocation ? formatLocation(artifactLocation) : undefined
+                    const dates = artifactTime ? formatDateRange(artifactTime.start, artifactTime.end, 'to') : undefined
+                    const descriptionParts = []
+                    if (findspot) descriptionParts.push(findspot)
+                    if (dates) descriptionParts.push(dates)
+                    const artifactDescription = `${descriptionParts.join(', ')}${descriptionParts.length ? '. ' : ''}found on artifactguesser.com`
 
                     const url = artifactId ? `https://artifactguesser.com/artifacts/${artifactId}` : undefined
-                    const href = `http://protocodex.com/merch-gen?media-url=${encodeURIComponent(src)}${url ? `&qr-link=${encodeURIComponent(url)}` : ''}&text=${encodeURIComponent(artifactName || 'Artifact')}`
+                    const href = `http://protocodex.com/merch-gen?media-url=${encodeURIComponent(src)}` +
+                      `${url ? `&qr-link=${encodeURIComponent(url)}` : ''}` +
+                      `&title=${encodeURIComponent(artifactName || 'Artifact')}` +
+                      `&text=${encodeURIComponent(artifactDescription || 'Artifact')}`
+
                     return (
                       <a
                         key={`${src}-${idx}`}
