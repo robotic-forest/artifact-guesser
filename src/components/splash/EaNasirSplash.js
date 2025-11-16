@@ -26,7 +26,7 @@ export const EaNasirSplash = ({ startGame }) => {
             <h1 className="text-5xl font-bold text-black text-center leading-[1.4]">
               <i className='inline-block mb-8'>Never again!</i>
               <br/>
-              Consider this mode <br/>your <i>training ground</i><br/>to discern
+              Consider this <br/>your <i>training ground</i><br/>to discern
               <br/><i className='font-mono mt-4 inline-block'>✨ good quality copper ✨</i>
             </h1>
           )}

@@ -5,6 +5,7 @@ import { convertCountries } from "@/lib/artifactUtils"
 import { countries } from "@/lib/countries"
 import { getProximity } from "@/lib/getProximity"
 import useSWR from "swr"
+import { useRouter } from "next/router"
 import { useHotkeys } from "react-hotkeys-hook"
 import toast from "react-hot-toast"
 import { modes } from "../gameui/ModeButton"
@@ -23,6 +24,7 @@ export const useGame = () => {
 
 export const GameProvider = ({ children }) => {
   const { user } = useUser()
+  const router = useRouter()
   const [game, setGame] = useState()
   const [selectedDate, setSelectedDate] = useState()
   const [selectedCountry, setSelectedCountry] = useState()
@@ -36,7 +38,11 @@ export const GameProvider = ({ children }) => {
   const [splashToShow, setSplashToShow] = useState(null); // Component type for splash
   const [actualStartGameFunction, setActualStartGameFunction] = useState(null); // Function to run after splash
 
-  const { data, mutate } = useSWR(user?.isLoggedIn && '/api/games/current')
+  // If a mode is provided via URL query, include it when fetching/creating the current game.
+  // This only affects creation when no ongoing game exists on the server.
+  const requestedMode = router?.query?.mode
+  const swrKey = user?.isLoggedIn && `/api/games/current${requestedMode ? `?mode=${encodeURIComponent(String(requestedMode))}` : ''}`
+  const { data, mutate } = useSWR(swrKey)
 
   const initGame = g => {
     setGame(g);
@@ -54,8 +60,24 @@ export const GameProvider = ({ children }) => {
     }
   }
 
-  // Sync with DB
-  useEffect(() => { if (data) initGame(data) }, [data])
+  // Sync with DB, but show splash if mode was chosen via URL and that mode has a splash
+  useEffect(() => {
+    if (!data) return;
+
+    const modeDef = data.mode && modes[data.mode];
+
+    // Only trigger splash when:
+    // - A mode was explicitly requested via URL
+    // - That mode has a splash component
+    // - We don't already have a game in context (i.e., we're creating/bootstrapping)
+    if (requestedMode && modeDef?.splash && !game) {
+      // Defer game initialization until after splash completes
+      setActualStartGameFunction(() => () => initGame(data));
+      setSplashToShow(() => modeDef.splash);
+    } else {
+      initGame(data);
+    }
+  }, [data, requestedMode, game]);
 
   // Reset game if logged out mid-game
   useEffect(() => {
@@ -73,9 +95,16 @@ export const GameProvider = ({ children }) => {
 
         if (localG) initGame(localG)
         else {
+          // Prefer mode from URL query if present when starting a fresh local game
+          const urlMode = typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search).get('mode')
+            : null
           const lsMode = localStorage.getItem('mode') || 'Balanced';
+          const newMode = (urlMode && urlMode.trim()) ? urlMode : lsMode;
+          if (urlMode && urlMode.trim()) {
+            localStorage.setItem('mode', newMode);
+          }
           const lsTimer = localStorage.getItem('timer'); // Get timer from localStorage
-          const newMode = lsMode;
           const newTimer = lsTimer !== null && lsTimer !== 'null' ? parseInt(lsTimer, 10) : null; // Parse timer, default null
 
           const newArtifact = await getRandomArtifact(null, newMode)
@@ -96,11 +125,22 @@ export const GameProvider = ({ children }) => {
             ]
           }
 
-          setGame(newGame)
-          setSelectedDate(modes[newMode]?.type === 'Era' ? ((modes[newMode].start + modes[newMode].end) / 2) : 0)
-          // sync localstorage
-          localStorage.setItem('game', JSON.stringify(newGame));
-          setSelectedTimer(newTimer); // Update state as well
+          // Helper to actually start the local game
+          const startLocalNewGame = () => {
+            initGame(newGame);
+            localStorage.setItem('game', JSON.stringify(newGame));
+            setSelectedTimer(newTimer);
+          };
+
+          const modeDef = modes[newMode];
+
+          if (modeDef?.splash) {
+            // Defer game start until after splash
+            setActualStartGameFunction(() => startLocalNewGame);
+            setSplashToShow(() => modeDef.splash);
+          } else {
+            startLocalNewGame();
+          }
         }
       }
     }

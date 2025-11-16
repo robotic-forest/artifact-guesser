@@ -12,8 +12,11 @@ const current = async (req, res) => {
 
   // If an ongoing game does not exist, create a new one
   if (!game) {
-    // Fetch the first artifact using the user's preferred mode
-    const artifact = await getRandomArtifact(user.currentMode || 'Balanced');
+    // Respect requested mode from query if provided; otherwise use user's preferred mode
+    const requestedMode = req.query?.mode
+    const selectedMode = (requestedMode && String(requestedMode).trim()) ? String(requestedMode) : (user.currentMode || 'Balanced')
+    // Fetch the first artifact using the selected mode
+    const artifact = await getRandomArtifact(selectedMode);
     // Get the user's preferred timer setting (ensure it's stored on the user document)
     // Use null if undefined or explicitly null on the user doc
     const preferredTimer = (user.currentTimer !== undefined && user.currentTimer !== null) ? user.currentTimer : null;
@@ -26,7 +29,7 @@ const current = async (req, res) => {
       round: 1,
       rounds: 5,
       score: 0,
-      mode: user.currentMode || 'Balanced',
+      mode: selectedMode,
       roundData: [
         {
           round: 1,
