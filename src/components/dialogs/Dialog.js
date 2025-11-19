@@ -226,8 +226,9 @@ const DialogComponent = ({
     ? (entryAnimEffect.animation?.duration || entryAnimEffect.entryDuration || '0.25s')
     : undefined
 
-  // Prefer explicitly provided props over radialEffect-derived values
-  const finalEntryAnimation = entryAnimation ?? derivedEntryAnimation ?? 'fadeUp'
+  // Prefer explicitly provided props over radialEffect-derived values.
+  // Default to no animation so the dialog simply appears with no fade/movement.
+  const finalEntryAnimation = entryAnimation ?? derivedEntryAnimation ?? 'none'
   const finalEntryDuration = entryDuration ?? derivedEntryDuration
 
   return !visible ? null : (
