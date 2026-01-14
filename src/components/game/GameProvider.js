@@ -75,9 +75,13 @@ export const GameProvider = ({ children }) => {
       setActualStartGameFunction(() => () => initGame(data));
       setSplashToShow(() => modeDef.splash);
     } else {
-      initGame(data);
+      // IMPORTANT: Don't continuously clobber local game state with SWR `data`.
+      // We only want to initialize from SWR when it first arrives (or when SWR itself changes).
+      // If we re-run initGame on every local `game` change, logged-in actions like
+      // `startNextRound()` will appear to "rerender" but not advance because they get overwritten.
+      if (!game) initGame(data);
     }
-  }, [data, requestedMode, game]);
+  }, [data, requestedMode]); // intentionally omit `game` to avoid clobbering local state
 
   // Reset game if logged out mid-game
   useEffect(() => {
@@ -150,8 +154,17 @@ export const GameProvider = ({ children }) => {
 
   const updateGame = async (updatedGame, startNew, newGameSettings) => {
     if (user?.isLoggedIn) {
-      // Prepare payload for the API, explicitly mapping settings
+      // Prepare payload for the API.
+      // IMPORTANT: Strip `artifact` objects out of `roundData` so we don't blow up request size
+      // (server will re-hydrate artifacts when reading games).
       const payloadToSend = { ...updatedGame };
+      if (Array.isArray(payloadToSend.roundData)) {
+        payloadToSend.roundData = payloadToSend.roundData.map(round => {
+          if (!round || typeof round !== 'object') return round;
+          const { artifact, ...rest } = round;
+          return rest;
+        });
+      }
       if (newGameSettings) {
         if (newGameSettings.newMode !== undefined) payloadToSend.newMode = newGameSettings.newMode;
         // Explicitly map newTimer from settings to selectedTimer for the API
@@ -164,13 +177,16 @@ export const GameProvider = ({ children }) => {
 
         if (startNew) {
           // If starting a new game, refetch the definitive state from the server.
-          // The useEffect watching 'data' will then call initGame -> setGame.
-          await mutate();
+          // We then init locally from the mutate() result (since we intentionally avoid
+          // clobbering local state from SWR on every render).
+          const fresh = await mutate();
+          if (fresh) initGame(fresh);
         } else {
           // For regular in-game updates (like guesses), update local state immediately
           // for responsiveness. We assume the API call succeeded.
           // Alternatively, use mutate() here too if the API returns the updated game.
-          setGame(payloadToSend); // Update local state with the data we intended to save
+          // Keep artifacts in local state for UI rendering (payloadToSend strips them).
+          setGame(updatedGame);
         }
       } catch (error) {
         console.error("Error updating game:", error);
@@ -565,7 +581,10 @@ const getRandomArtifact = async (game, mode) => {
   const { data: newArtifact } = await axios.get(`/api/artifacts/random?mode=${mode || 'Balanced'}`)
 
   if (game) {
-    const existingCountries = game.roundData.map(r => r.artifact.location.country)
+    // Be defensive: during transitions or after partial hydration, some rounds may not have `artifact`.
+    const existingCountries = (game.roundData || [])
+      .map(r => r?.artifact?.location?.country)
+      .filter(Boolean)
     if (existingCountries.includes(newArtifact.location.country) && pickNew) {
       return getRandomArtifact(null, mode)
     }

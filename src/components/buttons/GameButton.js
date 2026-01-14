@@ -1,6 +1,10 @@
 import styled from "@emotion/styled"
 
-export const GameButton = styled.button`
+// Default to type="button" so GameButton never accidentally submits a parent <form>.
+// Emotion doesn't support styled-components' `.attrs`, so we wrap a real button.
+export const GameButton = styled(({ type, ...props }) => (
+  <button type={type || 'button'} {...props} />
+))`
   border-radius: 3px;
   padding: 0px 8px;
   border: 1px solid ${p => p.active ? 'black' : '#ffffff66'};

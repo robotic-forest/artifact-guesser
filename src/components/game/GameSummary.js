@@ -86,7 +86,9 @@ export const GameSummary = ({ game: playedGame }) => {
   const [merchOpen, setMerchOpen] = useState(false)
   useEffect(() => {
     if (!isPlayed && !isMultiplayer) {
-      setMerchOpen(true)
+      // Show merch popup only sometimes to reduce intrusiveness.
+      // 1/3 chance per GameSummary mount.
+      setMerchOpen(Math.random() < (1 / 3))
     }
   }, [isPlayed, isMultiplayer])
 
