@@ -15,6 +15,7 @@ export const Artifact3D = ({ canvasStyle, cameraPosition, ...props }) => {
         style={canvasStyle}
         camera={{ position: cameraPosition }}
         onMouseOver={() => setRotate(false)}
+        onMouseOut={() => setRotate(true)}
       >
         <Scene {...props} rotate={rotate} />
       </Canvas>

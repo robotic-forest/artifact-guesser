@@ -27,6 +27,8 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
   const [ref, bounds] = useMeasure()
   const { height: windowHeight, width: windowWidth } = bounds
   const isMobile = windowWidth < 600
+  const [imageViewportRef, imageViewportBounds] = useMeasure()
+  const [autoFitImageView, setAutoFitImageView] = useState(true)
 
   const [relatedArtifactSettings, setRelatedArtifactSettings] = useState({
     startDateAfter: a.time.start - 10,
@@ -99,13 +101,14 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
             width: '100%',
             height: '100%',
             display: is3D ? 'grid' : 'block',
-            gridTemplateColumns: '2fr 3fr',
+            gridTemplateColumns: '1fr 1fr',
             overflow: 'hidden'
           }}>
             {is3D && (
               <div css={{
                 borderRight: '1px solid #ffffff55',
                 position: 'relative',
+                overflow: 'hidden',
               }}>
                 <Artifact3D
                   url='/3D/ram-amun.glb'
@@ -114,7 +117,7 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
                     height: '100%',
                   }}
                   scale={1}
-                  cameraPosition={[5, 5, 5]}
+                  cameraPosition={[4, 4, 4]}
                 />
                 <div className='absolute bottom-1 left-1 z-10 flex items-center'>
                   <IconButton tooltip='View Fullscreen' onClick={() => setImmersive('3D')} css={{
@@ -134,24 +137,34 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
             )}
             <div className='relative h-full'>
               {!loadingComplete && <LoadingArtifact className='absolute' />}
-              <MapInteractionCSS maxScale={100} value={value} onChange={v => setValue(v)}>
+              <div ref={imageViewportRef} className='h-full'>
+              <MapInteractionCSS
+                maxScale={100}
+                value={value}
+                onChange={v => {
+                  setAutoFitImageView(false)
+                  setValue(v)
+                }}
+              >
                 <ImageView
                   revealImage
                   imgs={a.images.external}
                   loadingComplete={loadingComplete}
-                  setLoadingComplete={bounds => {
-                    const h = bounds.height
+                  setLoadingComplete={imgBounds => {
+                    const h = imgBounds.height
+                    const viewportHeight = imageViewportBounds.height || windowHeight
+                    const viewportWidth = imageViewportBounds.width || windowWidth
       
                     if (h) {
-                      if (h < windowHeight) {
-                        const newY = (windowHeight - h) / 2
-                        if (!loadingComplete && value.translation.y !== newY) {
+                      if (h < viewportHeight) {
+                        const newY = (viewportHeight - h) / 2
+                        if (autoFitImageView && (value.translation.y !== newY || value.scale !== 1 || value.translation.x !== 0)) {
                           setValue(() => ({ scale: 1, translation: { x: 0, y: newY } }))
                         }
                       } else {
-                        const newScale = windowHeight / h
-                        const newX = (windowWidth - (bounds.width * newScale)) / 2
-                        if (!loadingComplete && value.scale !== newScale) {
+                        const newScale = viewportHeight / h
+                        const newX = (viewportWidth - (imgBounds.width * newScale)) / 2
+                        if (autoFitImageView && (value.scale !== newScale || value.translation.x !== newX || value.translation.y !== 0)) {
                           setValue(() => ({ scale: newScale, translation: { x: newX, y: 0 } }))
                         }
                       }
@@ -161,6 +174,7 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
                   }}
                 />
               </MapInteractionCSS>
+              </div>
             </div>
           </div>
 
