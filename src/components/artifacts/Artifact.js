@@ -348,14 +348,14 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
             <div className='h-[300px] w-full relative' css={{
               border: '1.5px inset',
               borderColor: '#00000055 #ffffff77 #ffffff77 #00000055',
+              overflow: 'hidden',
             }}>
-              <div className='absolute top-1 right-1 border border-white/30 bg-black text-white p-[1px_6px] rounded-[3px] text-sm'>
+              <div className='absolute top-1 right-1 border border-white/30 bg-black text-white p-[1px_6px] rounded-[3px] text-sm z-10'>
                 {formatDate(averageTime)}
               </div>
               <iframe
                 src={`https://www.runningreality.org/?notimeline&nobox&nocontrols#01/01/${averageTime}&${latLng}`}
-                width="100%"
-                height="100%"
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 'calc(100% + 44px)', border: 'none' }}
               />
               <div className='absolute bottom-1 right-1 z-10 flex items-center'>
                 <Link href={`https://www.runningreality.org/#01/01/${averageTime}&${latLng}&zoom=6`} target='_blank'>
