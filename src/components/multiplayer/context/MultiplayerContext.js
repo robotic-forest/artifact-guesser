@@ -257,37 +257,26 @@ export const MultiplayerProvider = ({ children }) => {
       }
     });
     newSocket.on('game-error', (error) => { console.error('Game Error:', error.message); });
-    // Modified chat listener to filter for current lobby
-    newSocket.on('chat', (payload) => {
-      // Use the ref to get the *current* lobby ID when the event fires
+    // Chat history (initial load / paginated)
+    newSocket.on('chat-history', (payload) => {
       const currentLobby = currentLobbyIdRef.current;
-
-      // Ignore if not currently in a lobby according to the ref
-      if (!currentLobby) {
-        // console.log('[MultiplayerContext] Received chat payload, but not currently in a lobby. Ignoring.');
-        return;
+      if (!currentLobby || !payload?.messages) return;
+      const relevantMessages = payload.messages.filter(msg => msg.lobby === currentLobby);
+      if (relevantMessages.length > 0 || payload.lobby === currentLobby) {
+        setChatMessages(relevantMessages);
       }
-
-      let relevantMessages = [];
-      if (Array.isArray(payload)) {
-        // Filter history/batch for messages matching the current lobby
-        relevantMessages = payload.filter(msg => msg.lobby === currentLobby);
-        if (relevantMessages.length > 0) {
-           // Replace state with the filtered history/batch
-           setChatMessages(relevantMessages);
-        } else {
-           // console.log(`[MultiplayerContext] Received message array, but no messages matched current lobby ${currentLobby}.`);
-           // Optionally clear state if history for this lobby is empty? Or just ignore. Let's ignore for now.
-        }
-      } else if (typeof payload === 'object' && payload !== null && payload.lobby === currentLobby) {
-        // It's a single message update for the current lobby
-        const newMessage = payload;
-        // Append the new message to the existing state
-        setChatMessages(prevMessages => [...prevMessages, newMessage]);
-      } else {
-        // Ignore payloads not relevant (e.g., global messages or messages for other lobbies)
-        // console.log(`[MultiplayerContext] Ignoring chat payload not relevant to current lobby ${currentLobby}:`, payload);
+    });
+    // Single new chat message (incremental)
+    newSocket.on('chat', (payload) => {
+      const currentLobby = currentLobbyIdRef.current;
+      if (!currentLobby) return;
+      if (typeof payload === 'object' && payload !== null && !Array.isArray(payload) && payload.lobby === currentLobby) {
+        setChatMessages(prevMessages => [...prevMessages, payload]);
       }
+    });
+    // Chat message deleted
+    newSocket.on('chat-message-deleted', ({ id }) => {
+      setChatMessages(prev => prev.filter(msg => msg.id !== id));
     });
 
     // Listener for global user count updates
@@ -656,6 +645,8 @@ export const MultiplayerProvider = ({ children }) => {
         socketInstance.off('lobby-error');
         socketInstance.off('game-error');
         socketInstance.off('chat');
+        socketInstance.off('chat-history');
+        socketInstance.off('chat-message-deleted');
         // Add cleanup for game listeners
         socketInstance.off('game-started');
         socketInstance.off('new-round');

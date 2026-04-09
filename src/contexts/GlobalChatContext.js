@@ -13,102 +13,102 @@ export const useGlobalChat = () => {
 };
 
 export const GlobalChatProvider = ({ children }) => {
-  const { _socket, isConnected, isRegistered } = useMultiplayer(); // Get shared socket and connection status
+  const { _socket, isConnected, isRegistered } = useMultiplayer();
   const { user } = useUser();
   const [globalChatMessages, setGlobalChatMessages] = useState([]);
-  const [isInGlobalChat, setIsInGlobalChat] = useState(false); // Track if currently joined
+  const [isInGlobalChat, setIsInGlobalChat] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Listener for incoming chat messages (filters for global)
+  // Handle initial history / paginated loads (array of messages)
+  const handleChatHistory = useCallback((payload) => {
+    if (!payload || !payload.messages) return;
+    const globalMessages = payload.messages.filter(msg => msg.lobby === 'global');
+    console.log('[GlobalChatContext] Received chat-history:', globalMessages.length, 'messages, hasMore:', payload.hasMore);
+    setGlobalChatMessages(globalMessages);
+    setHasMoreMessages(payload.hasMore ?? false);
+  }, []);
+
+  // Handle single new message (incremental update)
   const handleChatMessage = useCallback((payload) => {
-    // Determine if the payload is the initial history (array) or a single update (object)
-    // Note: This assumes the server sends full history as an array and updates as single objects.
-    // Adjust if the server behavior is different.
-
-    if (Array.isArray(payload)) {
-      // Likely the initial history load or potentially multiple messages at once
-      const globalMessages = payload.filter(msg => msg.lobby === 'global');
-      if (globalMessages.length > 0 || payload.every(msg => msg.lobby === 'global')) {
-        console.log('[GlobalChatContext] Received global message array (history or batch):', globalMessages);
-        // Replace state with the full history/batch
-        setGlobalChatMessages(globalMessages);
-      } else {
-        // console.log('[GlobalChatContext] Received array, but no global messages found. Ignoring.');
-      }
-    } else if (typeof payload === 'object' && payload !== null && payload.lobby === 'global') {
-      // Likely a single new message update
-      const newMessage = payload;
-      console.log('[GlobalChatContext] Received single global message update:', newMessage);
-      // Append the new message to the existing state
-      setGlobalChatMessages(prevMessages => [...prevMessages, newMessage]);
-    } else {
-      // Ignore payloads that are not arrays or relevant single objects
-      // console.warn('[GlobalChatContext] Received unexpected chat message payload:', payload);
+    if (typeof payload === 'object' && payload !== null && !Array.isArray(payload) && payload.lobby === 'global') {
+      console.log('[GlobalChatContext] Received single global message:', payload);
+      setGlobalChatMessages(prev => [...prev, payload]);
     }
+    // Ignore arrays (legacy) and non-global messages
+  }, []);
+
+  // Handle message deletion
+  const handleChatMessageDeleted = useCallback(({ id }) => {
+    console.log('[GlobalChatContext] Message deleted:', id);
+    setGlobalChatMessages(prev => prev.filter(msg => msg.id !== id));
   }, []);
 
   useEffect(() => {
     if (_socket && isConnected && isRegistered) {
-      console.log('[GlobalChatContext] Socket connected and registered, attaching chat listener.');
+      console.log('[GlobalChatContext] Socket connected and registered, attaching listeners.');
+      _socket.on('chat-history', handleChatHistory);
       _socket.on('chat', handleChatMessage);
+      _socket.on('chat-message-deleted', handleChatMessageDeleted);
 
-      // Cleanup listener on unmount or socket change
       return () => {
-        console.log('[GlobalChatContext] Cleaning up chat listener.');
+        console.log('[GlobalChatContext] Cleaning up listeners.');
+        _socket.off('chat-history', handleChatHistory);
         _socket.off('chat', handleChatMessage);
+        _socket.off('chat-message-deleted', handleChatMessageDeleted);
       };
     } else {
-       console.log('[GlobalChatContext] Socket not ready for listening (disconnected or not registered). Listener not attached.');
-       // Only clear messages if the socket is actually disconnected
        if (!isConnected) {
-           console.log('[GlobalChatContext] Socket disconnected, clearing messages.');
            setGlobalChatMessages([]);
-           setIsInGlobalChat(false); // Also reset joined state if disconnected
+           setIsInGlobalChat(false);
+           setHasMoreMessages(false);
        }
     }
-  }, [_socket, isConnected, isRegistered, handleChatMessage]);
+  }, [_socket, isConnected, isRegistered, handleChatHistory, handleChatMessage, handleChatMessageDeleted]);
 
-  // Function to join the global chat room
   const joinGlobalChat = useCallback(() => {
     if (_socket && isConnected && isRegistered && !isInGlobalChat) {
       console.log('[GlobalChatContext] Emitting join-global-chat');
       _socket.emit('join-global-chat');
       setIsInGlobalChat(true);
-      // Note: History is sent by backend upon join confirmation via 'chat' event
-    } else {
-       console.warn('[GlobalChatContext] Cannot join global chat:', { isConnected, isRegistered, isInGlobalChat });
     }
   }, [_socket, isConnected, isRegistered, isInGlobalChat]);
 
-  // Function to leave the global chat room
   const leaveGlobalChat = useCallback(() => {
-    if (_socket && isConnected && isInGlobalChat) { // Only leave if actually joined
+    if (_socket && isConnected && isInGlobalChat) {
       console.log('[GlobalChatContext] Emitting leave-global-chat');
       _socket.emit('leave-global-chat');
       setIsInGlobalChat(false);
-      setGlobalChatMessages([]); // Clear messages on leave
-    } else {
-       // console.warn('[GlobalChatContext] Cannot leave global chat:', { isConnected, isInGlobalChat });
+      setGlobalChatMessages([]);
+      setHasMoreMessages(false);
     }
   }, [_socket, isConnected, isInGlobalChat]);
 
-  // Function to send a global message
   const sendGlobalMessage = useCallback((message) => {
     if (_socket && isConnected && isRegistered && isInGlobalChat && user?.username) {
       const trimmedMessage = message.trim();
       if (trimmedMessage) {
-        console.log(`[GlobalChatContext] Emitting send (global): ${trimmedMessage}`);
         _socket.emit('send', {
           lobby: 'global',
-          username: user.username, // Backend uses this
+          username: user.username,
           message: trimmedMessage
         });
       }
-    } else {
-       console.error('[GlobalChatContext] Cannot send global message:', { isConnected, isRegistered, isInGlobalChat, username: user?.username });
-       // Maybe show a toast error?
     }
   }, [_socket, isConnected, isRegistered, isInGlobalChat, user?.username]);
 
+  const loadOlderMessages = useCallback(() => {
+    if (!_socket || isLoadingMore || !hasMoreMessages || globalChatMessages.length === 0) return;
+    setIsLoadingMore(true);
+    const oldestTimestamp = globalChatMessages[0]?.timestamp;
+    _socket.emit('request-older-messages', { lobby: 'global', before: oldestTimestamp }, (response) => {
+      if (response && response.messages) {
+        setGlobalChatMessages(prev => [...response.messages, ...prev]);
+        setHasMoreMessages(response.hasMore ?? false);
+      }
+      setIsLoadingMore(false);
+    });
+  }, [_socket, isLoadingMore, hasMoreMessages, globalChatMessages]);
 
   const value = {
     globalChatMessages,
@@ -116,8 +116,9 @@ export const GlobalChatProvider = ({ children }) => {
     leaveGlobalChat,
     sendGlobalMessage,
     isInGlobalChat,
-    // Expose shared socket if needed by components directly (though sendGlobalMessage is preferred)
-    // _socket,
+    hasMoreMessages,
+    isLoadingMore,
+    loadOlderMessages,
   };
 
   return (

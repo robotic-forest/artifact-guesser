@@ -47,7 +47,9 @@ const scrollbarCSS = {
     joinGlobalChat,
     leaveGlobalChat,
     isInGlobalChat,
-    // sendGlobalMessage // We use ChatInput which calls context internally via socket prop
+    hasMoreMessages,
+    isLoadingMore,
+    loadOlderMessages,
   } = useGlobalChat();
   const { _socket, isConnected, isRegistered, globalUserCount } = useMultiplayer(); // Need socket, connection status, and user count
   const { user, isAdmin } = useUser(); // Get user state and admin flag
@@ -95,12 +97,38 @@ const scrollbarCSS = {
   }, [canChat, isInGlobalChat, joinGlobalChat]);
 
 
-  // Auto-scroll effect for the active chat display
+  // Track whether user is near the bottom for auto-scroll
+  const isNearBottomRef = useRef(true);
+  const prevScrollHeightRef = useRef(0);
+
+  // Auto-scroll effect for the active chat display (only when near bottom)
   useEffect(() => {
-    if (isActive && chatDisplayRef.current) {
+    if (isActive && chatDisplayRef.current && isNearBottomRef.current) {
       chatDisplayRef.current.scrollTop = chatDisplayRef.current.scrollHeight;
     }
-  }, [globalChatMessages, isActive]); // Scroll when messages change or chat becomes active
+  }, [globalChatMessages, isActive]);
+
+  // Preserve scroll position after loading older messages
+  useEffect(() => {
+    if (!isLoadingMore && prevScrollHeightRef.current > 0 && chatDisplayRef.current) {
+      const newScrollHeight = chatDisplayRef.current.scrollHeight;
+      chatDisplayRef.current.scrollTop = newScrollHeight - prevScrollHeightRef.current;
+      prevScrollHeightRef.current = 0;
+    }
+  }, [isLoadingMore]);
+
+  // Scroll handler for infinite scroll upward
+  const handleChatScroll = useCallback(() => {
+    if (!chatDisplayRef.current) return;
+    const el = chatDisplayRef.current;
+    // Track if user is near the bottom
+    isNearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+    // Load older messages when scrolled to top
+    if (el.scrollTop === 0 && hasMoreMessages && !isLoadingMore) {
+      prevScrollHeightRef.current = el.scrollHeight;
+      loadOlderMessages();
+    }
+  }, [hasMoreMessages, isLoadingMore, loadOlderMessages]);
 
   // Effect to handle clicks outside the component
   useEffect(() => {
@@ -347,9 +375,18 @@ const scrollbarCSS = {
             className="flex-grow overflow-y-auto text-sm text-black pr-1 rounded p-2 border border-black/10"
             css={{
               ...scrollbarCSS,
-              backgroundColor: 'var(--backgroundColorBarelyLight)', // Use a barely dark background
+              backgroundColor: 'var(--backgroundColorBarelyLight)',
             }}
+            onScroll={handleChatScroll}
           >
+            {isLoadingMore && (
+              <div className="text-xs italic text-gray-400 text-center py-1">Loading older messages...</div>
+            )}
+            {!isLoadingMore && hasMoreMessages && (
+              <div className="text-xs italic text-gray-400 text-center py-1 cursor-pointer hover:text-gray-600" onClick={loadOlderMessages}>
+                Scroll up for more
+              </div>
+            )}
             {globalChatMessages.map((c, i) => (
               <div key={c.id || i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }} onContextMenu={(e) => onMessageContextMenu(e, c)}>
                 {c.username && <b className="mr-1">{c.username}:</b>}
