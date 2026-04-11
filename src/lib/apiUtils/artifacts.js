@@ -2,12 +2,41 @@ import { modes } from "@/components/gameui/ModeButton"
 import { initDB } from "./mongodb"
 import { countriesWithContinents } from "../countries"
 
+// Era buckets for weighted sampling in general modes (Classic, Highlights,
+// Balanced, Ea Nasir). Modes of type 'Era' and 'Continent' are excluded —
+// those have their own filters already.
+//
+// Weights compensate for the Met/BM bias toward post-1500 content: bronze age
+// is only ~10% of the modern corpus, so without weighting, general play feels
+// overwhelmingly modern. Ancient buckets get a ~10-20x boost, Modern gets cut.
+const ERA_BUCKETS = [
+  { name: 'Prehistoric',        start: -10000, end: -3000, weight: 6 },
+  { name: 'Bronze Age',         start: -3000,  end: -1200, weight: 5 },
+  { name: 'Iron Age',           start: -1200,  end: -600,  weight: 5 },
+  { name: 'Classical Antiquity',start: -600,   end: 0,     weight: 5 },
+  { name: 'Late Antiquity',     start: 0,      end: 500,   weight: 4 },
+  { name: 'Middle Ages',        start: 500,    end: 1500,  weight: 2 },
+  { name: 'Early Modern',       start: 1500,   end: 1800,  weight: 1 },
+  { name: 'Modern',             start: 1800,   end: 2100,  weight: 0.3 },
+]
+
+const pickWeighted = (items, weightFn) => {
+  const total = items.reduce((s, i) => s + weightFn(i), 0)
+  if (total <= 0) return items[Math.floor(Math.random() * items.length)]
+  let roll = Math.random() * total
+  for (const item of items) {
+    roll -= weightFn(item)
+    if (roll <= 0) return item
+  }
+  return items[items.length - 1]
+}
+
 export const getRandomArtifact = async mode => {
   const db = await initDB()
   return await getArtifactRecursive(mode, db)
 }
 
-const getArtifactRecursive = async (mode, db) => {
+const getArtifactRecursive = async (mode, db, attempt = 0) => {
   const modeInfo = modes[mode]
 
   const criteria = { problematic: { $ne: true } }
@@ -22,6 +51,19 @@ const getArtifactRecursive = async (mode, db) => {
   }
   if (mode === 'Ea Nasir Mode') {
     criteria['medium'] = { $regex: /copper/i }
+  }
+
+  // Era weighting: for general modes, pick a weighted era bucket first.
+  // This rebalances the post-1500 skew at sample time. Skip for Era and
+  // Continent modes, which have their own filters. After a few failed
+  // retries, fall back to no era weighting.
+  const applyEraWeighting = modeInfo?.type !== 'Era'
+    && modeInfo?.type !== 'Continent'
+    && attempt < 3
+  if (applyEraWeighting) {
+    const bucket = pickWeighted(ERA_BUCKETS, b => b.weight)
+    criteria['time.start'] = { $lte: bucket.end }
+    criteria['time.end'] = { $gte: bucket.start }
   }
 
   // Country-weighted sampling: pick a country using sqrt-weighted probability,
@@ -39,15 +81,11 @@ const getArtifactRecursive = async (mode, db) => {
       { $group: { _id: '$location.country', count: { $sum: 1 } } },
     ]).toArray()
     if (countryCounts.length > 0) {
-      const weights = countryCounts.map(c => ({ country: c._id, w: Math.sqrt(c.count) }))
-      const totalWeight = weights.reduce((s, c) => s + c.w, 0)
-      let roll = Math.random() * totalWeight
-      let picked = weights[0].country
-      for (const { country, w } of weights) {
-        roll -= w
-        if (roll <= 0) { picked = country; break }
-      }
-      criteria['location.country'] = picked
+      const picked = pickWeighted(
+        countryCounts.map(c => ({ country: c._id, w: Math.sqrt(c.count) })),
+        c => c.w
+      )
+      criteria['location.country'] = picked.country
     }
   }
 
@@ -56,6 +94,6 @@ const getArtifactRecursive = async (mode, db) => {
     { $sample: { size: 1 } }
   ]).toArray())[0]
 
-  if (!artifact) return await getArtifactRecursive(mode, db)
+  if (!artifact) return await getArtifactRecursive(mode, db, attempt + 1)
   return artifact
 }
