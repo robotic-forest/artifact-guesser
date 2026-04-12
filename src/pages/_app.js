@@ -5,7 +5,9 @@ import { SWRConfig } from 'swr'
 import { GlobalStyles } from "@/components/GlobalStyles"
 import { PromiseDialog } from '@/components/dialogs/Dialog'
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useRouter } from 'next/router';
 import { usePreviousRoute } from '@/hooks/usePreviousRoute';
+import { trackPageview } from '@/lib/analytics';
 import { MultiplayerProvider } from '@/components/multiplayer/context/MultiplayerContext'; // Import MultiplayerProvider
 import { GlobalChatProvider } from '@/contexts/GlobalChatContext'; // Import GlobalChatProvider
 import io from "socket.io-client"
@@ -43,6 +45,15 @@ export const useTheme = (localTheme) => {
 let CyberInvocation; export default CyberInvocation = ({ Component, pageProps }) => {
   const previousRoute = usePreviousRoute()
   const [t, setTheme] = useState(theme)
+
+  // Track pageviews on route changes
+  const router = useRouter()
+  useEffect(() => {
+    trackPageview() // Initial pageview
+    const handleRouteChange = () => trackPageview()
+    router.events.on('routeChangeComplete', handleRouteChange)
+    return () => router.events.off('routeChangeComplete', handleRouteChange)
+  }, [])
   
   return (
     <SWRConfig value={{ fetcher, onError: err => console.error(err) }}>

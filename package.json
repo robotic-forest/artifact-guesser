@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.11.0",
     "@react-three/drei": "^9.78.1",
     "@react-three/fiber": "^8.13.4",
+    "@vercel/og": "^0.6.8",
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "iron-session": "^6.1.3",

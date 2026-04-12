@@ -11,6 +11,7 @@ import toast from "react-hot-toast"
 import { modes } from "../gameui/ModeButton"
 import { generateInsult } from "@/hooks/useInsult"
 import AAAAAA from "../art/AAAAAA"
+import { track } from "@/lib/analytics"
 
 const GameContext = createContext(null)
 
@@ -345,6 +346,13 @@ export const GameProvider = ({ children }) => {
 
     newGame.score += points;
 
+    track('round_completed', {
+      runType: 'personal',
+      gameId: game._id,
+      round: game.round,
+      score: points
+    })
+
     updateGame(newGame); // Update game state
   };
 
@@ -418,6 +426,7 @@ export const GameProvider = ({ children }) => {
 
     // Define the core logic for starting a new game
     const coreNewGameLogic = async () => {
+      track('game_started', { runType: 'personal', mode })
       setLoading(true);
       setIsTimerActive(false); // Ensure timer is off
       if (timerIntervalRef.current) {
@@ -470,6 +479,13 @@ export const GameProvider = ({ children }) => {
       timerIntervalRef.current = null;
     }
     setIsTimerActive(false);
+
+    track('game_completed', {
+      runType: 'personal',
+      gameId: game._id,
+      score: game.score,
+      completed: true
+    })
 
     if (!user.isLoggedIn) axios.post('/api/games/noauth/log');
     updateGame({ ...game, isViewingSummary: true });

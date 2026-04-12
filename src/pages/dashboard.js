@@ -36,7 +36,8 @@ const DashboardPage = () => {
       <div css={{
         position: 'fixed',
         bottom: 8,
-        left: 48,
+        left: 8,
+        '@media (min-width: 600px)': { left: 48 },
       }}>
         <GlobalChat notFixed showHeader backgroundColor='var(--backgroundColorDark)' />
         <LobbyBrowser backgroundColor='var(--backgroundColorDark)' />

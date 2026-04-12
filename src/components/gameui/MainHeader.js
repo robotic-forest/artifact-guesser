@@ -5,6 +5,7 @@ import { artifactsTheme } from "@/pages/artifacts"
 import { BiQuestionMark } from "react-icons/bi"
 import { BsDiscord } from "react-icons/bs"
 import { FaTrophy } from "react-icons/fa"
+import { IoCalendar } from "react-icons/io5"
 import { Tag } from "../tag/Tag"
 import { modes } from "./ModeButton"
 import { useGame } from "../game/GameProvider"
@@ -32,12 +33,26 @@ export const MainHeader = ({ settings }) => {
           )}
         </div>
         <div className='flex items-center'>
+          <Link href='/daily'>
+            <MenuIconButton
+              className='ml-1.5'
+              css={{
+                border: '1px solid #00000033',
+                '@media (max-width: 600px)': { marginLeft: 0 }
+              }}
+              tooltip="Today's Run"
+              theme={{
+                textColor: '#ffffff',
+                primaryColor: '#4f95ff',
+                backgroundColor: '#4f95ff'
+              }}
+            >
+              <IoCalendar />
+            </MenuIconButton>
+          </Link>
           <MenuIconButton
             className='ml-1.5'
-            css={{
-              border: '1px solid #00000033',
-              '@media (max-width: 600px)': { marginLeft: 0 }
-            }}
+            css={{ border: '1px solid #00000033' }}
             tooltip='Highscores'
             theme={{
               textColor: '#000000',

@@ -375,9 +375,22 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
                  <b className='text-lg'>Start New Game</b>
                </SimulatorButton>
                {/* Removed legacyBehavior, Link should wrap the component directly */}
-               <Link href='/multiplayer'>
+               <Link href='/daily'>
                  <SimulatorButton css={{
                    background: '#4f95ff',
+                   boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
+                   ':hover': {
+                     boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',
+                     filter: 'brightness(1.1)',
+                     transition: 'box-shadow 0.2s'
+                   }
+                 }}>
+                   <b className='text-lg'>Play Today's Run</b>
+                 </SimulatorButton>
+               </Link>
+               <Link href='/multiplayer'>
+                 <SimulatorButton css={{
+                   background: '#7a5fcf',
                    boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffff77',
                    ':hover': {
                      boxShadow: '0 0 180px 0 #ffffff, 0 0 100px 0 #ffffffaa',

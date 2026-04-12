@@ -487,8 +487,11 @@ export const ImageView = ({
 
   // Effect to handle completion
   useEffect(() => {
-    // Ensure we have images and all have attempted to load (success or error)
-    if (totalImages > 0 && (loadedCount + errorImgs.length) === totalImages) {
+    // Every image in the original list has either loaded or errored.
+    // Use imgs.length (not totalImages) because totalImages shrinks as
+    // errors accumulate, which otherwise makes this check unsatisfiable
+    // when some images fail (e.g. .tif files that browsers can't decode).
+    if (imgs?.length > 0 && (loadedCount + errorImgs.length) === imgs.length) {
       // Call setLoadingComplete for layout adjustments (can be called multiple times if bounds change)
       setLoadingComplete && setLoadingComplete(bounds);
 

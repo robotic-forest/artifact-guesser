@@ -27,7 +27,7 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
   const router = useRouter()
   useTheme(theme)
 
-  const noauthroutes = ['/', '/artifacts', '/about', '/games/[id]', '/artifacts/[id]', '/moloch']
+  const noauthroutes = ['/', '/artifacts', '/about', '/games/[id]', '/artifacts/[id]', '/moloch', '/support']
   if (user && !user.isLoggedIn && !noauthroutes.includes(router.pathname)) router.push('/')
 
   return (

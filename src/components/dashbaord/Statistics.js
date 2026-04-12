@@ -17,6 +17,7 @@ import { ArtifactCountMap } from "./ArtifactCountMap"
 import { Behistun } from "./Behistun"
 // import { Notes } from "./Notes" // Notes component seems unused, commenting out
 import { Collosi } from "./Collosi"
+import { Analytics } from "./Analytics"
 // modes and Dropdown moved to Games.js
 import { Games } from "./Games/Games" // Updated import path
 
@@ -33,6 +34,11 @@ export const Statistics = () => {
   return (
     <div className='grid grid-cols-1 md:gap-2 md:grid-cols-2'>
       <div>
+        <Analytics />
+        {/* <Behistun /> */}
+        {/* <Notes /> */}
+      </div>
+      <div>
         <GoatStats />
         <DashInfo
           title={<><FaUser className='text-xs mr-3'/>Accounts</>}
@@ -41,10 +47,6 @@ export const Statistics = () => {
           theme={accountTheme}
           actions={<AllAccountActions />}
         />
-        {/* <Behistun /> */}
-        {/* <Notes /> */}
-      </div>
-      <div>
         {/* Replace the old DashInfo with the new Games component */}
         <Games />
 
@@ -68,7 +70,7 @@ export const Statistics = () => {
             </div>
           )}
         />
-        <Collosi className='flex justify-end mb-2' />
+        {/* <Collosi className='flex justify-end mb-2' /> */}
 
       </div>
     </div>
