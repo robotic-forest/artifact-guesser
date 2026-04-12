@@ -1,0 +1,65 @@
+name: Test Suite
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run lint
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tests/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: tests
+      - run: npm run test:api
+        working-directory: tests
+        env:
+          SESSION_PASSWORD: ci-test-password-that-is-at-least-32-chars!!
+          SECRET: ci-test-jwt-secret
+          DOMAIN: http://localhost:3099
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tests/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: tests
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests
+      - run: npm run test:e2e
+        working-directory: tests
+        env:
+          SESSION_PASSWORD: ci-test-password-that-is-at-least-32-chars!!
+          SECRET: ci-test-jwt-secret
+          DOMAIN: http://localhost:3099

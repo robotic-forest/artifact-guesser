@@ -1,0 +1,22 @@
+{
+  "name": "ag-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:chat": "vitest run --reporter=verbose chat",
+    "test:api": "vitest run --reporter=verbose api",
+    "test:smoke": "vitest run --reporter=verbose api/smoke.test.js",
+    "test:e2e": "npx playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "bcryptjs": "^3.0.3",
+    "mongodb": "^6.6.2",
+    "mongodb-memory-server": "^10.4.0",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
+    "vitest": "^3.1.1"
+  }
+}
