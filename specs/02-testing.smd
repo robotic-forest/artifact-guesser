@@ -1,0 +1,109 @@
+# Testing
+
+## Test Architecture
+
+Tests live in `tests/` inside the artifact-guesser repo. Two frameworks:
+
+- **Vitest**: API integration tests + chat socket tests
+- **Playwright**: E2E browser tests (Chromium)
+
+## API Integration Tests
+
+### How They Work
+
+A Vitest global setup (`tests/helpers/global-api-setup.js`) runs once per test session:
+
+1. Starts MongoMemoryServer (ephemeral MongoDB)
+2. Starts Next.js dev server on port 3099 with test env vars
+3. Warms up all API routes (sequential fetch to each endpoint)
+4. Writes connection info to `.test-env.json` for test workers
+5. Tests hit real HTTP endpoints — no mocks, no handler reimplementation
+6. Teardown kills all processes by port
+
+### Auth in Tests
+
+Tests use the real `/api/signup` and `/api/login` endpoints to get session cookies. The `createUser()` and `loginUser()` helpers in `tests/helpers/api-env.js` handle this.
+
+### Data Seeding
+
+Factory functions in `tests/helpers/seed.js`:
+- `createTestArtifact(db, overrides)` — single artifact with valid images
+- `createTestArtifacts(db, count)` — batch with varied countries/museums
+- `createTestAccount(db, overrides)` — account with bcrypt-hashed password
+- `createTestDailyChallenge(db, artifactIds)` — daily challenge definition
+- `clearAllCollections(db)` — wipes all collections between tests
+
+### Test Files
+
+| File | Tests | Coverage |
+|---|---|---|
+| `api/smoke.test.js` | 6 | App boots, random artifact shape, login errors, daily endpoint, static assets, session roundtrip |
+| `api/auth.test.js` | 12 | Signup, login, logout, session persistence, duplicate email, protected routes |
+| `api/daily.test.js` | 7 | Daily challenge creation, game lifecycle, score persistence, leaderboard ranking |
+| `api/games.test.js` | 7 | Game CRUD, mode selection, cross-user edit prevention, random artifact |
+| `api/challenges.test.js` | 5 | Challenge create/fetch, artifact consistency, 404/400 handling |
+| `chat/*.test.js` | 4 files | Chat persistence, deletion, pagination, email notifications (Socket.IO) |
+
+Total: 37 API integration tests.
+
+### Running
+
+```bash
+cd tests
+npm run test          # all tests (chat + API)
+npm run test:api      # API tests only
+npm run test:smoke    # smoke tests only
+npm run test:chat     # chat tests only
+```
+
+### Performance
+
+- Warmup (MongoMemoryServer + Next.js + route compilation): ~5 minutes
+- Actual test execution: ~5 seconds
+- Total wall time: ~5.5 minutes
+- Resource usage after warmup: ~350MB RAM, <1% CPU
+
+## E2E Tests (Playwright)
+
+Config: `tests/e2e/playwright.config.js`
+
+Uses Playwright's `webServer` to auto-start Next.js. Chromium only.
+
+```bash
+cd tests
+npm run test:e2e
+```
+
+### Current Specs
+- `e2e/flows/main-game.spec.js` — homepage loads, game controls appear, Today's Run link exists
+- `e2e/flows/daily-challenge.spec.js` — daily page loads, Today's Run tag, game controls, guess validation
+
+## CI Pipeline
+
+GitHub Actions: `.github/workflows/test.yml`
+
+Three parallel jobs:
+1. **lint** — `npm run lint`
+2. **integration-tests** — `npm run test:api` (Vitest + MongoMemoryServer)
+3. **e2e-tests** — Playwright with Chromium
+
+No secrets needed. MongoMemoryServer eliminates external DB dependency.
+
+## Adding New Tests
+
+To test a new API endpoint:
+
+1. Add a test file in `tests/api/your-feature.test.js`
+2. Import `connectToTestEnv`, `createUser`, `authGet`, `authPost` from `../helpers/api-env.js`
+3. Import seed helpers from `../helpers/seed.js`
+4. Use `beforeAll` to connect, `beforeEach` to clear collections, `afterAll` to disconnect
+5. If the endpoint needs route warmup, add it to `warmupRoutes` in `global-api-setup.js`
+
+## Known Bugs Documented in Tests
+
+Tests intentionally document known bugs with comments rather than asserting ideal behavior:
+- Wrong password acceptance (login.js precedence bug)
+- Duplicate username allowed (signup.js missing check)
+- 500 instead of 401 (verifyAuth called without res)
+
+When these bugs are fixed, tighten the assertions.

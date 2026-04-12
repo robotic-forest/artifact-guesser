@@ -1,0 +1,78 @@
+# Daily Challenge System
+
+## Overview
+
+"Today's Run" — a 3-round daily challenge with the same artifacts for every player. The main public growth surface and recurring engagement driver.
+
+## How It Works
+
+### Artifact Selection
+On first request each day (UTC), `pickValidatedArtifacts` selects 3 artifacts:
+- 70% chance each pick is `isHighlight`, 30% chance it's any artifact
+- Source-aware: avoids picking multiple artifacts from the same museum domain
+- Image validation: HEAD-probes each candidate's images, rejects artifacts with no reachable renderable images
+- Unrenderable formats (.tif, .heic, etc.) are stripped from the response
+- Broken artifacts are marked `problematic: true` in the DB
+
+File: `src/pages/api/daily/current.js`
+
+### Game Lifecycle
+
+**Logged-in users:**
+- Server creates a `dailyGames` document on first visit
+- One per user per day (enforced by `{userId, dateKey}` uniqueness)
+- Round guesses saved via `POST /api/daily/edit`
+- Re-fetching returns the same in-progress or completed game
+
+**Anonymous users:**
+- Game stored in localStorage keyed by `daily_${dateKey}`
+- Once completed, the game is preserved (no replay until next day)
+- Signing up after completion does not retroactively save the anonymous score
+
+### Scoring
+- 3 rounds, 200 points max per round (100 date + 100 country)
+- Total: 600 points max
+- Same scoring logic as the personal game
+
+## API Endpoints
+
+| Endpoint | Method | Auth | Purpose |
+|---|---|---|---|
+| `/api/daily/current` | GET | Optional | Get/create today's daily + user's game |
+| `/api/daily/edit` | POST | Required | Save round guesses |
+| `/api/daily/artifact` | GET | None | Fetch artifact by ID (for rounds 2-3) |
+| `/api/daily/leaderboard` | GET | None | Top 20 scores for a date |
+| `/api/daily/reset` | POST | Admin | Delete today's daily + games (emergency) |
+| `/api/daily/tease` | GET | None | Random highlight artifact image for share cards |
+
+## Frontend Components
+
+All in `src/components/daily/`:
+- `DailyProvider.js` — state management (mirrors GameProvider interface)
+- `DailyGame.js` — game UI with map, date slider, guess button
+- `DailyHeader.js` — header with "Today's Run" tag
+- `DailyRoundSummary.js` — per-round reveal
+- `DailySummary.js` — final score, leaderboard, share card, challenge CTA
+
+## Friend Challenges
+
+Built on top of the daily system. A challenge preserves the same 3 artifact IDs.
+
+### Flow
+1. Player completes daily → clicks "Copy Challenge Link"
+2. Challenge created via `POST /api/challenges/create` (pre-created on summary render)
+3. Recipient opens `/challenge/[id]` → plays same 3 artifacts
+4. Score comparison shown on completion (You vs Challenger)
+
+### Components
+- `ChallengeProvider.js` — state management
+- `ChallengeGame.js` — game UI with challenge banner
+- `ChallengeSummary.js` — score comparison view
+
+## Share Cards
+
+Dynamic OG image at `/api/og/daily` (edge runtime, @vercel/og):
+- 1200x630 PNG with score, date, random artifact tease
+- Referenced by OG meta tags on `/daily` and `/challenge/[id]`
+- Inline preview on daily summary screen
+- Tease image is a random highlight artifact (not from today's run)

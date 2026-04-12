@@ -1,0 +1,47 @@
+# Environment Configuration
+
+## Required Environment Variables
+
+| Variable | Purpose | Example |
+|---|---|---|
+| MONGODB_URI | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/...` |
+| MONGODB_DATABASE | Database name | `production`, `staging`, `ag_test` |
+| SESSION_PASSWORD | iron-session encryption (32+ chars) | random string |
+| SECRET | JWT signing key | random string |
+| STRIPE_LIVE_SECRET_KEY | Stripe API key | `sk_live_...` or `sk_test_...` |
+| MAILJET_USER | Mailjet API username | API key |
+| MAILJET_PASSWORD | Mailjet API password | Secret key |
+| DOMAIN | App domain for redirects | `https://artifactguesser.com` |
+
+## Optional Variables
+
+| Variable | Purpose | Default |
+|---|---|---|
+| NEXT_PUBLIC_SOCKET_URL | Socket.IO server | `http://localhost:9667` |
+| GOATCOUNTER_TOKEN | GoatCounter API (legacy) | none |
+
+## Environment Contexts
+
+### Production
+- Vercel deployment
+- `MONGODB_DATABASE=production` (or omitted, defaults to `production`)
+- `NODE_ENV=production`
+- Real Stripe keys, real Mailjet credentials
+
+### Staging / Local Dev
+- `npm run dev` (port 5000)
+- `MONGODB_DATABASE=staging`
+- Same Atlas cluster, separate database
+- Can use Stripe test keys
+
+### Test
+- MongoMemoryServer (ephemeral, in-process)
+- `MONGODB_DATABASE=ag_test`
+- Fake Stripe/Mailjet credentials
+- No external network dependencies except artifact image URLs
+
+## Files
+- `.env` — local secrets (gitignored)
+- `.env.example` — template documenting all variables
+- `src/lib/apiUtils/mongoclient.js` — connection management
+- `src/lib/apiUtils/mongodb.js` — database handle with env-driven name

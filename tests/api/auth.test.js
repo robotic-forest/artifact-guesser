@@ -136,10 +136,9 @@ describe('Logout', () => {
 });
 
 describe('Protected routes', () => {
-  // games/current.js calls verifyAuth(req) without res → crashes → 500
   it('rejects unauthenticated access to /api/games/current', async () => {
     const res = await fetch(`${baseUrl}/api/games/current`);
-    expect([401, 500]).toContain(res.status);
+    expect(res.status).toBe(401);
   });
 
   it('rejects unauthenticated access to /api/accounts/edit', async () => {
@@ -148,6 +147,6 @@ describe('Protected routes', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: 'hacker' }),
     });
-    expect([401, 500]).toContain(res.status);
+    expect(res.status).toBe(401);
   });
 });

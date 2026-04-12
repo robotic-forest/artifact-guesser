@@ -27,7 +27,7 @@ export const MainHeader = ({ settings }) => {
             <span className='mt-[1px]'>Artifact Guesser</span>
           </div>
           {game?.mode && (
-            <Tag className='ml-1.5' css={{ height: 24, padding: '3px 6px 2px' }} bold color={modes[game.mode].color}>
+            <Tag className='ml-1.5' css={{ height: 24, padding: '3px 6px', lineHeight: '18px' }} bold color={modes[game.mode].color}>
               {game.mode}
             </Tag>
           )}

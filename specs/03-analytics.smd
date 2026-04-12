@@ -1,0 +1,106 @@
+# Analytics System
+
+## Overview
+
+First-party event-based analytics system replacing GoatCounter. Collects traffic, gameplay, sharing, and monetization events into a single `analyticsEvents` MongoDB collection.
+
+## Client-Side Tracker
+
+File: `src/lib/analytics.js`
+
+### IDs
+- `anonymousId` — persistent, stored in localStorage (`ag_anon_id`), survives sessions
+- `sessionId` — per-session, stored in sessionStorage (`ag_session_id`)
+- `userId` — attached server-side when user is authenticated
+
+### UTM Capture
+Reads `utm_source`, `utm_medium`, `utm_campaign` from URL on first page load per session.
+
+### Usage
+```js
+import { track } from '@/lib/analytics'
+
+track('event_type', { gameId: '...', score: 200, runType: 'daily' })
+```
+
+Events are fire-and-forget (non-blocking). Localhost events are silently skipped.
+
+### Pageview Tracking
+Automatic via `_app.js` — `trackPageview()` fires on initial load and every `routeChangeComplete` event.
+
+## Server-Side Collection
+
+Endpoint: `POST /api/analytics/event`
+
+Accepts both authenticated and anonymous events. Adds server-side fields:
+- `ip` — from `x-forwarded-for` or socket
+- `userAgent` — from request header
+- `occurredAt` — server timestamp
+- `source: 'internal'`
+
+## Event Types
+
+### Traffic
+- `pageview` — every page load/navigation
+
+### Personal Game
+- `game_started` — new personal game created
+- `round_completed` — guess submitted (with score, round number)
+- `game_completed` — final summary viewed (with total score)
+
+### Daily Challenge
+- `daily_run_started` — daily challenge loaded (fresh start only, not re-entries)
+- `daily_round_completed` — daily round guessed (with score, dateKey)
+- `daily_run_completed` — daily challenge finished (with total score)
+
+### Sharing & Challenges
+- `challenge_sent` — challenge link created/copied
+- `challenge_opened` — challenge page loaded by recipient
+- `challenge_completed` — challenge finished by recipient
+- `score_shared` — share score action taken
+
+### Monetization
+- `support_cta_clicked` — support link clicked (with placement context)
+
+## Reporting API
+
+Endpoint: `GET /api/analytics/report` (Admin-only)
+
+### Report Types
+
+**overview** — total views, unique visitors, event breakdown by type
+**funnel** — game completion funnel + daily run funnel with step counts
+**traffic** — views by day, top pages, top referrers
+
+### Query Parameters
+- `type` — report type (overview, funnel, traffic)
+- `period` — time range (24h, 7d, 30d, 90d)
+
+## Dashboard
+
+Admin dashboard at `/dashboard` includes an Analytics panel with:
+- Period selector buttons
+- Views + unique visitors stat boxes
+- Event breakdown (alphabetically sorted, stable across periods)
+- Game funnel visualization with drop-off percentages
+- Daily run funnel
+- Views-by-day bar chart with counts in bars
+- Top pages and top referrers lists
+
+## GoatCounter Migration
+
+Status: **Not yet done**
+
+Plan:
+1. Export GoatCounter historical data (path, timestamp, referrer, session)
+2. Import into analyticsEvents with `source: 'goatcounter'` provenance
+3. Validate counts match during short overlap period
+4. Remove GoatCounter script and `/api/goatcounter` proxy endpoint
+
+## MongoDB Indexes
+
+```
+analyticsEvents: { type: 1, occurredAt: -1 }
+analyticsEvents: { occurredAt: -1 }
+analyticsEvents: { anonymousId: 1, type: 1 }
+```

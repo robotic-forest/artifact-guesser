@@ -21,10 +21,20 @@ const TEST_DB = 'ag_test';
 let mongod, mongoClient, nextProcess;
 
 export async function setup() {
-  // Kill any leftover processes from previous runs
+  // Kill any leftover processes and remove Next.js dev lock file
   try {
     const { execSync } = await import('child_process');
-    execSync(`kill -9 $(lsof -t -i:${TEST_PORT}) 2>/dev/null || true`, { stdio: 'ignore' });
+    const pids = execSync(`lsof -t -i:${TEST_PORT} 2>/dev/null`, { encoding: 'utf-8' }).trim();
+    if (pids) {
+      for (const pid of pids.split('\n')) {
+        try { process.kill(Number(pid), 9); } catch {}
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  } catch {}
+  try {
+    const fs = await import('fs');
+    fs.rmSync(path.resolve(APP_DIR, '.next/dev/lock'), { force: true });
   } catch {}
 
   mongod = await MongoMemoryServer.create();

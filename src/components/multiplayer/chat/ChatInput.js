@@ -36,13 +36,16 @@ export const ChatInput = ({ socket, lobbyId, readOnly }) => {
         readOnly={readOnly} // Use readOnly to prevent typing but allow clicks
         css={{
           flexGrow: 1,
-          opacity: isEffectivelyDisabled ? 0.6 : 1, // Style based on effective disabled state
-          cursor: isEffectivelyDisabled ? 'not-allowed' : 'text', // Style based on effective disabled state
-          background: isEffectivelyDisabled ? 'var(--backgroundColorDark)' : 'var(--backgroundColorSlightlyLight)', // Style based on effective disabled state
+          opacity: isEffectivelyDisabled ? 0.6 : 1,
+          cursor: isEffectivelyDisabled ? 'not-allowed' : 'text',
+          background: isEffectivelyDisabled ? 'var(--backgroundColorDark)' : 'var(--backgroundColorSlightlyLight)',
+          color: 'var(--textColor)',
+          border: '1px solid var(--textSuperLowOpacity)',
           marginRight: 8,
           padding: '4px 8px',
           outline: 'none',
           borderRadius: 5,
+          fontSize: 'var(--fs)',
           transition: 'all 0.2s ease-in-out',
           '&:focus': {
             background: 'var(--backgroundColorLight)',

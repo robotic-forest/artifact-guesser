@@ -4,7 +4,7 @@ import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
 import { ObjectId } from "mongodb";
 
 const current = async (req, res) => {
-  const v = verifyAuth(req); if (!v) return
+  const v = verifyAuth(req, res); if (!v) return
   const db = await initDB()
 
   const user = await db.collection('accounts').findOne({ _id: new ObjectId(v._id) })

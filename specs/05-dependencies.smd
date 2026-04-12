@@ -1,0 +1,64 @@
+# Dependencies
+
+## Core Dependencies
+
+| Package | Version | Role | Upgrade Risk |
+|---|---|---|---|
+| next | 13.4.10-canary.2 | Framework | HIGH — pages router changes, edge runtime |
+| react / react-dom | 18.2.0 | UI | HIGH — React 19 is a major shift |
+| mongodb | 6.6.2 | Database driver | MEDIUM — query API changes |
+| iron-session | 6.1.3 | Auth sessions | MEDIUM — API changed significantly in v8 |
+| stripe | 15.10.0 | Payments | MEDIUM — large version gap to v22 |
+
+## UI Dependencies
+
+| Package | Version | Role | Upgrade Risk |
+|---|---|---|---|
+| @emotion/react | 11.11.1 | CSS-in-JS | LOW |
+| @emotion/styled | 11.11.0 | CSS-in-JS | LOW |
+| styled-components | 6.1.11 | CSS-in-JS | LOW |
+| tailwindcss | 3.3.2 | Utility CSS | HIGH — v4 has new config format |
+| react-icons | 4.10.1 | Icons | MEDIUM — v5 renamed some icons |
+| react-hotkeys-hook | 4.5.0 | Keyboard shortcuts | MEDIUM — API changes in v5 |
+
+## Game-Specific Dependencies
+
+| Package | Version | Role | Upgrade Risk |
+|---|---|---|---|
+| three | 0.154.0 | 3D rendering | MEDIUM — breaking changes common |
+| @react-three/fiber | 8.13.4 | React Three.js | MEDIUM |
+| @react-three/drei | 9.78.1 | Three.js helpers | MEDIUM |
+| react-map-interaction | (in use) | Map zoom/pan | LOW |
+
+## Data / Network
+
+| Package | Version | Role | Upgrade Risk |
+|---|---|---|---|
+| axios | 1.6.8 | HTTP client | LOW |
+| swr | 2.2.5 | Data fetching | LOW |
+| socket.io-client | 4.7.5 | Real-time | LOW |
+| node-mailjet | 6.0.5 | Email | LOW |
+
+## Upgrade Strategy
+
+### Phase 1: Safe Upgrades (patch/minor within same major)
+Run `npm update` to pick up semver-compatible updates. Run test suite. If green, commit.
+
+Packages: @emotion/*, axios, swr, socket.io-client, node-mailjet, react-hook-form, react-hot-toast, react-select, react-textarea-autosize, react-tooltip, react-use-measure, styled-components, postcss, autoprefixer, jsonwebtoken
+
+### Phase 2: Major Upgrades (one branch per package)
+Order by risk, lowest first:
+1. mongodb 6→7
+2. react-icons 4→5
+3. react-hotkeys-hook 4→5
+4. iron-session 6→8
+5. bcryptjs 2→3
+6. stripe 15→22
+7. Next.js 13→14 (then 14→15)
+8. React 18→19
+9. tailwindcss 3→4
+
+Per upgrade: branch → install → build → test suite → PR
+
+### Lock File
+Use `package-lock.json` (npm). Delete `yarn.lock` if it exists.

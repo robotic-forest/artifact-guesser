@@ -1,0 +1,97 @@
+# Architecture
+
+## Stack
+
+Artifact Guesser is a Next.js 13 application using the pages router.
+
+- **Frontend**: React 18, Emotion CSS-in-JS, Tailwind CSS, styled-components
+- **Backend**: Next.js API routes (pages/api/), Node.js runtime
+- **Database**: MongoDB Atlas (single cluster, env-driven database name)
+- **Auth**: iron-session (cookie-based, `monolith_auth` cookie)
+- **Payments**: Stripe (subscriptions, webhooks)
+- **Email**: Mailjet (transactional emails, BCC to admin)
+- **Real-time**: Socket.IO (multiplayer games, global chat)
+- **Analytics**: First-party event system (replaced GoatCounter)
+- **OG Images**: @vercel/og (edge runtime, dynamic PNG generation)
+- **3D**: Three.js + React Three Fiber (artifact visualization, experimental)
+
+## Database
+
+Single MongoDB Atlas cluster: `urcontext.rbv44f0.mongodb.net`
+
+Database name is controlled by `MONGODB_DATABASE` environment variable:
+- Production: `production` (default fallback)
+- Staging/Dev: `staging`
+- Tests: `ag_test` (MongoMemoryServer, ephemeral)
+
+Connection is managed via `src/lib/apiUtils/mongoclient.js`:
+- Development: global variable caching across HMR reloads
+- Production: new connection per cold start, pooled (maxPoolSize: 10)
+
+### Collections
+
+| Collection | Purpose | Key Fields |
+|---|---|---|
+| accounts | User profiles | email, username, password (bcrypt), role, currentMode, currentTimer, subscription |
+| games | Personal game records | userId, round, rounds, score, mode, roundData[], ongoing |
+| artifacts | Museum artifacts (~135K) | name, location, time, images, isHighlight, problematic, source |
+| dailyChallenges | One per day: 3 artifact IDs | dateKey (unique), artifactIds[], rounds |
+| dailyGames | Per-user daily game state | userId + dateKey (unique), score, completed, roundData[] |
+| challenges | Friend challenge definitions | dateKey, artifactIds[], challengerScore, challengerUsername |
+| analyticsEvents | All tracked events | type, occurredAt, path, anonymousId, sessionId, userId, ip |
+| favorites | User favorited artifacts | userId, artifactId |
+| chat_messages | Global chat history | lobby, username, message, timestamp, id |
+| platform | Platform-wide counters | noauthGames |
+
+## API Routes
+
+52 routes under `src/pages/api/`. All use `withSessionRoute()` wrapper for session access.
+
+### Auth Pattern
+```
+const user = verifyAuth(req, res)        // Returns user or sends 401
+const user = verifyAuth(req, res, ['Admin'])  // Role-based, sends 403
+```
+
+### Route Categories
+- **Public (13)**: artifact browsing, daily challenge (anon), random artifact, OG images, Stripe webhooks
+- **Auth-required (34)**: game CRUD, account management, favorites, daily game submission
+- **Admin-only (2)**: mass email, daily reset
+- **Edge runtime (1)**: `/api/og/daily` (OG image generation)
+
+## Authentication
+
+iron-session with cookie-based auth:
+- Cookie: `monolith_auth`
+- Encryption: `SESSION_PASSWORD` env var (32+ chars)
+- JWT tokens signed with `SECRET` env var for internal use
+- Passwords hashed with bcryptjs
+
+### Known Issues
+- `login.js`: admin bypass check has JS precedence bug (`!existingSession?.role === 'admin'`)
+- `signup.js`: no duplicate username validation
+- `games/current.js`: calls `verifyAuth(req)` without `res`, crashes with 500 instead of 401
+
+## Frontend Architecture
+
+### Game State
+- `GameProvider` (`src/components/game/GameProvider.js`): manages personal game state via React context
+- `DailyProvider` (`src/components/daily/DailyProvider.js`): manages daily challenge state
+- `ChallengeProvider` (`src/components/daily/ChallengeProvider.js`): manages friend challenge state
+- All three share the same context shape (round, score, artifact, guessed, timer state)
+
+### Routing
+- `/` — personal game (5-round, resumable)
+- `/daily` — Today's Run (3-round daily challenge)
+- `/challenge/[id]` — friend challenge with score comparison
+- `/multiplayer/[lobbyid]` — real-time multiplayer
+- `/dashboard` — admin dashboard (analytics, accounts, games, artifacts)
+- `/support` — supporter page (Stripe plans)
+- `/artifacts` — artifact database browser
+- `/about` — about page
+
+### Key Patterns
+- `dynamic(() => ..., { ssr: false })` for game components (client-only rendering)
+- SWR for data fetching with axios
+- Emotion CSS prop + Tailwind classes (mixed, both in use)
+- `useHotkeys` for keyboard shortcuts (Enter/Space to advance)

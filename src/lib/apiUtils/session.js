@@ -1,4 +1,4 @@
-import { withIronSessionApiRoute, withIronSessionSsr } from "iron-session/next"
+import { getIronSession } from "iron-session"
 
 const sessionOptions = {
   cookieName: "monolith_auth",
@@ -9,22 +9,28 @@ const sessionOptions = {
 }
 
 export function withSessionRoute(handler) {
-  return withIronSessionApiRoute(handler, sessionOptions)
+  return async function sessionRoute(req, res) {
+    req.session = await getIronSession(req, res, sessionOptions)
+    return handler(req, res)
+  }
 }
 
 export function withSessionSsr(handler) {
-  return withIronSessionSsr(handler, sessionOptions)
+  return async function sessionSsr(context) {
+    context.req.session = await getIronSession(context.req, context.res, sessionOptions)
+    return handler(context)
+  }
 }
 
 export const verifyAuth = (req, res, roles) => {
   if (!req.session.user) {
-    res.status(401).send({ error: 'Unauthorised' })
+    if (res) res.status(401).send({ error: 'Unauthorised' })
     return false
   }
 
   if (roles) {
     if (!roles.includes(req.session.user.role)) {
-      res.status(403).send({ error: 'Forbidden' })
+      if (res) res.status(403).send({ error: 'Forbidden' })
       return false
     }
   }

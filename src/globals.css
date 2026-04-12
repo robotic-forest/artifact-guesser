@@ -1,7 +1,52 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/utilities" layer(utilities);
+@import "tailwindcss/theme" layer(theme);
 
 :root {
   color-scheme: dark;
+}
+
+/* Minimal form reset — replaces Tailwind preflight for form elements.
+   Needed because we skip preflight to avoid clobbering Emotion base styles. */
+input, textarea, select {
+  font: inherit;
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Compact react-tooltip overrides (v5 defaults are too padded) */
+.react-tooltip {
+  padding: 0 !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+  z-index: 1000 !important;
+}
+.react-tooltip [class*="content"] {
+  padding: 2px 8px !important;
+}
+
+/* Ensure select/dropdown elements inherit dark theme */
+select, option {
+  background: var(--backgroundColor, #000);
+  color: var(--textColor, #fff);
 }
