@@ -185,10 +185,10 @@ export const Artifact = ({ artifact: a, roundSummary }) => {
           <div className='absolute pb-1 pr-1 bottom-0 left-0 z-10 flex items-end w-[fit-content]' css={{
             ...(roundSummary ? { paddingLeft: 4 } : { paddingRight: 4 })
           }}>
-            <BuyMerch artifact={a} className='relative' type='babel' babelSize={isMobile ? 0.5 : 0.8} style={{
+            {/* <BuyMerch artifact={a} className='relative' type='babel' babelSize={isMobile ? 0.5 : 0.8} style={{
               top: isMobile && roundSummary ? '-150px' : '-5px',
               left: isMobile && roundSummary ? '10px' : '-5px',
-            }} />
+            }} /> */}
             {/* <div className='flex items-center'>
               <div className='mr-1 p-[1px_6px_1.5px] rounded text-white bg-black border border-white/30'>
                 {a.images.external.length} {a.images.external.length > 1 ? 'images' : 'image'}

@@ -83,14 +83,13 @@ export const GameSummary = ({ game: playedGame }) => {
 
   // Open merch dialog on load for single-player current game summaries
   const isMultiplayer = game?.gameType === 'multiplayer'
+  // Merch popup disabled for now
   const [merchOpen, setMerchOpen] = useState(false)
-  useEffect(() => {
-    if (!isPlayed && !isMultiplayer) {
-      // Show merch popup only sometimes to reduce intrusiveness.
-      // 1/3 chance per GameSummary mount.
-      setMerchOpen(Math.random() < (1 / 3))
-    }
-  }, [isPlayed, isMultiplayer])
+  // useEffect(() => {
+  //   if (!isPlayed && !isMultiplayer) {
+  //     setMerchOpen(Math.random() < (1 / 3))
+  //   }
+  // }, [isPlayed, isMultiplayer])
 
   // Aggregate images from all rounds for richer merch stream
   const merchImages = useMemo(() => {
@@ -279,42 +278,9 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
           </div>
         )}
 
-        {/* {user?.isLoggedIn && !isPlayed && (
-          <div className='w-full flex justify-center p-3 text-black'>
-            <div className='my-3 p-2 pb-0 rounded w-[fit-content] inline-flex items-center flex-wrap justify-end'
-            css={{ background: '#f1d18b' }}>
-              <span className='mr-2 mb-2 pl-1'>
-                Want to help support this project?{' '}
-                All donations go toward development, server costs, and goat-treats.{' '}
-              </span>
-              <MolochButton
-                variant='outlined'
-                onClick={() => setSupportOpen(true)}
-                style={{
-                  width: 'fit-content',
-                  marginBottom: 8,
-                  color: 'black'
-                }}
-              >
-                Learn more
-              </MolochButton>
-              <Link href='https://ko-fi.com/protocodex' passHref target='_blank'>
-                <MolochButton
-                  variant='outlined'
-                  style={{
-                    width: 'fit-content',
-                    marginBottom: 8,
-                    color: 'black'
-                  }}
-                >
-                  Visit KOFI Page
-                </MolochButton>
-              </Link>
-            </div>
-          </div>
-        )} */}
+        {!isPlayed && <GoatKofiAsk />}
 
-        <div className='mb-6 text-center'>
+        {/* <div className='mb-6 text-center'>
           Join our community on{' '}
           <a href='https://discord.gg/MvkqPTdcwm' className='text-blue-300 hover:text-blue-500 hover:underline'>
             Discord
@@ -330,7 +296,7 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
             Instagram
             <BiLinkExternal className='inline ml-1 relative bottom-[2px]' />
           </a>
-        </div>
+        </div> */}
         
         {/* Only show game controls if startNewGame is available (i.e., not viewing an old summary) */}
         {!isPlayed && startNewGame && (
@@ -556,3 +522,70 @@ export const calcScoreColors = (points) => {
 }
 
 // Boops moved to ../art/Money
+
+const KOFI_PICS = [
+  { src: '/me/menpenelope.jpeg', caption: 'Me with Penelope. She is a lot bigger now, and always wanting food. Help me spoil her.' },
+  { src: '/me/badbabe.jpeg', caption: 'My goat, Shakespeare, in a box. Being bad.' },
+  { src: '/me/chickens.jpeg', caption: 'Chickens havin a lil drink' },
+]
+
+const GoatKofiAsk = () => {
+  const [zoomedPic, setZoomedPic] = useState(null)
+
+  const CirclePic = ({ pic, style }) => (
+    <img
+      src={pic.src}
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setZoomedPic(pic) }}
+      css={{
+        width: 68, height: 68, objectFit: 'cover', borderRadius: '50%',
+        cursor: 'pointer', transition: 'transform 0.15s',
+        '&:hover': { transform: 'scale(1.1)' },
+        ...style,
+      }}
+    />
+  )
+
+  return (
+    <>
+      {zoomedPic && (
+        <div
+          className='fixed inset-0 z-50 flex flex-col items-center justify-center'
+          css={{ background: 'rgba(0,0,0,0.85)' }}
+          onClick={() => setZoomedPic(null)}
+        >
+          <img
+            src={zoomedPic.src}
+            css={{ maxWidth: '90vw', maxHeight: '70vh', borderRadius: 8 }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div className='mt-3 text-white text-lg'>{zoomedPic.caption}</div>
+          <button
+            onClick={() => setZoomedPic(null)}
+            className='absolute top-4 right-4 text-white text-2xl'
+            css={{ '&:hover': { opacity: 0.7 } }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      <div className='w-full flex justify-center items-center p-3 mb-4'>
+        <CirclePic pic={KOFI_PICS[0]} style={{ marginRight: 10 }} />
+        <Link href='https://ko-fi.com/protocodex' target='_blank' css={{ textDecoration: 'none', '&:hover': { color: 'inherit' } }}>
+          <div className='rounded' css={{ background: '#f1d18b', padding: '10px 20px' }}>
+            <span className='text-black font-bold'>
+              Hi, I'm Sam. Having fun? Please buy treats for my goats!
+            </span>
+            <MolochButton
+              variant='outlined'
+              style={{ width: 'fit-content', marginLeft: 12, color: 'black' }}
+            >
+              Visit Ko-fi
+            </MolochButton>
+          </div>
+        </Link>
+        <CirclePic pic={KOFI_PICS[1]} style={{ marginLeft: 6 }} />
+        <CirclePic pic={KOFI_PICS[2]} style={{ marginLeft: 6 }} />
+      </div>
+    </>
+  )
+}

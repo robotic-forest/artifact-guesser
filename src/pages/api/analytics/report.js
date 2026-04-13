@@ -31,25 +31,28 @@ const report = async (req, res) => {
 
   try {
     if (reportType === 'overview') {
-      const [totalViews, uniqueVisitors, eventCounts] = await Promise.all([
-        db.collection('analyticsEvents').countDocuments({
-          type: 'pageview',
-          occurredAt: { $gte: since }
-        }),
+      // GoatCounter events have a `count` field (daily total per path).
+      // Internal events have count=1 implicitly (one doc per event).
+      const [viewsAgg, uniqueVisitors, eventCounts] = await Promise.all([
+        db.collection('analyticsEvents').aggregate([
+          { $match: { type: 'pageview', occurredAt: { $gte: since } } },
+          { $group: { _id: null, total: { $sum: { $ifNull: ['$count', 1] } } } }
+        ]).toArray(),
         db.collection('analyticsEvents').distinct('anonymousId', {
           type: 'pageview',
-          occurredAt: { $gte: since }
+          occurredAt: { $gte: since },
+          anonymousId: { $ne: null },
         }),
         db.collection('analyticsEvents').aggregate([
           { $match: { occurredAt: { $gte: since } } },
-          { $group: { _id: '$type', count: { $sum: 1 } } },
+          { $group: { _id: '$type', count: { $sum: { $ifNull: ['$count', 1] } } } },
           { $sort: { count: -1 } }
         ]).toArray()
       ])
 
       return res.json({
         period,
-        totalViews,
+        totalViews: viewsAgg[0]?.total || 0,
         uniqueVisitors: uniqueVisitors.length,
         eventBreakdown: eventCounts.map(e => ({ type: e._id, count: e.count }))
       })
@@ -89,13 +92,13 @@ const report = async (req, res) => {
       const [topPaths, topReferrers, viewsByDay] = await Promise.all([
         db.collection('analyticsEvents').aggregate([
           { $match: { type: 'pageview', occurredAt: { $gte: since } } },
-          { $group: { _id: '$path', count: { $sum: 1 } } },
+          { $group: { _id: '$path', count: { $sum: { $ifNull: ['$count', 1] } } } },
           { $sort: { count: -1 } },
           { $limit: 20 }
         ]).toArray(),
         db.collection('analyticsEvents').aggregate([
           { $match: { type: 'pageview', occurredAt: { $gte: since }, referrer: { $ne: null } } },
-          { $group: { _id: '$referrer', count: { $sum: 1 } } },
+          { $group: { _id: '$referrer', count: { $sum: { $ifNull: ['$count', 1] } } } },
           { $sort: { count: -1 } },
           { $limit: 20 }
         ]).toArray(),
@@ -103,7 +106,7 @@ const report = async (req, res) => {
           { $match: { type: 'pageview', occurredAt: { $gte: since } } },
           { $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$occurredAt' } },
-            count: { $sum: 1 }
+            count: { $sum: { $ifNull: ['$count', 1] } }
           }},
           { $sort: { _id: 1 } }
         ]).toArray()
