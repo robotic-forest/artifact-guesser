@@ -2,13 +2,8 @@ import { modes } from "@/components/gameui/ModeButton"
 import { initDB } from "./mongodb"
 import { countriesWithContinents } from "../countries"
 
-// Era buckets for weighted sampling in general modes (Classic, Highlights,
-// Balanced, Ea Nasir). Modes of type 'Era' and 'Continent' are excluded —
-// those have their own filters already.
-//
-// Weights compensate for the Met/BM bias toward post-1500 content: bronze age
-// is only ~10% of the modern corpus, so without weighting, general play feels
-// overwhelmingly modern. Ancient buckets get a ~10-20x boost, Modern gets cut.
+// Era buckets for weighted sampling in general modes.
+// Weights compensate for the corpus bias toward post-1500 content.
 const ERA_BUCKETS = [
   { name: 'Prehistoric',        start: -10000, end: -3000, weight: 6 },
   { name: 'Bronze Age',         start: -3000,  end: -1200, weight: 5 },
@@ -19,6 +14,19 @@ const ERA_BUCKETS = [
   { name: 'Early Modern',       start: 1500,   end: 1800,  weight: 1 },
   { name: 'Modern',             start: 1800,   end: 2100,  weight: 0.3 },
 ]
+
+// Quality score thresholds per mode. Artifacts below the threshold are
+// excluded. Scores range 0-10, computed by quality-score.js in ag-data.
+// 0-1 = sherds/fragments/trash, 2-3 = borderline, 4-5 = good, 6+ = great
+const QUALITY_THRESHOLDS = {
+  'Classic': 3,
+  'Balanced': 3,
+  'Highlights': 6,
+  'Ea Nasir Mode': 2,     // copper artifacts are niche, don't over-filter
+  'Deep Cuts': 0,         // everything, including sherds
+  // Era and Continent modes default to 3
+  _default: 3,
+}
 
 const pickWeighted = (items, weightFn) => {
   const total = items.reduce((s, i) => s + weightFn(i), 0)
@@ -40,6 +48,13 @@ const getArtifactRecursive = async (mode, db, attempt = 0) => {
   const modeInfo = modes[mode]
 
   const criteria = { problematic: { $ne: true } }
+
+  // Quality score filter — exclude low-quality artifacts from normal play
+  const minScore = QUALITY_THRESHOLDS[mode] ?? QUALITY_THRESHOLDS._default
+  if (minScore > 0) {
+    criteria.quality_score = { $gte: minScore }
+  }
+
   if (mode === 'Highlights') criteria.isHighlight = true
   if (mode === 'Balanced') {
     const pickHighlight = Math.random() > 0.5
@@ -54,9 +69,6 @@ const getArtifactRecursive = async (mode, db, attempt = 0) => {
   }
 
   // Era weighting: for general modes, pick a weighted era bucket first.
-  // This rebalances the post-1500 skew at sample time. Skip for Era and
-  // Continent modes, which have their own filters. After a few failed
-  // retries, fall back to no era weighting.
   const applyEraWeighting = modeInfo?.type !== 'Era'
     && modeInfo?.type !== 'Continent'
     && attempt < 3
@@ -66,11 +78,7 @@ const getArtifactRecursive = async (mode, db, attempt = 0) => {
     criteria['time.end'] = { $gte: bucket.start }
   }
 
-  // Country-weighted sampling: pick a country using sqrt-weighted probability,
-  // then a random artifact from that country. Sqrt weighting prevents dominant
-  // countries (Egypt 84% of Bronze Age) from overwhelming the game, while
-  // still giving larger collections more weight than tiny ones.
-  // Continent mode already picks a country — skip the extra step for it.
+  // Country-weighted sampling: pick a country using sqrt-weighted probability.
   if (modeInfo?.type === 'Continent') {
     const continentCountries = countriesWithContinents.filter(c => c.continent === mode).map(c => c.country)
     const randomCountry = continentCountries[Math.floor(Math.random() * continentCountries.length)]

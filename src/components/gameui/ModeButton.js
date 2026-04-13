@@ -64,6 +64,10 @@ export const modes = {
     splash: EaNasirSplash
     // splashDuration removed
   },
+  'Deep Cuts': {
+    color: '#666666',
+    description: 'Unfiltered. Sherds, fragments, and all. Ultra hard.'
+  },
 
   // Continent Modes
   'Africa': {
