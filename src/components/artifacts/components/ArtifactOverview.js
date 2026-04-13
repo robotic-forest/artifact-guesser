@@ -4,9 +4,8 @@ import { FavoritesToggle } from "./FavoritesToggle"
 import { useArtifact } from "@/hooks/artifacts/useArtifact"
 import useUser from "@/hooks/useUser"
 import { IconButton } from "@/components/buttons/IconButton"
-import { FaRedditAlien } from "react-icons/fa"
+import { FaShare } from "react-icons/fa"
 import toast from "react-hot-toast"
-import { IoCheckmarkSharp } from "react-icons/io5"
 
 export const ArtifactOverview = ({ artifact, style }) => {
   const { updateArtifact } = useArtifact({ artifact })
@@ -34,24 +33,31 @@ export const ArtifactOverview = ({ artifact, style }) => {
             </div>
           </div>
         </div>
-        <div className='flex items-center'>
-          {/* {isAdmin && (
-            <IconButton tooltip={artifact.inPostQueue ? 'Remove from post queue' : 'Add to post queue'} css={{
-              background: '#ffffff55',
+        <div className='flex items-center gap-1.5'>
+          <IconButton
+            tooltip='Copy link'
+            onClick={() => {
+              const url = `${window.location.origin}/artifacts/${artifact?._id}`
+              navigator.clipboard.writeText(url)
+                .then(() => toast.success('Artifact link copied!'))
+                .catch(() => toast.error('Could not copy link'))
+            }}
+            css={{
+              background: 'var(--backgroundColorBarelyLight)',
               '&:hover': {
-                background: '#ffffffaa'
+                background: 'var(--backgroundColorLight)',
+                boxShadow: 'none',
               },
-              marginRight: 6,
-              borderRadius: 3
-            }} onClick={() => {
-              if (artifact.postUrl) return toast.error('This artifact has already been posted!')
-                
-              updateArtifact({ inPostQueue: !artifact.inPostQueue })
-              toast.success(`${artifact.inPostQueue ? 'Removed from' : 'Added to'} post queue!`)
-            }}>
-              {artifact.inPostQueue ? <IoCheckmarkSharp /> :  <FaRedditAlien />}
-            </IconButton>
-          )} */}
+              border: '1px outset',
+              borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+              boxShadow: 'none',
+              borderRadius: 0,
+              height: 24,
+              minWidth: 24,
+            }}
+          >
+            <FaShare style={{ fontSize: 11 }} />
+          </IconButton>
           <FavoritesToggle artifactId={artifact?._id} />
         </div>
       </div>

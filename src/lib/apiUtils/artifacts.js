@@ -23,7 +23,7 @@ const QUALITY_THRESHOLDS = {
   'Balanced': 3,
   'Highlights': 6,
   'Ea Nasir Mode': 2,     // copper artifacts are niche, don't over-filter
-  'Deep Cuts': 0,         // everything, including sherds
+  'Extreme Mode': 0,      // everything, including sherds
   // Era and Continent modes default to 3
   _default: 3,
 }

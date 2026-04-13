@@ -1,0 +1,485 @@
+Artifact Museums + Museum Complex Plan (v1)
+
+Goal
+- Render “museums” that contain rooms of related artifacts (country / period / medium / etc).
+- Introduce a “museum complex”: multiple museums on a shared plane arranged around a central courtyard, growing like the existing room layout.
+- Keep museum sizes bounded and visually consistent (target ~10 artifacts per room, configurable).
+- Generate a URL/spec that encodes artifact selection constraints + grouping/layout so ArtifactGuesser can launch the same view in Protocodex.
+- Use Protocodex backend direct DB query (server-side) against the ArtifactGuesser Mongo.
+
+Key constraint from existing Protocodex WorldMode implementation
+- Rooms are currently derived from Protocodex “page components”:
+  - List-like parents: List | OmniList | ImageList generate rooms
+  - Children are linked via options.parent === listParent.id
+- Courtyard length scales with number of list-parents (rooms). Room length scales with number of children unless overridden.
+- BuildingGenerator currently bundles:
+  - layout derivation (from page components) + scene rendering + environment (Skybox/GroundLayer)
+  => too coupled; needs a clean intermediate world data structure.
+
+============================================================
+1) Museum sizing + grouping
+============================================================
+
+Targets / caps
+- targetArtifactsPerRoom (default 10): soft target, used to compute room count.
+- maxRoomsPerMuseum (default ~12–16): hard cap to prevent giant buildings.
+- maxArtifactsTotal (default ~200–500): hard safety limit for perf.
+
+Deterministic “even distribution with age buckets”
+- Define midYear = (time.start + time.end) / 2
+- Stable sort by (midYear, _id) for deterministic results.
+- Compute requiredRooms = ceil(N / targetArtifactsPerRoom).
+- Split sorted list into requiredRooms contiguous chunks (size ~targetArtifactsPerRoom).
+- Each chunk => one room. Room label can be derived from min/max midYear in that chunk.
+
+If requiredRooms > maxRoomsPerMuseum
+- Preferred: spill into more museums (museum complex / wings) rather than densifying a single building.
+- Optional fallback: increase artifactsPerRoom up to a maxArtifactsPerRoom to fit (less ideal visually).
+
+============================================================
+2) Museum Complex (multiple museums arranged around a courtyard)
+============================================================
+
+Concept
+- A museum complex is to museums what a museum is to rooms:
+  - central courtyard
+  - left/right “slots” along the courtyard length
+  - courtyard length grows with number of museums
+
+Complex layout parameters (initial defaults, tweakable)
+- complex.courtyard.lengthBase: e.g. 20
+- complex.courtyard.width: e.g. 20
+- complex.gap: space between courtyard edge and museum buildings, e.g. 8
+- maxMuseumsPerComplex: hard cap, e.g. 12
+
+Complex courtyard length growth (mirrors existing room logic)
+- M = museumCount
+- pairSlots = ceil(M / 2)
+- if M <= 2: courtyardLength = lengthBase
+- else:      courtyardLength = lengthBase * pairSlots
+
+Museum placement (mirrors doorway/room pairing)
+- For museum index i:
+  - slot = floor(i / 2)
+  - side = (i % 2 === 0) ? -1 : +1
+  - zSpacing = courtyardLength / pairSlots
+  - z = -courtyardLength/2 + zSpacing/2 + slot * zSpacing
+  - x = side * (complex.courtyard.width/2 + complex.gap + museumHalfExtent)
+
+Prevent overlap (variable museum sizes)
+- Each museum has its own computed footprint half-extent:
+  museumHalfExtent = (museumBaseSize * museumSettings.baseScale * museumScale) / 2
+- Use museumHalfExtent in the x placement so large museums get pushed out further automatically.
+
+Environment / groundplane for the complex
+- Exactly one environment (skybox/lighting) and one groundplane at the complex level.
+- Each museum should render with hideEnvironment=true so it contributes only building geometry + exhibits.
+
+============================================================
+3) URL / Spec for ArtifactGuesser <-> Protocodex interop
+============================================================
+
+MuseumComplexSpec (URL-serializable, versioned)
+- Encode as base64url(JSON) under a query param (e.g. ?museum=...).
+- Version with v=1 for future evolution.
+
+MuseumComplexSpec v1 (shape)
+{
+  v: 1,
+  type: "museum_complex",
+  source: "artifact-guesser",
+
+  filter: { ...artifact constraints... },   // whitelisted keys only
+
+  distribution: {
+    targetArtifactsPerRoom: 10,
+    targetRoomsPerMuseum: 10,              // controls museum count from N artifacts
+    maxRoomsPerMuseum: 16,
+    maxMuseumsPerComplex: 12,
+    maxArtifactsTotal: 500,
+    museumSplitMode: "chronological" | "round_robin",
+    roomGroupingMode: "age_quantiles",
+    seed?: "string"
+  },
+
+  complexLayout: {
+    courtyard: { lengthBase: 20, width: 20 },
+    gap: 8
+  },
+
+  museumLayout: {
+    worldStyleOverrides?: { ... },         // matches Protocodex worldStyle structure
+    roomOverride?: { length, width, height, color },
+    imageOverride?: { size, vertical_position }
+  }
+}
+
+Notes on filters (ArtifactGuesser API pattern)
+- ArtifactGuesser already supports /api/artifacts?filter=<JSON>.
+- For URL -> DB safety: Protocodex must whitelist allowed filter keys and coerce types; no arbitrary Mongo operators from URL payloads.
+- Full whitelist, semantics, and security rules: see section 10.
+
+============================================================
+4) Backend: direct DB query (server-side) + move Mongo URI out of code
+============================================================
+
+Current problem
+- protocodex-mainframe/worker-jobs/artifact-guesser/ag-mongo.js currently hardcodes Mongo URI credentials.
+
+Required change
+- Move URI to env var:
+  - AG_MONGODB_URI
+  - (optional) AG_MONGODB_DB=production
+- Keep the dev “global client promise” pattern, but use env URI.
+- Add an explicit startup/runtime error if AG_MONGODB_URI is missing.
+
+Museum query endpoint (server-side)
+- Add a Protocodex mainframe route like:
+  GET /api/ag/museum-complex?spec=<base64url>
+  - Parse MuseumComplexSpec
+  - Whitelist/coerce filter keys
+  - Query AG Mongo directly with limit=maxArtifactsTotal
+  - Return either:
+    A) artifacts (client groups), or
+    B) fully grouped WorldComplexSpec / MuseumComplexSpec materialized with rooms+museums (preferred for determinism).
+
+============================================================
+5) Refactor plan: BuildingGenerator -> MuseumGenerator + clean data model
+============================================================
+
+User direction
+- Rename BuildingGenerator to MuseumGenerator.
+- MuseumGenerator should accept rooms/layout directly.
+- Deriving rooms (from Protocodex page components OR artifacts) must be done in a separate parent/adaptor.
+- MuseumGenerator must be usable by both Protocodex “page components” and Artifact groupings.
+
+Clean intermediate data structure (neutral “world schema”)
+
+WorldComplexSpec (render-ready)
+- env: skybox/lighting/ground config (rendered once)
+- complexLayout: courtyard dims + placement strategy
+- museums: MuseumSpec[]
+
+MuseumSpec
+- id, label
+- worldStyle (palette/dims; compatible with existing worldStyle defaults)
+- rooms: RoomSpec[]
+- courtyardExhibits?: Exhibit[]  // optional
+
+RoomSpec
+- id, label, theme?
+- override?: { length, width, height, color }
+- exhibits: Exhibit[]            // target ~10
+
+Exhibit
+- id
+- kind: 'image' | 'video' | 'model3d' | 'text'
+- asset: { url, width?, height?, thumbnailUrl? }
+- meta?: { title?, subtitle?, href? }
+- display?: { size?, vertical?, rotation? }
+
+Adapters (derivation layer)
+- fromPageComponents(components[]) -> MuseumSpec (and then layout)
+  - preserves current behavior but translated into the neutral schema
+- fromArtifacts(artifacts[], groupingOptions) -> MuseumSpec / WorldComplexSpec
+  - implements age-quantile chunking, museum complex splitting, etc.
+
+MuseumGenerator API (render-only)
+- Accept precomputed layout + neutral exhibits, not Protocodex page components:
+  <MuseumGenerator
+    layout={{ scale, settings, baseSize, courtyardLength, doorways, rooms, roomComponents, entrancePosition, ... }}
+    exhibits={exhibitMapOrArray}
+    hideEnvironment
+    physicsEnabled
+    ...
+  />
+
+Derivation component (parent)
+- MuseumFromComponents:
+  - computes layout (formerly useBuildingLayout) + neutral exhibits from page components
+  - renders <MuseumGenerator layout=... exhibits=... />
+- MuseumFromArtifacts:
+  - groups artifacts -> rooms -> exhibits
+  - computes layout (same machinery, but driven by room/exhibit counts)
+  - renders <MuseumGenerator ... />
+
+Environment split (complex-level)
+- MuseumComplex renders:
+  - global Skybox/lighting
+  - one groundplane
+  - Physics wrapper (single world)
+  - multiple MuseumGenerator instances with hideEnvironment=true
+
+Migration approach (minimize breakage)
+- Phase A: rename + wrappers
+  - Introduce MuseumGenerator (new name), keep temporary wrapper/export for BuildingGenerator compatibility.
+  - Update call sites: Scene3D + StackedMuseums.
+- Phase B: decouple renderers
+  - Refactor RoomComponents/CourtyardMedia to render from Exhibit schema rather than page-component types.
+  - Remove getOmniLists/options.parent coupling from world renderer.
+
+Backwards compatibility guardrail (do not break current Protocodex museum generation)
+- Maintain the existing “page components -> world” path during migration:
+  - Keep a compatibility wrapper that accepts existing `components[]` and produces a server-materializable MuseumSpec.
+  - Only switch existing pages/WorldMode to the new `WorldComplexSpec` endpoint once the renderer can consume MuseumGenerator/MuseumComplex safely.
+- Net effect:
+  - Existing Protocodex page-driven BuildingGenerator behavior continues to work until explicitly migrated.
+  - New Artifact museums/complexes can be implemented alongside it without disrupting legacy flows.
+
+============================================================
+6) Open decisions / follow-ups
+============================================================
+- museumSplitMode: chronological wings vs round-robin variety (both deterministic).
+- server-side vs client-side generation (DECIDED: server-side materializes full WorldComplexSpec).
+- click/HUD behavior for exhibits (DECIDED for v1: open ArtifactGuesser artifact page in a new tab).
+- performance/LOD strategy for large complexes (disable physics or exhibit rendering at distance).
+
+============================================================
+7) Runtime requirements (what we need “live” to implement)
+============================================================
+
+Client runtime (Protocodex)
+- A route/view capable of reading MuseumComplexSpec from URL:
+  - query param: spec=<base64url(JSON)> (or museum=<...>; pick one and standardize)
+  - JSON parse + schema version check (v=1), with safe fallbacks for missing fields
+- A world renderer that can render a complex:
+  - Single environment: skybox + lighting
+  - Single groundplane
+  - Multiple museums positioned around the complex courtyard
+  - Museums rendered with hideEnvironment=true
+- Client behavior in the server-materialized approach:
+  - Fetch WorldComplexSpec by specId (or resolve from an input spec)
+  - Render exactly the museums/rooms/exhibits/placements provided (no regrouping)
+- Adapter implementation(s):
+  - fromArtifacts -> WorldComplexSpec / MuseumSpec (exhibit payload)
+  - fromPageComponents -> MuseumSpec (legacy compatibility)
+- Exhibit rendering support:
+  - For images: URL + optional width/height (nice-to-have for aspect ratio)
+  - For models: GLB URL (optional for v1; can be added later)
+  - HUD/click actions: per-exhibit href to AG artifact detail page
+
+Server runtime (Protocodex mainframe)
+- A direct Mongo connection to ArtifactGuesser DB:
+  - env var AG_MONGODB_URI (REQUIRED)
+  - optional env var AG_MONGODB_DB=production (default production)
+- A server endpoint to resolve artifacts for a spec:
+  - GET /api/ag/museum-complex?spec=<base64url>
+  - Responsibilities:
+    - Parse spec; validate v=1
+    - Whitelist/coerce allowed filter keys (prevent arbitrary Mongo operator injection)
+    - Enforce hard caps (maxArtifactsTotal)
+    - Query artifacts collection with a stable sort key used for determinism
+- Must materialize WorldComplexSpec on the server:
+  - grouping (chronological wings + ~10/room)
+  - labels/time ranges
+  - placements/transforms (museum + exhibit)
+  - stable IDs (museumId/roomId/exhibitId)
+
+Data required from ArtifactGuesser artifacts (minimum fields)
+- _id (string/oid), name/title (optional but useful)
+- time.start, time.end
+- images.thumbnail or images.external[0] (must have at least one usable image URL)
+- location.country (optional, for labeling)
+- medium/culture (optional, for theme metadata)
+
+Operational constraints
+- CORS/auth: endpoint must be callable by protocodex-client
+- Performance: enforce limits + consider caching:
+  - server response caching keyed by spec hash
+  - client caching keyed by spec hash
+
+============================================================
+8) Server-side materialization (final decision)
+============================================================
+
+Decision
+- Everything is generated/materialized server-side into a render-ready WorldComplexSpec.
+- Clients are pure renderers of the server-authored spec (no regrouping or placement math).
+- This is required for future multiplayer/shared museums and cross-client determinism.
+
+Core rule
+- Clients do not recompute splits or placements.
+- Client renders the server-authored WorldComplexSpec and uses stable IDs to reference entities.
+
+WorldComplexSpec v1 (materialized, render-ready)
+- Top-level fields:
+  - v: 1
+  - specId: stable hash of canonicalized MuseumComplexSpec input
+  - generatedAt: timestamp
+  - input: (optional) canonical MuseumComplexSpec used to generate this output (useful for debugging)
+  - env:
+    - lighting config
+    - skybox config
+    - ground config (single groundplane)
+  - complexLayout:
+    - courtyard dims
+    - placement params (gap, width, lengthBase)
+  - museums: MuseumSpec[]
+
+MuseumSpec (materialized)
+- museumId: stable ID
+- label + timeRange
+- transform: { position:[x,y,z], rotation:[x,y,z], scale:[x,y,z] } (at minimum position)
+- worldStyle: resolved settings (defaults + overrides), so the renderer doesn’t need to “deep merge” to be correct
+- rooms: RoomSpec[]
+
+RoomSpec (materialized)
+- roomId: stable ID
+- label + timeRange
+- override: { length,width,height,color } (resolved/clamped if needed)
+- exhibits: Exhibit[]
+
+Exhibit (materialized)
+- exhibitId: stable ID (prefer artifact _id-derived ID when unique)
+- kind: image | video | model3d | text
+- asset: url(s) and any metadata needed to render deterministically (optional width/height)
+- meta: title/subtitle/href (e.g. link back to artifactguesser artifact page)
+- display: final resolved display settings (size/vertical/rotation/etc)
+- placement:
+  - For “everything server-side”, include final world-space placement:
+    { position:[x,y,z], rotation:[x,y,z], axis:'x'|'z', side:-1|1 }
+  - This avoids clients diverging in wall-placement math and simplifies multiplayer (everyone references same transforms).
+
+Handling multi-image artifacts (v1)
+- ArtifactGuesser artifacts usually have:
+  - images.thumbnail (preferred for fast rendering), and
+  - images.external[] (gallery / full-size images)
+- In the museum world, we render ONE image per exhibit for perf and consistency:
+  - primaryImageUrl = images.thumbnail ?? images.external[0]
+  - meta.href = https://artifactguesser.com/artifacts/<artifactId> (open in new tab)
+    => the full multi-image browsing experience lives on the AG artifact page.
+- Optional future-proofing (cheap to include now):
+  - asset.galleryImageUrls = images.external (do not render in-world yet)
+  - asset.thumbnailUrl = images.thumbnail (explicit, if separate from primary)
+- Edge-case rules (server-side, deterministic):
+  - If no usable image URL exists: skip artifact OR emit a placeholder exhibit with a stable “missing” asset.
+  - If primaryImageUrl is invalid/unreachable at runtime:
+    - v1: accept client-side failure (shows missing texture) and rely on href
+    - v2: server can pre-validate or include deterministic fallback list (e.g. all externals).
+
+Canonicalization + specId (determinism)
+- Canonicalize MuseumComplexSpec before hashing:
+  - fill defaults
+  - normalize numeric types
+  - sort arrays where order should not matter (e.g. countries list)
+  - normalize strings (trim)
+- specId = hash(canonicalSpec) (e.g. sha256 base64url, or similar stable digest)
+- Store materialized WorldComplexSpec keyed by specId for caching and shareable URLs.
+
+Stable sorting + splitting (timeline mode)
+- Sort artifacts by (midYear asc, _id asc), where midYear=(time.start+time.end)/2.
+- Split into K museums contiguously (chronological wings).
+- Split each museum into rooms contiguously (~targetArtifactsPerRoom).
+
+Stable IDs (multiplayer readiness)
+- museumId: `${specId}:m:${museumIndex}`
+- roomId:   `${museumId}:r:${roomIndex}`
+- exhibitId:
+  - preferred: `ag:${artifact._id}` (global unique, easy cross-system reference)
+  - if duplicates can occur (same artifact in multiple rooms), use `${roomId}:e:${artifact._id}`
+
+Server endpoints (suggested)
+- POST /api/ag/world/complex/resolve
+  - body: MuseumComplexSpec
+  - response: WorldComplexSpec (materialized) + specId
+- GET /api/ag/world/complex/:specId
+  - response: WorldComplexSpec (materialized)
+
+Multiplayer hook-in (later)
+- A multiplayer “session” references specId + optional lobbyId.
+- Server emits/accepts events referencing museumId/roomId/exhibitId.
+- Clients load WorldComplexSpec by specId, then connect to a socket namespace for presence/position/interaction sync.
+
+============================================================
+9) LODs + performance (v1 targets + reasonable distances)
+============================================================
+
+Core performance levers
+- Hard caps (server): maxMuseumsPerComplex, maxRoomsPerMuseum, maxArtifactsTotal.
+- LOD tiers (client): reduce exhibit rendering + physics as distance increases.
+- Texture strategy: use primaryImageUrl = thumbnail ?? external[0] (smallest practical asset).
+
+Distance units
+- Treat world units as “meters-ish”. A typical museum footprint radius is ~80–120 units (depends on room count and worldStyle).
+- Distances below are chosen so:
+  - “Near” comfortably includes the active museum and immediate courtyard area.
+  - “Mid” includes adjacent museums in the complex.
+  - “Far” collapses distant museums to cheap proxies.
+
+LOD tiers (distance from camera/player to museum center)
+- Tier 0 (near): d <= 150
+  - Render full museum geometry + exhibits (images/models) + colliders for museum + complex ground.
+  - Allow interactions (center-click / tap) to open AG page in new tab.
+- Tier 1 (mid): 150 < d <= 350
+  - Render museum geometry (walls/rooms), but reduce exhibit cost:
+    - Option A (simple): do not render exhibits at all.
+    - Option B (nicer): render a small capped subset (e.g. 1–2 “hero” exhibits per room).
+  - Disable museum interior colliders; keep only complex ground collider.
+- Tier 2 (far): d > 350
+  - Render only a lightweight proxy for the museum:
+    - bounding box, simplified mesh, or even just a label marker.
+  - No exhibits, no colliders, no per-frame updates.
+
+Hysteresis (avoid popping)
+- Use separate enter/exit thresholds per tier (e.g. +/- 20 units) so the museum doesn’t thrash between tiers when you hover near a boundary.
+
+Texture loading budget
+- Only prefetch textures for Tier 0 museums.
+- Optionally prefetch a small number for Tier 1 (hero exhibits) if enabled.
+- Avoid prefetching Tier 2.
+
+Physics strategy
+- Single Physics world, but colliders enabled only for:
+  - complex ground plane, and
+  - Tier 0 museum (or museums) nearest the player.
+- Far museums run with physics disabled entirely.
+
+Server output support for LOD (recommended)
+- Include a museum-level bounding sphere/extent:
+  - museum.bounds = { center:[x,y,z], radius:number }
+  - Client uses this for fast distance checks.
+
+============================================================
+10) Filter whitelist and security model (server-side spec parsing)
+============================================================
+
+Core rule
+- Do NOT accept raw Mongo filter objects or any keys starting with "$" from the client.
+- Build the Mongo query server-side from a typed, whitelisted filter schema only.
+
+Whitelisted filter keys (MuseumComplexSpec.filter)
+- country: string | string[]
+- medium: string | string[]
+- culture: string | string[]
+- startYearMin, startYearMax, endYearMin, endYearMax: number (year bounds)
+- excludeIds: string[] (ObjectIds to exclude)
+- q: string (optional; free-text search)
+
+Recommended semantics (match behavior)
+
+Country: exact match (with normalization)
+- Semantics: match artifacts whose location.country equals one of the given values (after normalization).
+- Implementation: map input to canonical country names (e.g. USA -> United States) and query with $in on location.country (or a normalized field like location.country_norm if you add it).
+- Rationale: countries are a closed-ish set; exact match is fast and index-friendly; normalization handles common variants.
+
+Medium and culture: contains match (safe escaped substring)
+- Semantics: match artifacts where the field contains the given string(s), case-insensitive.
+- Implementation: never accept user-provided regex. Escape the input (escapeRegExp), build { $regex: escaped, $options: 'i' } server-side. Enforce max length (e.g. 64 chars) and optionally restrict to safe character set.
+- Rationale: medium/culture values are often messy and varied; contains is more forgiving for UX.
+
+Time bounds
+- Coerce to numbers; clamp to reasonable year range (e.g. -10000 to 2100) to avoid accidental full scans.
+- Map to Mongo: time.start / time.end with $gte / $lte as in existing buildArtifactCriteria.
+
+excludeIds
+- Validate as array of strings; coerce to ObjectIds; use $nin. Cap array size (e.g. max 50).
+
+Text search (q)
+- Option A: $text index on name (and optionally culture, medium, description). Use { $text: { $search: q } }. Enforce max length and strip control characters.
+- Option B: escaped substring on name only: { name: { $regex: escapeRegExp(q), $options: 'i' } }.
+- Do not allow raw regex syntax in q.
+
+Canonicalization (for specId hashing)
+- When canonicalizing the spec for hashing, use the same normalization as above (country mapping, trimmed/lowercased strings where applicable) so equivalent filters produce the same specId.
+
+

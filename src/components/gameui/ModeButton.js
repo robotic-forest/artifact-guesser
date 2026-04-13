@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { EaNasirSplash } from '../splash/EaNasirSplash';
 
 export const ModeButton = ({ mode, onClick, className, css }) => {
-  const { color, description } = modes[mode]
+  const { color, description, type } = modes[mode]
   const isEaNasirMode = mode === 'Ea Nasir Mode';
+  const isSpecialMode = type === 'Special';
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -14,21 +15,21 @@ export const ModeButton = ({ mode, onClick, className, css }) => {
         <Image
           src="/ea-nasir-cropped.png"
           alt="A small figure of Ea-Nasir"
-          width={120} // Adjust size as needed
-          height={120} // Adjust size as needed
-          className="ea-nasir-image absolute right-[30px] transition-top duration-300 ease-in-out pointer-events-none" // Positioning, transition, initial state, REMOVED z-10
-          style={{ top: hovered ? '-90px' : '-75px' }} // Adjust the top position on hover
-          unoptimized // If the image is static and doesn't need Next.js optimization
+          width={120}
+          height={120}
+          className="ea-nasir-image absolute right-[30px] transition-top duration-300 ease-in-out pointer-events-none"
+          style={{ top: hovered ? '-90px' : '-75px' }}
+          unoptimized
         />
       )}
       <button
         onClick={onClick}
-        className={`relative flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg border-4 border-white/40 ${className}`} // Added relative and overflow-hidden
+        className={`relative flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg ${isSpecialMode ? 'border-2 border-white/20' : 'border-4 border-white/40'} ${className}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         css={{
           background: color,
-          color: 'black',
+          color: isSpecialMode ? 'white' : 'black',
           '&:hover': {
             filter: 'brightness(1.15)'
           },
@@ -36,7 +37,7 @@ export const ModeButton = ({ mode, onClick, className, css }) => {
         }}
       >
         <div>
-          <b>{mode}</b>
+          <b style={isSpecialMode ? { color: '#ef4444' } : undefined}>{mode}</b>
           {description && <div className='text-sm'>{description}</div>}
         </div>
       </button>
@@ -64,8 +65,10 @@ export const modes = {
     splash: EaNasirSplash
     // splashDuration removed
   },
-  'Deep Cuts': {
-    color: '#666666',
+  // Special Modes
+  'Extreme Mode': {
+    type: 'Special',
+    color: '#000000',
     description: 'Unfiltered. Sherds, fragments, and all. Ultra hard.'
   },
 

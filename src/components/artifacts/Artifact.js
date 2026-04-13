@@ -22,6 +22,10 @@ import { Artifact3D } from "../art/Artifact3D"
 import { Immersive2D } from "./components/Immersive2D"
 import { Immersive3D } from "./components/Immersive3D"
 import { BuyMerch } from "./components/BuyMerch"
+import { FavoritesToggle } from "./components/FavoritesToggle"
+import { FaShare } from "react-icons/fa"
+import { Button } from "../buttons/Button"
+import toast from "react-hot-toast"
 
 export const Artifact = ({ artifact: a, roundSummary }) => {
   const [ref, bounds] = useMeasure()
