@@ -24,7 +24,7 @@ export const GlobalChatProvider = ({ children }) => {
   const handleChatHistory = useCallback((payload) => {
     if (!payload || !payload.messages) return;
     const globalMessages = payload.messages.filter(msg => msg.lobby === 'global');
-    console.log('[GlobalChatContext] Received chat-history:', globalMessages.length, 'messages, hasMore:', payload.hasMore);
+    // console.log('[GlobalChatContext] Received chat-history:', globalMessages.length, 'messages, hasMore:', payload.hasMore);
     setGlobalChatMessages(globalMessages);
     setHasMoreMessages(payload.hasMore ?? false);
   }, []);
@@ -32,7 +32,7 @@ export const GlobalChatProvider = ({ children }) => {
   // Handle single new message (incremental update)
   const handleChatMessage = useCallback((payload) => {
     if (typeof payload === 'object' && payload !== null && !Array.isArray(payload) && payload.lobby === 'global') {
-      console.log('[GlobalChatContext] Received single global message:', payload);
+      // console.log('[GlobalChatContext] Received single global message:', payload);
       setGlobalChatMessages(prev => [...prev, payload]);
     }
     // Ignore arrays (legacy) and non-global messages
@@ -40,19 +40,19 @@ export const GlobalChatProvider = ({ children }) => {
 
   // Handle message deletion
   const handleChatMessageDeleted = useCallback(({ id }) => {
-    console.log('[GlobalChatContext] Message deleted:', id);
+    // console.log('[GlobalChatContext] Message deleted:', id);
     setGlobalChatMessages(prev => prev.filter(msg => msg.id !== id));
   }, []);
 
   useEffect(() => {
     if (_socket && isConnected && isRegistered) {
-      console.log('[GlobalChatContext] Socket connected and registered, attaching listeners.');
+      // console.log('[GlobalChatContext] Socket connected and registered, attaching listeners.');
       _socket.on('chat-history', handleChatHistory);
       _socket.on('chat', handleChatMessage);
       _socket.on('chat-message-deleted', handleChatMessageDeleted);
 
       return () => {
-        console.log('[GlobalChatContext] Cleaning up listeners.');
+        // console.log('[GlobalChatContext] Cleaning up listeners.');
         _socket.off('chat-history', handleChatHistory);
         _socket.off('chat', handleChatMessage);
         _socket.off('chat-message-deleted', handleChatMessageDeleted);
@@ -68,7 +68,7 @@ export const GlobalChatProvider = ({ children }) => {
 
   const joinGlobalChat = useCallback(() => {
     if (_socket && isConnected && isRegistered && !isInGlobalChat) {
-      console.log('[GlobalChatContext] Emitting join-global-chat');
+      // console.log('[GlobalChatContext] Emitting join-global-chat');
       _socket.emit('join-global-chat');
       setIsInGlobalChat(true);
     }
@@ -76,7 +76,7 @@ export const GlobalChatProvider = ({ children }) => {
 
   const leaveGlobalChat = useCallback(() => {
     if (_socket && isConnected && isInGlobalChat) {
-      console.log('[GlobalChatContext] Emitting leave-global-chat');
+      // console.log('[GlobalChatContext] Emitting leave-global-chat');
       _socket.emit('leave-global-chat');
       setIsInGlobalChat(false);
       setGlobalChatMessages([]);

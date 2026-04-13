@@ -27,7 +27,7 @@ export const InfoItem = ({ icon, value, list, tooltip, tooltipPlace = 'top', noI
             {React.cloneElement(icon, { style: !noIcon && iconStyle })}
           </div>
         </div>
-        <div css={{ overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 1 }}>
+        <div css={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
           {value || list && Object.keys(list).map(key => (
             <div key={key}>
               <div css={{ color: 'var(--textLowOpacity)', fontSize: '0.9em', marginBottom: 2 }}>
@@ -68,16 +68,15 @@ export const InfoUI = styled.div`
   }
 
   @media (min-width: 1050px) {
-    width: fit-content;
-    margin-right: 40px;
-
-    height: fit-content;
+    width: 100%;
+    margin-bottom: 24px;
 
     .item-container {
-      display: block;
+      display: flex;
+      flex-flow: row wrap;
 
       & > div {
-        width: auto
+        width: 50%
       }
     }
   }

@@ -17,7 +17,7 @@ export const DailyHeader = () => {
           <GiGreekSphinx className='mr-2' />
           <span className='mt-[1px]'>Artifact Guesser</span>
         </div>
-        <Tag className='ml-1.5' css={{ height: 24, padding: '3px 6px 2px' }} bold color='#4f95ff'>
+        <Tag className='ml-1.5' css={{ height: 24, padding: '3px 6px', lineHeight: '18px' }} bold color='#4f95ff'>
           Today's Run
         </Tag>
       </div>

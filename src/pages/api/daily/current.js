@@ -4,12 +4,21 @@ import { ObjectId } from "mongodb"
 import axios from "axios"
 import { stripUnrenderableImages } from "@/lib/apiUtils/artifactImages"
 
+// Domains known to block server-side HEAD requests (Cloudflare 403) but
+// serve images fine to browsers. Skip probing these — trust the URLs.
+const TRUSTED_DOMAINS = [
+  'media.britishmuseum.org',
+  'art.thewalters.org',
+]
+
 /**
  * HEAD-probes an image URL to check if it's reachable.
- * Returns true if the response is 2xx, false otherwise.
+ * Skips trusted domains that block server-side requests.
  */
 const isImageReachable = async (url) => {
   try {
+    const hostname = new URL(url).hostname
+    if (TRUSTED_DOMAINS.some(d => hostname.includes(d))) return true
     const res = await axios.head(url, { timeout: 5000, validateStatus: () => true })
     return res.status >= 200 && res.status < 400
   } catch {
@@ -60,14 +69,18 @@ const pickValidatedArtifacts = async (db, count) => {
       typeof id === 'string' ? new ObjectId(id) : id
     )
 
-    // Weighted coin: prefer highlights but allow non-highlights
-    const useHighlight = Math.random() < HIGHLIGHT_PROBABILITY
+    // Weighted coin: prefer high-quality artifacts but allow standard ones
+    const useHighQuality = Math.random() < HIGHLIGHT_PROBABILITY
 
     const criteria = {
       problematic: { $ne: true },
       _id: { $nin: excludeIds }
     }
-    if (useHighlight) criteria.isHighlight = true
+    if (useHighQuality) {
+      criteria.quality_score = { $gte: 6 }
+    } else {
+      criteria.quality_score = { $gte: 3 }
+    }
 
     const [candidate] = await db.collection('artifacts').aggregate([
       { $match: criteria },

@@ -8,6 +8,7 @@ import { accountTheme } from '..'
 import { GameList } from '@/pages/games'
 import { GiAbstract034 } from 'react-icons/gi'
 import FilterBar from '@/components/datatable/FilterBar'
+import { PlayerJourney } from '@/components/dashbaord/PlayerJourney'
 
 export default function Account() {
   const { account } = useAccount()
@@ -16,22 +17,24 @@ export default function Account() {
 
   return loading ? null : (
     <Layout theme={accountTheme}>
-      <div css={{
-        display: 'flex',
-        flexDirection: 'row',
-        '@media(max-width: 1050px)': {
-          flexDirection: 'column'
-        }
-      }}>
-        <AccountInfo />
-        <div style={{ width: '100%', marginBottom: 24 }}>
+      <div>
+        <AccountInfo actions={<AccountActions />} />
+        <div style={{ width: '100%', minWidth: 0, overflow: 'hidden', marginBottom: 24 }}>
           {account?.status === 'Deactivated' && (
             <InfoBox closed>
               This account has been deactivated
             </InfoBox>
           )}
-          <AccountActions />
-          <div className='mt-8'>
+          {u.isAdmin && account?._id && (
+            <div className='mb-2 p-3' css={{
+              background: 'var(--backgroundColorBarelyLight)',
+              border: '1px outset',
+              borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+            }}>
+              <PlayerJourney accountId={account._id} />
+            </div>
+          )}
+          <div className='mt-4'>
             <FilterBar
               title={(
                 <b className='flex items-center'>

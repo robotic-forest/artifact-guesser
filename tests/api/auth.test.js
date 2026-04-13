@@ -43,12 +43,11 @@ describe('Signup', () => {
     expect(second.body.success).toBe(false);
   });
 
-  // signup does not check for duplicate usernames (only emails)
-  it('allows duplicate username (known gap)', async () => {
+  it('rejects duplicate username', async () => {
     await createUser(baseUrl, { email: 'a@test.com', username: 'samename' });
     const second = await createUser(baseUrl, { email: 'b@test.com', username: 'samename' });
 
-    expect(second.body.success).toBe(true);
+    expect(second.body.success).toBe(false);
   });
 });
 
@@ -76,7 +75,6 @@ describe('Login', () => {
     expect(login.body.success).toBe(true);
   });
 
-  // login.js has a precedence bug in its admin bypass check
   it('rejects wrong password', async () => {
     await createUser(baseUrl, {
       email: 'charlie@test.com',
@@ -85,7 +83,7 @@ describe('Login', () => {
     });
 
     const login = await loginUser(baseUrl, 'charlie', 'WrongPass!');
-    expect(login.body).toHaveProperty('success');
+    expect(login.body.success).toBe(false);
   });
 
   it('rejects nonexistent user', async () => {

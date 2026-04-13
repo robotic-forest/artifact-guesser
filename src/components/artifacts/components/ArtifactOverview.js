@@ -70,6 +70,12 @@ export const ArtifactOverview = ({ artifact, style }) => {
           item1={{ label: 'Medium', value: artifact?.medium }}
           item2={artifact?.classification && { label: 'Classification', value: artifact?.classification }}
         />
+        {isAdmin && artifact?.quality_score !== undefined && (
+          <DetailsDoubleItemAlt mb={12}
+            item1={{ label: 'Quality Score', value: `${artifact.quality_score} / 10` }}
+            item2={artifact?.source?.name && { label: 'Source', value: artifact.source.name }}
+          />
+        )}
       </div>
     </div>
   )

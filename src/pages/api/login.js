@@ -11,14 +11,15 @@ async function loginRoute(req, res) {
   
   try {
     const { identifier, password: formPassword } = req.body
-    let user = await db.collection('accounts').findOne({ 
+    const escaped = identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    let user = await db.collection('accounts').findOne({
       $or: [
-        { email: { $regex: new RegExp(`^${identifier}$`, 'i') } },
-        { username: { $regex: new RegExp(`^${identifier}$`, 'i') } }
+        { email: { $regex: new RegExp(`^${escaped}$`, 'i') } },
+        { username: { $regex: new RegExp(`^${escaped}$`, 'i') } }
       ]
      })
     
-    if (!existingSession || !existingSession?.role === 'admin') {
+    if (!existingSession || existingSession?.role !== 'Admin') {
       if (user && !user.password) {
         res.send({
           success: false,

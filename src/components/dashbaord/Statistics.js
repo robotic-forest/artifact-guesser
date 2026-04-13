@@ -18,6 +18,7 @@ import { Behistun } from "./Behistun"
 // import { Notes } from "./Notes" // Notes component seems unused, commenting out
 import { Collosi } from "./Collosi"
 import { Analytics } from "./Analytics"
+import { Retention } from "./Retention"
 // modes and Dropdown moved to Games.js
 import { Games } from "./Games/Games" // Updated import path
 
@@ -35,6 +36,7 @@ export const Statistics = () => {
     <div className='grid grid-cols-1 md:gap-2 md:grid-cols-2'>
       <div>
         <Analytics />
+        <Retention />
         {/* <Behistun /> */}
         {/* <Notes /> */}
       </div>

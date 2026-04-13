@@ -6,13 +6,14 @@ import moment from "moment"
 
 const signupRoute = async (req, res) => {
   const db = await initDB()
-  const { email, username, password, game } = req.body
+  const { email, username, password, game, anonymousId } = req.body
 
   const newUser = {
     email,
     username,
     status: 'Active',
     role: 'Player',
+    ...(anonymousId && { anonymousId }),
   }
 
   const [_id, error] = await createAccount({
@@ -47,7 +48,19 @@ const signupRoute = async (req, res) => {
   }
   
   await req.session.save()
-  
+
+  // Link anonymous identity to the new account for journey tracking
+  if (anonymousId) {
+    await db.collection('analyticsEvents').insertOne({
+      type: 'identity_linked',
+      occurredAt: new Date(),
+      source: 'internal',
+      anonymousId,
+      userId: _id.toString(),
+      path: '/api/signup',
+    })
+  }
+
   res.send({ success: true })
 }
 

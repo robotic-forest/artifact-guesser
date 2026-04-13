@@ -20,8 +20,13 @@ export const createAccount = async (newAccount, options) => {
   const db = await initDB()
   const data = newAccount
 
-  const accountWithEmail = data.email && await db.collection('accounts').findOne({ email: data.email })
+  const escEmail = data.email?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const accountWithEmail = escEmail && await db.collection('accounts').findOne({ email: { $regex: new RegExp(`^${escEmail}$`, 'i') } })
   if (accountWithEmail) return [null, 'Account with that email already exists.']
+
+  const escUsername = data.username?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const accountWithUsername = escUsername && await db.collection('accounts').findOne({ username: { $regex: new RegExp(`^${escUsername}$`, 'i') } })
+  if (accountWithUsername) return [null, 'Account with that username already exists.']
 
   if (data.password) data.password = await bcrypt.hash(data.password, 10)
 
@@ -32,7 +37,7 @@ export const createAccount = async (newAccount, options) => {
     const url = `${process.env.DOMAIN}/confirm?user=${insertedId}&token=${token}`
 
     sendEmail({
-      email,
+      email: data.email,
       subject: 'Please verify your email',
       html: `Click the link to verify your email, or copy and paste it into your browser:
 

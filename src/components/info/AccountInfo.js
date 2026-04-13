@@ -11,7 +11,7 @@ import { Button } from '../buttons/Button'
 import { IconGenerator } from '../art/IconGenerator'
 import moment from 'moment'
 
-export const AccountInfo = () => {
+export const AccountInfo = ({ actions }) => {
   const { account } = useAccount()
   const { user } = useUser()
   const router = useRouter()
@@ -26,6 +26,9 @@ export const AccountInfo = () => {
         justifyContent: 'space-between',
         marginBottom: 24,
         width: '100%',
+        '@media (max-width: 600px)': {
+          paddingTop: 36,
+        }
       }}>
         <div css={{
           display: 'flex',
@@ -46,20 +49,24 @@ export const AccountInfo = () => {
             Account
           </h4>
         </div>
-        {!editDisabled && (
-          <Link href={`/accounts/${account?._id}/edit`}>
-            <Button small variant='outlined'>Edit</Button>
-          </Link>
-        )}
+        <div className='flex items-center gap-2'>
+          {!editDisabled && (
+            <Link href={`/accounts/${account?._id}/edit`}>
+              <Button small variant='outlined'>Edit</Button>
+            </Link>
+          )}
+          {actions}
+        </div>
       </div>
 
       <div css={{
-        borderRadius: 10,
-        paddingRight: 24
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: '8px 16px',
       }}>
         <div css={{
           fontWeight: 600,
-          margin: '0px 0 16px',
           fontSize: '1.2em',
           display: 'flex',
           alignItems: 'center',
@@ -67,13 +74,12 @@ export const AccountInfo = () => {
           border: '3px solid var(--ghostText)',
           borderRadius: 6,
           padding: '6px 16px 6px 10px',
-          width: 'fit-content'
         }}>
           <IconGenerator className='mr-2.5' />
           {account?.username}
         </div>
 
-        <InfoItem icon={<MdEmail />} value={(
+        <InfoItem icon={<MdEmail />} style={{ marginBottom: 0 }} value={(
           <a href={`mailto:${account?.email}`}>
             {account?.email || (
               <span css={{ color: 'var(--textLowOpacity)' }}>
@@ -82,19 +88,9 @@ export const AccountInfo = () => {
             )}
           </a>
         )} />
-        <InfoItem
-          icon={<b>Type</b>}
-          value={account?.role}
-        />
-        <InfoItem
-          icon={<b>Status</b>}
-          value={account?.status}
-        />
-        <InfoItem
-          icon={<b>Created</b>}
-          value={moment(account?.createdAt).format('MMM D, YYYY')}
-          style={{ marginBottom: 0 }}
-        />
+        <InfoItem icon={<b>Type</b>} value={account?.role} style={{ marginBottom: 0 }} />
+        <InfoItem icon={<b>Status</b>} value={account?.status} style={{ marginBottom: 0 }} />
+        <InfoItem icon={<b>Created</b>} value={moment(account?.createdAt).format('MMM D, YYYY')} style={{ marginBottom: 0 }} />
       </div>
     </InfoUI>
   )

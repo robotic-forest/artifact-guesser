@@ -97,10 +97,62 @@ Plan:
 3. Validate counts match during short overlap period
 4. Remove GoatCounter script and `/api/goatcounter` proxy endpoint
 
+## Identity Linking
+
+When a user signs up, their current `anonymousId` (from the client tracker) must be stored on the account document. This enables tracing the full player journey: anonymous arrival (e.g. via challenge link) → gameplay → signup → retention.
+
+### Implementation
+- On signup, read `anonymousId` from the request body (client sends it alongside username/email/password)
+- Store as `anonymousId` field on the account document
+- Emit an `identity_linked` event with both `anonymousId` and `accountId`
+- When querying analytics, join on `anonymousId` to reconstruct pre-signup activity
+
+### Event
+- `identity_linked` — fired at signup, ties anonymousId to new accountId
+
+## Player Journey Dashboard
+
+Admin-only views for understanding individual and aggregate player behavior. All views accessible from `/dashboard`.
+
+### Individual Player View (Admin Account Page)
+
+For any account, show the full story:
+
+- **Arrival source**: how they found the game (challenge link, direct, referral — derived from first analytics event's referrer/UTM for their anonymousId)
+- **Pre-signup activity**: anonymous games played before creating an account (via anonymousId link)
+- **Signup date**
+- **Games played timeline**: visual graph (dates on x-axis, games on y-axis)
+- **Daily run participation**: streak count, total days played, last played date
+- **Challenges sent / received / completed** (counts)
+- **Average score trend over time**
+- **Last active date**
+
+Data sources: `accounts` (profile + anonymousId), `games` (personal games), `dailyGames` (daily participation), `challenges` (friend challenges), `analyticsEvents` (arrival, pageviews, all events tied to anonymousId + accountId).
+
+### Aggregate Retention View (Dashboard Section)
+
+- **Cohort retention table**: of users who signed up in week X, what % played in week X+1, X+2, X+3, etc.
+- **Daily run return rate**: day-over-day — what % of yesterday's daily run players came back today
+- **Drop-off analysis**: lifecycle stage where players stop (1 game → gone, played 3 days → stopped, played 2 weeks → stopped, etc.)
+- **Challenge funnel**: challenge_opened → played → signed_up → retained, with conversion rates at each step
+- **Average engagement**: games per user per week, trending over time
+
+### Reporting API Extensions
+
+New report types for `GET /api/analytics/report`:
+
+- `player-journey` — individual player data (requires `accountId` param)
+- `retention` — cohort retention table (params: `cohortSize` = week/month, `period`)
+- `engagement` — daily return rate, average games/user/week, drop-off buckets
+- `challenge-funnel` — full challenge link → signup → retention conversion rates
+
 ## MongoDB Indexes
 
 ```
 analyticsEvents: { type: 1, occurredAt: -1 }
 analyticsEvents: { occurredAt: -1 }
 analyticsEvents: { anonymousId: 1, type: 1 }
+analyticsEvents: { anonymousId: 1, occurredAt: -1 }
+accounts: { anonymousId: 1 }
+dailyGames: { accountId: 1, dateKey: 1 }
 ```

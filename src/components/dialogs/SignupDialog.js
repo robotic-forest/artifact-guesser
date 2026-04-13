@@ -25,6 +25,11 @@ export const SignupDialog = ({ open, onClose }) => {
     // send current game to save it
     data.game = game
 
+    // attach anonymousId for identity linking (pre-signup → post-signup journey)
+    try {
+      data.anonymousId = localStorage.getItem('ag_anon_id') || undefined
+    } catch {}
+
     try {
       const { data: res } = await axios.post('/api/signup', data)
       if (res?.success) {
