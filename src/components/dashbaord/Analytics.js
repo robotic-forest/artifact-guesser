@@ -62,9 +62,12 @@ const OverviewPanel = ({ period }) => {
 
   return (
     <div className='mb-3'>
-      <div className='flex gap-3 mb-2'>
+      <div className='flex gap-3 mb-1'>
         <StatBox label='Views' value={data.totalViews} />
         <StatBox label='Unique Visitors' value={data.uniqueVisitors} />
+      </div>
+      <div className='text-[10px] mb-2 text-right' css={{ color: 'var(--textLowOpacity)' }}>
+        filtered {data.botViews ?? 0} bot views from {data.botVisitors ?? 0} bot visitors
       </div>
 
       {data.eventBreakdown?.length > 0 && (
@@ -226,8 +229,11 @@ const MiniChart = ({ data }) => {
   )
 }
 
-const StatBox = ({ label, value }) => (
-  <div className='flex-1 p-2 rounded text-center' css={{ background: 'var(--backgroundColorLight)' }}>
+const StatBox = ({ label, value, dim }) => (
+  <div className='flex-1 p-2 rounded text-center' css={{
+    background: 'var(--backgroundColorLight)',
+    opacity: dim ? 0.5 : 1,
+  }}>
     <div className='text-lg font-bold'>{value ?? <Spinner />}</div>
     <div className='text-[10px] uppercase tracking-wider' css={{ color: 'var(--textLowOpacity)' }}>{label}</div>
   </div>

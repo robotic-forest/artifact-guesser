@@ -35,25 +35,42 @@ const report = async (req, res) => {
       // Internal events have count=1 implicitly (one doc per event).
       const [viewsAgg, uniqueVisitors, eventCounts] = await Promise.all([
         db.collection('analyticsEvents').aggregate([
-          { $match: { type: 'pageview', occurredAt: { $gte: since } } },
+          { $match: { type: 'pageview', occurredAt: { $gte: since }, isBot: { $ne: true } } },
           { $group: { _id: null, total: { $sum: { $ifNull: ['$count', 1] } } } }
         ]).toArray(),
         db.collection('analyticsEvents').distinct('anonymousId', {
           type: 'pageview',
           occurredAt: { $gte: since },
           anonymousId: { $ne: null },
+          isBot: { $ne: true },
         }),
         db.collection('analyticsEvents').aggregate([
-          { $match: { occurredAt: { $gte: since } } },
+          { $match: { occurredAt: { $gte: since }, isBot: { $ne: true } } },
           { $group: { _id: '$type', count: { $sum: { $ifNull: ['$count', 1] } } } },
           { $sort: { count: -1 } }
         ]).toArray()
+      ])
+
+      // Bot activity for sanity checking / comparison with GoatCounter
+      const [botViewsAgg, botVisitors] = await Promise.all([
+        db.collection('analyticsEvents').aggregate([
+          { $match: { type: 'pageview', occurredAt: { $gte: since }, isBot: true } },
+          { $group: { _id: null, total: { $sum: { $ifNull: ['$count', 1] } } } }
+        ]).toArray(),
+        db.collection('analyticsEvents').distinct('anonymousId', {
+          type: 'pageview',
+          occurredAt: { $gte: since },
+          anonymousId: { $ne: null },
+          isBot: true,
+        }),
       ])
 
       return res.json({
         period,
         totalViews: viewsAgg[0]?.total || 0,
         uniqueVisitors: uniqueVisitors.length,
+        botViews: botViewsAgg[0]?.total || 0,
+        botVisitors: botVisitors.length,
         eventBreakdown: eventCounts.map(e => ({ type: e._id, count: e.count }))
       })
     }
@@ -65,7 +82,8 @@ const report = async (req, res) => {
         funnelEvents.map(type =>
           db.collection('analyticsEvents').countDocuments({
             type,
-            occurredAt: { $gte: since }
+            occurredAt: { $gte: since },
+            isBot: { $ne: true },
           })
         )
       )
@@ -76,7 +94,8 @@ const report = async (req, res) => {
         dailyFunnelEvents.map(type =>
           db.collection('analyticsEvents').countDocuments({
             type,
-            occurredAt: { $gte: since }
+            occurredAt: { $gte: since },
+            isBot: { $ne: true },
           })
         )
       )
@@ -91,7 +110,7 @@ const report = async (req, res) => {
     if (reportType === 'traffic') {
       const [topPaths, topReferrers, viewsByDay] = await Promise.all([
         db.collection('analyticsEvents').aggregate([
-          { $match: { type: 'pageview', occurredAt: { $gte: since } } },
+          { $match: { type: 'pageview', occurredAt: { $gte: since }, isBot: { $ne: true } } },
           { $group: { _id: '$path', count: { $sum: { $ifNull: ['$count', 1] } } } },
           { $sort: { count: -1 } },
           { $limit: 20 }
@@ -103,7 +122,7 @@ const report = async (req, res) => {
           { $limit: 20 }
         ]).toArray(),
         db.collection('analyticsEvents').aggregate([
-          { $match: { type: 'pageview', occurredAt: { $gte: since } } },
+          { $match: { type: 'pageview', occurredAt: { $gte: since }, isBot: { $ne: true } } },
           { $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$occurredAt' } },
             count: { $sum: { $ifNull: ['$count', 1] } }
@@ -294,7 +313,7 @@ const report = async (req, res) => {
     if (reportType === 'engagement') {
       // Daily return rate + engagement metrics
       const dailyActive = await db.collection('analyticsEvents').aggregate([
-        { $match: { occurredAt: { $gte: since }, userId: { $ne: null } } },
+        { $match: { occurredAt: { $gte: since }, userId: { $ne: null }, isBot: { $ne: true } } },
         { $group: {
           _id: {
             date: { $dateToString: { format: '%Y-%m-%d', date: '$occurredAt' } },
@@ -344,10 +363,10 @@ const report = async (req, res) => {
 
       // Challenge funnel
       const challengeFunnel = await Promise.all([
-        db.collection('analyticsEvents').countDocuments({ type: 'challenge_sent', occurredAt: { $gte: since } }),
-        db.collection('analyticsEvents').countDocuments({ type: 'challenge_opened', occurredAt: { $gte: since } }),
-        db.collection('analyticsEvents').countDocuments({ type: 'challenge_completed', occurredAt: { $gte: since } }),
-        db.collection('analyticsEvents').countDocuments({ type: 'identity_linked', occurredAt: { $gte: since } }),
+        db.collection('analyticsEvents').countDocuments({ type: 'challenge_sent', occurredAt: { $gte: since }, isBot: { $ne: true } }),
+        db.collection('analyticsEvents').countDocuments({ type: 'challenge_opened', occurredAt: { $gte: since }, isBot: { $ne: true } }),
+        db.collection('analyticsEvents').countDocuments({ type: 'challenge_completed', occurredAt: { $gte: since }, isBot: { $ne: true } }),
+        db.collection('analyticsEvents').countDocuments({ type: 'identity_linked', occurredAt: { $gte: since }, isBot: { $ne: true } }),
       ])
 
       return res.json({

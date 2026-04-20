@@ -10,6 +10,12 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
+        {/* GoatCounter — kept alongside internal analytics for parallel sanity checking */}
+        <script
+          data-goatcounter="https://artifactguesser.goatcounter.com/count"
+          async
+          src="//gc.zgo.at/count.js"
+        />
       </body>
     </Html>
   )

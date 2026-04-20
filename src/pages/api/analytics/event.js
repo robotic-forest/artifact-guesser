@@ -1,5 +1,6 @@
 import { initDB } from "@/lib/apiUtils/mongodb"
 import { withSessionRoute } from "@/lib/apiUtils/session"
+import { detectBot } from "@/lib/apiUtils/botDetection"
 
 /**
  * POST /api/analytics/event
@@ -63,6 +64,9 @@ const recordEvent = async (req, res) => {
     || req.socket?.remoteAddress
     || null
 
+  const userAgent = req.headers['user-agent'] || null
+  const { isBot, reason: botReason } = detectBot(userAgent)
+
   const event = {
     type,
     occurredAt: new Date(),
@@ -73,7 +77,9 @@ const recordEvent = async (req, res) => {
     sessionId: sessionId || null,
     userId: user?._id || null,
     ip,
-    userAgent: req.headers['user-agent'] || null,
+    userAgent,
+    isBot,
+    botReason: botReason || null,
     utmSource: utmSource || null,
     utmMedium: utmMedium || null,
     utmCampaign: utmCampaign || null,
