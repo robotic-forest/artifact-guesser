@@ -265,47 +265,81 @@ const report = async (req, res) => {
     }
 
     if (reportType === 'retention') {
-      // Cohort retention: weekly signup cohorts, track activity in subsequent weeks
+      // Cohort retention computed in a single aggregation pipeline.
+      // - Each account is tagged with its ISO signup week + cohortStart (Monday 00:00 UTC).
+      // - $lookup pulls that account's non-bot events and buckets them into week offsets
+      //   from cohortStart. $facet in parallel produces cohort sizes.
       const weeks = parseInt(req.query.weeks) || 8
+      const earliest = new Date(Date.now() - (weeks + 4) * 7 * 86400000)
 
-      const cohorts = await db.collection('accounts').aggregate([
-        { $match: { createdAt: { $exists: true } } },
-        { $project: {
-          _id: 1,
-          week: { $dateToString: { format: '%Y-W%V', date: '$createdAt' } },
+      const [result] = await db.collection('accounts').aggregate([
+        { $match: { createdAt: { $gte: earliest } } },
+        { $addFields: {
+          userIdStr: { $toString: '$_id' },
+          cohort: { $dateToString: { format: '%G-W%V', date: '$createdAt' } },
+          cohortStart: { $dateFromParts: {
+            isoWeekYear: { $isoWeekYear: '$createdAt' },
+            isoWeek: { $isoWeek: '$createdAt' },
+            isoDayOfWeek: 1,
+          }},
         }},
-        { $group: { _id: '$week', users: { $push: '$_id' }, count: { $sum: 1 } } },
-        { $sort: { _id: -1 } },
-        { $limit: weeks },
+        { $facet: {
+          sizes: [
+            { $group: { _id: '$cohort', size: { $sum: 1 } } },
+          ],
+          retention: [
+            { $lookup: {
+              from: 'analyticsEvents',
+              let: { uid: '$userIdStr', cs: '$cohortStart' },
+              pipeline: [
+                { $match: { $expr: { $and: [
+                  { $eq: ['$userId', '$$uid'] },
+                  { $gte: ['$occurredAt', '$$cs'] },
+                  { $ne: ['$isBot', true] },
+                ]}}},
+                { $group: { _id: {
+                  $floor: { $divide: [ { $subtract: ['$occurredAt', '$$cs'] }, 604800000 ] },
+                }}},
+              ],
+              as: 'activeWeekIds',
+            }},
+            { $unwind: '$activeWeekIds' },
+            { $group: {
+              _id: { cohort: '$cohort', week: '$activeWeekIds._id' },
+              users: { $addToSet: '$_id' },
+            }},
+            { $project: {
+              _id: 0,
+              cohort: '$_id.cohort',
+              week: '$_id.week',
+              count: { $size: '$users' },
+            }},
+          ],
+        }},
       ]).toArray()
 
-      const cohortData = []
-      for (const cohort of cohorts.reverse()) {
-        const userIds = cohort.users.map(id => id.toString())
-        const retention = []
-
-        for (let w = 0; w < weeks; w++) {
-          const weekStart = getWeekStart(cohort._id, w)
-          const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000)
-
-          const activeCount = await db.collection('analyticsEvents').distinct('userId', {
-            userId: { $in: userIds },
-            occurredAt: { $gte: weekStart, $lt: weekEnd },
-          })
-
-          retention.push({
-            week: w,
-            active: activeCount.length,
-            rate: cohort.count > 0 ? Math.round((activeCount.length / cohort.count) * 100) : 0,
-          })
-        }
-
-        cohortData.push({
-          cohort: cohort._id,
-          size: cohort.count,
-          retention,
-        })
+      const sizeMap = Object.fromEntries((result?.sizes || []).map(s => [s._id, s.size]))
+      const byCohort = {}
+      for (const r of result?.retention || []) {
+        ;(byCohort[r.cohort] = byCohort[r.cohort] || {})[r.week] = r.count
       }
+
+      const cohortData = Object.keys(sizeMap)
+        .sort()                   // ISO week strings sort chronologically
+        .slice(-weeks)            // keep most recent N
+        .map(cohort => {
+          const size = sizeMap[cohort]
+          const weekCounts = byCohort[cohort] || {}
+          const retention = Array.from({ length: weeks }, (_, w) => {
+            const active = weekCounts[w] || 0
+            return {
+              week: w,
+              active,
+              rate: size > 0 ? Math.round((active / size) * 100) : 0,
+            }
+          })
+          return { cohort, size, retention }
+        })
 
       return res.json({ cohorts: cohortData })
     }
@@ -386,20 +420,6 @@ const report = async (req, res) => {
     console.error('Analytics report error:', err)
     res.status(500).json({ error: 'Failed to generate report' })
   }
-}
-
-// Parse ISO week string "2026-W15" + offset to a Date (Monday of that week)
-function getWeekStart(isoWeek, offsetWeeks = 0) {
-  const [year, week] = isoWeek.split('-W').map(Number)
-  // Jan 4 is always in ISO week 1
-  const jan4 = new Date(Date.UTC(year, 0, 4))
-  // Monday of week 1
-  const mondayW1 = new Date(jan4)
-  mondayW1.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay() + 6) % 7))
-  // Target week
-  const target = new Date(mondayW1)
-  target.setUTCDate(mondayW1.getUTCDate() + ((week - 1) + offsetWeeks) * 7)
-  return target
 }
 
 export default withSessionRoute(report)

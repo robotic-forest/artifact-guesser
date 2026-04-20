@@ -5,7 +5,7 @@ import { IoMdAnalytics } from "react-icons/io"
 
 export const Retention = () => {
   const [period, setPeriod] = useState('30d')
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
 
   return (
     <div className='mb-2' css={{
@@ -170,13 +170,18 @@ const EngagementMetrics = ({ period }) => {
         </>
       )}
 
-      {/* Challenge funnel */}
-      {data.challengeFunnel?.some(s => s.count > 0) && (
+      {/* Challenge funnel — always render so zero state is visible */}
+      {data.challengeFunnel?.length > 0 && (
         <>
           <div className='text-[10px] uppercase tracking-wider mb-1' css={{ color: 'var(--textLowOpacity)' }}>
             Challenge Funnel
           </div>
           <ChallengeFunnel steps={data.challengeFunnel} />
+          {data.challengeFunnel.every(s => s.count === 0) && (
+            <div className='text-[10px] mt-1' css={{ color: 'var(--textLowOpacity)' }}>
+              No challenges tracked yet in this period.
+            </div>
+          )}
         </>
       )}
     </div>
