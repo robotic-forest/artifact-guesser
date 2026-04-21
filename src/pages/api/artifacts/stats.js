@@ -3,7 +3,15 @@ import { initDB } from "@/lib/apiUtils/mongodb"
 const artifactStats = async (req, res) => {
   const db = await initDB()
 
-  const [total, byCountry, byEra, playAgg] = await Promise.all([
+  const [
+    total,
+    byCountry,
+    byEra,
+    bySource,
+    favoritesCount,
+    difficultyByCountry,
+    difficultyByEra,
+  ] = await Promise.all([
     db.collection('artifacts').count(),
 
     db.collection('artifacts').aggregate([
@@ -11,7 +19,6 @@ const artifactStats = async (req, res) => {
       { $sort: { count: -1 } }
     ]).toArray(),
 
-    // Histogram by century (dates.year ranges from BCE-negative to CE-positive)
     db.collection('artifacts').aggregate([
       { $match: { 'dates.year': { $ne: null } } },
       { $project: { century: { $floor: { $divide: ['$dates.year', 100] } } } },
@@ -19,53 +26,89 @@ const artifactStats = async (req, res) => {
       { $sort: { _id: 1 } },
     ]).toArray(),
 
-    // Single-player rounds: unwind, group by artifactId, avg points
+    db.collection('artifacts').aggregate([
+      { $group: { _id: { $ifNull: ['$source.name', 'Unknown'] }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]).toArray(),
+
+    db.collection('favorites').countDocuments(),
+
+    // Average points per artifact country, joined from single-player games
     db.collection('games').aggregate([
       { $match: { gameType: { $ne: 'multiplayer' }, roundData: { $exists: true }, ongoing: { $ne: true } } },
       { $unwind: '$roundData' },
       { $match: { 'roundData.guessed': true, 'roundData.points': { $ne: null } } },
+      { $group: { _id: '$roundData.artifactId', avgPoints: { $avg: '$roundData.points' }, plays: { $sum: 1 } } },
+      { $match: { plays: { $gte: 3 } } },
+      { $addFields: { artifactOid: { $toObjectId: '$_id' } } },
+      { $lookup: { from: 'artifacts', localField: 'artifactOid', foreignField: '_id', as: 'artifact' } },
+      { $unwind: '$artifact' },
       { $group: {
-        _id: '$roundData.artifactId',
-        plays: { $sum: 1 },
-        avgPoints: { $avg: '$roundData.points' },
+        _id: '$artifact.location.country',
+        avgPoints: { $avg: '$avgPoints' },
+        artifacts: { $sum: 1 },
+        totalPlays: { $sum: '$plays' },
       }},
-      { $match: { plays: { $gte: 5 } } },
+      { $match: { artifacts: { $gte: 3 } } },
+      { $sort: { avgPoints: 1 } },
+    ]).toArray(),
+
+    db.collection('games').aggregate([
+      { $match: { gameType: { $ne: 'multiplayer' }, roundData: { $exists: true }, ongoing: { $ne: true } } },
+      { $unwind: '$roundData' },
+      { $match: { 'roundData.guessed': true, 'roundData.points': { $ne: null } } },
+      { $group: { _id: '$roundData.artifactId', avgPoints: { $avg: '$roundData.points' }, plays: { $sum: 1 } } },
+      { $match: { plays: { $gte: 3 } } },
+      { $addFields: { artifactOid: { $toObjectId: '$_id' } } },
+      { $lookup: { from: 'artifacts', localField: 'artifactOid', foreignField: '_id', as: 'artifact' } },
+      { $unwind: '$artifact' },
+      { $match: { 'artifact.dates.year': { $ne: null } } },
+      { $project: {
+        avgPoints: 1,
+        plays: 1,
+        century: { $floor: { $divide: ['$artifact.dates.year', 100] } },
+      }},
+      { $group: {
+        _id: '$century',
+        avgPoints: { $avg: '$avgPoints' },
+        artifacts: { $sum: 1 },
+        totalPlays: { $sum: '$plays' },
+      }},
+      { $match: { artifacts: { $gte: 3 } } },
+      { $sort: { _id: 1 } },
     ]).toArray(),
   ])
 
-  // Split into hardest / easiest / mostSeen, then join artifact info
-  const { ObjectId } = await import('mongodb')
-  const hardest = [...playAgg].sort((a, b) => a.avgPoints - b.avgPoints).slice(0, 5)
-  const easiest = [...playAgg].sort((a, b) => b.avgPoints - a.avgPoints).slice(0, 5)
-  const mostSeen = [...playAgg].sort((a, b) => b.plays - a.plays).slice(0, 5)
-
-  const idSet = new Set([...hardest, ...easiest, ...mostSeen].map(r => r._id).filter(Boolean))
-  const oids = [...idSet].map(id => { try { return new ObjectId(id) } catch { return null } }).filter(Boolean)
-  const artifacts = oids.length
-    ? await db.collection('artifacts').find(
-      { _id: { $in: oids } },
-      { projection: { name: 1, dates: 1, location: 1 } },
-    ).toArray()
-    : []
-  const artifactMap = Object.fromEntries(artifacts.map(a => [a._id.toString(), a]))
-
-  const enrich = r => ({
-    artifactId: r._id,
-    name: artifactMap[r._id]?.name || null,
-    country: artifactMap[r._id]?.location?.country || null,
-    year: artifactMap[r._id]?.dates?.year || null,
-    plays: r.plays,
-    avgPoints: Math.round(r.avgPoints),
-  })
+  // Coverage gaps
+  const SCARCE_THRESHOLD = 20
+  const scarceCountries = byCountry.filter(c => c._id && c.count < SCARCE_THRESHOLD)
+  const scarceCenturies = byEra.filter(e => e.count < SCARCE_THRESHOLD)
 
   res.send({
     data: {
       total,
       byCountry,
       byEra,
-      hardest: hardest.map(enrich),
-      easiest: easiest.map(enrich),
-      mostSeen: mostSeen.map(enrich),
+      bySource,
+      favoritesCount,
+      difficultyByCountry: difficultyByCountry.map(r => ({
+        country: r._id || '(unknown)',
+        avgPoints: Math.round(r.avgPoints),
+        artifacts: r.artifacts,
+        totalPlays: r.totalPlays,
+      })),
+      difficultyByEra: difficultyByEra.map(r => ({
+        century: r._id,
+        avgPoints: Math.round(r.avgPoints),
+        artifacts: r.artifacts,
+        totalPlays: r.totalPlays,
+      })),
+      coverageGaps: {
+        threshold: SCARCE_THRESHOLD,
+        scarceCountries: scarceCountries.slice(0, 10),
+        scarceCountriesTotal: scarceCountries.length,
+        scarceCenturies,
+      },
     }
   })
 }
