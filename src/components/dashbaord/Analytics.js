@@ -3,14 +3,17 @@ import { useState } from "react"
 import { Tag } from "../tag/Tag"
 import { Spinner } from "../loading/Spinner"
 import { IoMdAnalytics } from "react-icons/io"
+import { Retention } from "./Retention"
+import { GoatStats } from "../info/GoatCounter"
 
-const periods = ['24h', '7d', '30d', '90d']
+const periods = ['24h', '7d', '30d', '90d', 'all']
 
 const periodLabels = {
   '24h': 'Last 24h',
   '7d': 'Last 7 days',
   '30d': 'Last 30 days',
-  '90d': 'Last 90 days'
+  '90d': 'Last 90 days',
+  'all': 'All time'
 }
 
 export const Analytics = () => {
@@ -49,6 +52,12 @@ export const Analytics = () => {
         <OverviewPanel period={period} />
         <FunnelPanel period={period} />
         <TrafficPanel period={period} />
+        <div className='mt-3'>
+          <Retention />
+        </div>
+        <div className='mt-3'>
+          <GoatStats />
+        </div>
       </div>
     </div>
   )
@@ -201,10 +210,14 @@ const TrafficPanel = ({ period }) => {
 
 const MiniChart = ({ data }) => {
   const max = Math.max(...data.map(d => d.count), 1)
-  const barWidth = Math.max(4, Math.floor(100 / data.length) - 1)
+  const dense = data.length > 60
+  const gap = dense ? 0 : 2
 
   return (
-    <div className='flex items-end gap-[2px] h-[50px] mb-1 w-full'>
+    <div
+      className='flex items-end h-[50px] mb-1 w-full'
+      css={{ gap, overflow: 'hidden' }}
+    >
       {data.map(d => (
         <div
           key={d.date}
@@ -219,10 +232,11 @@ const MiniChart = ({ data }) => {
             fontSize: 9,
             fontWeight: 700,
             color: '#000',
+            overflow: 'hidden',
           }}
           title={`${d.date}: ${d.count} views`}
         >
-          {d.count}
+          {dense ? '' : d.count}
         </div>
       ))}
     </div>

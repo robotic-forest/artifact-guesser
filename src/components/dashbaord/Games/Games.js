@@ -6,6 +6,7 @@ import { gamesTheme } from "@/pages/games"
 import { modes } from "@/components/gameui/ModeButton" // Import modes for colors
 import { Dropdown } from "@/components/dropdown/Dropdown" // Import Dropdown
 import { adjustLightness } from "./utils" // Import helper function
+import { MultiplayerHistory } from "../MultiplayerHistory"
 
 // Helper function adjustLightness moved to utils.js
 
@@ -150,6 +151,9 @@ export const Games = () => {
             </div>
           </div>
           {/* --- End Mode Stats Section --- */}
+          <div className='mt-3'>
+            <MultiplayerHistory />
+          </div>
         </div>
       )}
       url={gamesUrl} // Use the defined URL variable

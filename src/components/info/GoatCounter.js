@@ -1,34 +1,46 @@
 import { useGoat } from "@/hooks/useGoat"
 import moment from "moment"
+import { useState } from "react"
 import { Tag } from "../tag/Tag"
 import { Spinner } from "../loading/Spinner"
-import Link from "next/link"
 import { GiGoat } from "react-icons/gi"
 
 export const GoatStats = () => {
-  
+  const [expanded, setExpanded] = useState(false)
+
   return (
-    <>
-      <Link href='https://artifactguesser.goatcounter.com/' target='_blank' rel='noreferrer' css={{ textDecoration: 'none', '&:hover': { color: 'var(--textColor)' } }}>
-        <div className='p-3 pb-1 mb-2 cursor-pointer' css={{
-          border: '1px solid #ffffff33',
-          background: 'var(--backgroundColorBarelyLight)',
-          '&:hover': { background: 'var(--backgroundColorSlightlyLight)' }
-        }}>
-          <div className='flex items-center text-sm' css={{
-            marginBottom: 8
-          }}>
-            <GiGoat style={{ marginRight: 10 }} />
-            Goatcounter Views
-          </div>
-          <div className='mt-4 flex items-center' css={{ flexFlow: 'row wrap' }}>
-            <Views {...{ amount: 10, unit: 'years', title: 'All' }} />
-            <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
-            <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />
-          </div>
+    <div>
+      <div
+        className='flex items-center justify-between cursor-pointer text-xs'
+        css={{ marginBottom: expanded ? 8 : 0, color: 'var(--textLowOpacity)' }}
+        onClick={() => setExpanded(e => !e)}
+      >
+        <div className='flex items-center'>
+          <GiGoat className='mr-2' />
+          Goatcounter Views
+          <span className='ml-2'>{expanded ? '▼' : '▶'}</span>
         </div>
-      </Link>
-    </>
+        {expanded && (
+          <a
+            href='https://artifactguesser.goatcounter.com/'
+            target='_blank'
+            rel='noreferrer'
+            onClick={e => e.stopPropagation()}
+            css={{ textDecoration: 'underline' }}
+          >
+            open dashboard
+          </a>
+        )}
+      </div>
+
+      {expanded && (
+        <div className='flex items-center' css={{ flexFlow: 'row wrap' }}>
+          <Views {...{ amount: 10, unit: 'years', title: 'All' }} />
+          <Views {...{ amount: 1, unit: 'month', title: 'Last month' }} />
+          <Views {...{ amount: 1, unit: 'day', title: 'Last day' }} />
+        </div>
+      )}
+    </div>
   )
 }
 

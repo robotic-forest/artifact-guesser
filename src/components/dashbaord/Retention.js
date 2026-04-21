@@ -5,54 +5,46 @@ import { IoMdAnalytics } from "react-icons/io"
 
 export const Retention = () => {
   const [period, setPeriod] = useState('30d')
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className='mb-2' css={{
-      border: '1px outset',
-      borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
-      background: 'var(--backgroundColorBarelyLight)',
-    }}>
-      <div css={{ padding: expanded ? '12px 12px 8px' : '12px' }}>
-        <div
-          className='flex items-center justify-between cursor-pointer'
-          css={{ marginBottom: expanded ? 12 : 0 }}
-          onClick={() => setExpanded(e => !e)}
-        >
-          <div className='flex items-center'>
-            <IoMdAnalytics className='mr-2' />
-            Retention & Engagement
-            <span className='ml-2 text-xs' css={{ color: 'var(--textLowOpacity)' }}>
-              {expanded ? '▼' : '▶'}
-            </span>
-          </div>
-          {expanded && (
-            <div className='flex gap-1'>
-              {['7d', '30d', '90d'].map(p => (
-                <button
-                  key={p}
-                  onClick={(e) => { e.stopPropagation(); setPeriod(p) }}
-                  className='px-2 py-0.5 text-xs rounded'
-                  css={{
-                    background: p === period ? 'var(--primaryColor)' : 'var(--backgroundColorLight)',
-                    color: p === period ? '#000' : 'var(--textColor)',
-                    '&:hover': { background: p === period ? 'var(--primaryColor)' : 'var(--backgroundColorLight2)' }
-                  }}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          )}
+    <div>
+      <div
+        className='flex items-center justify-between cursor-pointer text-xs'
+        css={{ marginBottom: expanded ? 8 : 0, color: 'var(--textLowOpacity)' }}
+        onClick={() => setExpanded(e => !e)}
+      >
+        <div className='flex items-center'>
+          <IoMdAnalytics className='mr-2' />
+          Retention & Engagement
+          <span className='ml-2'>{expanded ? '▼' : '▶'}</span>
         </div>
-
         {expanded && (
-          <>
-            <CohortRetention />
-            <EngagementMetrics period={period} />
-          </>
+          <div className='flex gap-1'>
+            {['7d', '30d', '90d'].map(p => (
+              <button
+                key={p}
+                onClick={(e) => { e.stopPropagation(); setPeriod(p) }}
+                className='px-2 py-0.5 text-xs rounded'
+                css={{
+                  background: p === period ? 'var(--primaryColor)' : 'var(--backgroundColorLight)',
+                  color: p === period ? '#000' : 'var(--textColor)',
+                  '&:hover': { background: p === period ? 'var(--primaryColor)' : 'var(--backgroundColorLight2)' }
+                }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         )}
       </div>
+
+      {expanded && (
+        <>
+          <CohortRetention />
+          <EngagementMetrics period={period} />
+        </>
+      )}
     </div>
   )
 }

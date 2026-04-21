@@ -1,5 +1,4 @@
 import { DashInfo } from "@/components/info/DashInfo"
-import { GoatStats } from "@/components/info/GoatCounter"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 // useGames and GiAbstract034 moved to Games.js
@@ -18,7 +17,8 @@ import { Behistun } from "./Behistun"
 // import { Notes } from "./Notes" // Notes component seems unused, commenting out
 import { Collosi } from "./Collosi"
 import { Analytics } from "./Analytics"
-import { Retention } from "./Retention"
+import { AccountInsights } from "./AccountInsights"
+import { ArtifactInsights } from "./ArtifactInsights"
 // modes and Dropdown moved to Games.js
 import { Games } from "./Games/Games" // Updated import path
 
@@ -36,21 +36,19 @@ export const Statistics = () => {
     <div className='grid grid-cols-1 md:gap-2 md:grid-cols-2'>
       <div>
         <Analytics />
-        <Retention />
+        <Games />
         {/* <Behistun /> */}
         {/* <Notes /> */}
       </div>
       <div>
-        <GoatStats />
         <DashInfo
           title={<><FaUser className='text-xs mr-3'/>Accounts</>}
           count={accounts}
           url='/accounts'
           theme={accountTheme}
           actions={<AllAccountActions />}
+          extraInfo={<AccountInsights />}
         />
-        {/* Replace the old DashInfo with the new Games component */}
-        <Games />
 
         {/* Artifacts DashInfo remains */}
         <DashInfo
@@ -60,15 +58,8 @@ export const Statistics = () => {
           theme={artifactsTheme}
           extraInfo={(
             <div className='text-xs'>
-              {/* <div className='flex items-center pt-3 pb-1 px-2'>
-                <span className='opacity-60 mr-2'>Problem</span> {artifacts?.problematic}
-                <Link href='/artifacts?problematic=true' className='ml-2.5'>
-                  <IconButton size={20} tooltipPlace='right'>
-                    <IoMdEye />
-                  </IconButton>
-                </Link>
-              </div> */}
               <ArtifactCountMap className='m-1 mt-0' artifacts={artifacts?.byCountry} />
+              <ArtifactInsights stats={artifacts} />
             </div>
           )}
         />

@@ -27,7 +27,9 @@ const report = async (req, res) => {
     '30d': 30 * 24 * 60 * 60 * 1000,
     '90d': 90 * 24 * 60 * 60 * 1000
   }
-  const since = new Date(now.getTime() - (periodMs[period] || periodMs['7d']))
+  const since = period === 'all'
+    ? new Date(0)
+    : new Date(now.getTime() - (periodMs[period] || periodMs['7d']))
 
   try {
     if (reportType === 'overview') {
