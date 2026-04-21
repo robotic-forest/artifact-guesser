@@ -1,19 +1,32 @@
 import useSWR from "swr"
 import Link from "next/link"
+import { useState } from "react"
 import { Spinner } from "../loading/Spinner"
+import { PeriodToggle, periodLabels } from "./PeriodToggle"
 
 export const AccountInsights = () => {
-  const { data, error } = useSWR('/api/accounts/insights')
-
-  if (error) return <div className='p-3 text-xs text-red-400'>Failed to load insights</div>
-  if (!data) return <div className='p-3'><Spinner /></div>
+  const [period, setPeriod] = useState('30d')
+  const { data, error } = useSWR(`/api/accounts/insights?period=${period}`)
 
   return (
     <div className='p-3 text-xs'>
-      <SignupFunnel data={data.signupFunnel} />
-      <Activation data={data.activation} />
-      <TopPlayers title='Top by Games Played' rows={data.topByGames} metric='games' />
-      <TopPlayers title='Top by Total Score' rows={data.topByScore} metric='totalScore' />
+      <div className='flex items-center justify-between mb-3'>
+        <span className='text-[10px] uppercase tracking-wider' css={{ color: 'var(--textLowOpacity)' }}>
+          {periodLabels[period]}
+        </span>
+        <PeriodToggle period={period} setPeriod={setPeriod} />
+      </div>
+
+      {error && <div className='text-red-400'>Failed to load insights</div>}
+      {!data && !error && <Spinner />}
+      {data && (
+        <>
+          <SignupFunnel data={data.signupFunnel} />
+          <Activation data={data.activation} />
+          <TopPlayers title='Top by Games Played' rows={data.topByGames} metric='games' />
+          <TopPlayers title='Top by Total Score' rows={data.topByScore} metric='totalScore' />
+        </>
+      )}
     </div>
   )
 }
@@ -32,7 +45,7 @@ const SignupFunnel = ({ data }) => {
   return (
     <div className='mb-3'>
       <div className='text-[10px] uppercase tracking-wider mb-1' css={{ color: 'var(--textLowOpacity)' }}>
-        Signup Funnel (last 30d)
+        Signup Funnel
       </div>
       {steps.map((s, i) => {
         const prev = i > 0 ? steps[i - 1].count : null
@@ -61,7 +74,7 @@ const Activation = ({ data }) => {
   if (data.cohortSize === 0) {
     return (
       <div className='mb-3 text-[10px]' css={{ color: 'var(--textLowOpacity)' }}>
-        No new accounts in the last 30 days.
+        No new accounts in this period.
       </div>
     )
   }
@@ -75,7 +88,7 @@ const Activation = ({ data }) => {
   return (
     <div className='mb-3'>
       <div className='text-[10px] uppercase tracking-wider mb-1' css={{ color: 'var(--textLowOpacity)' }}>
-        Activation (new accounts last 30d: {data.cohortSize})
+        Activation (new accounts: {data.cohortSize})
       </div>
       <div className='grid grid-cols-3 gap-2'>
         {rows.map(r => (

@@ -12,7 +12,16 @@ const insights = async (req, res) => {
   const db = await initDB()
 
   const now = new Date()
-  const since30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const period = req.query.period || '30d'
+  const periodMs = {
+    '24h': 24 * 60 * 60 * 1000,
+    '7d': 7 * 24 * 60 * 60 * 1000,
+    '30d': 30 * 24 * 60 * 60 * 1000,
+    '90d': 90 * 24 * 60 * 60 * 1000,
+  }
+  const since = period === 'all'
+    ? new Date(0)
+    : new Date(now.getTime() - (periodMs[period] || periodMs['30d']))
 
   const [
     uniqueVisitors,
@@ -23,23 +32,23 @@ const insights = async (req, res) => {
     topByGames,
     topByScore,
   ] = await Promise.all([
-    // Unique non-bot visitors in last 30d
+    // Unique non-bot visitors in period
     db.collection('analyticsEvents').distinct('anonymousId', {
       type: 'pageview',
-      occurredAt: { $gte: since30 },
+      occurredAt: { $gte: since },
       isBot: { $ne: true },
       anonymousId: { $ne: null },
     }),
 
-    // Accounts created in last 30d (cohort for activation)
+    // Accounts created in period (cohort for activation)
     db.collection('accounts').find(
-      { createdAt: { $gte: since30 } },
+      { createdAt: { $gte: since } },
       { projection: { _id: 1, username: 1, createdAt: 1 } },
     ).toArray(),
 
     // Games played by those new accounts (grouped by userId)
     db.collection('games').aggregate([
-      { $match: { startedAt: { $gte: since30 } } },
+      { $match: { startedAt: { $gte: since } } },
       { $group: { _id: '$userId', count: { $sum: 1 } } },
     ]).toArray(),
 

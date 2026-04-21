@@ -2,6 +2,7 @@ import useSWR from "swr"
 import { useState } from "react"
 import { Spinner } from "../loading/Spinner"
 import { IoMdAnalytics } from "react-icons/io"
+import { PeriodToggle } from "./PeriodToggle"
 
 export const Retention = () => {
   const [period, setPeriod] = useState('30d')
@@ -19,24 +20,7 @@ export const Retention = () => {
           Retention & Engagement
           <span className='ml-2'>{expanded ? '▼' : '▶'}</span>
         </div>
-        {expanded && (
-          <div className='flex gap-1'>
-            {['7d', '30d', '90d'].map(p => (
-              <button
-                key={p}
-                onClick={(e) => { e.stopPropagation(); setPeriod(p) }}
-                className='px-2 py-0.5 text-xs rounded'
-                css={{
-                  background: p === period ? 'var(--primaryColor)' : 'var(--backgroundColorLight)',
-                  color: p === period ? '#000' : 'var(--textColor)',
-                  '&:hover': { background: p === period ? 'var(--primaryColor)' : 'var(--backgroundColorLight2)' }
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        )}
+        {expanded && <PeriodToggle period={period} setPeriod={setPeriod} />}
       </div>
 
       {expanded && (

@@ -5,16 +5,7 @@ import { Spinner } from "../loading/Spinner"
 import { IoMdAnalytics } from "react-icons/io"
 import { Retention } from "./Retention"
 import { GoatStats } from "../info/GoatCounter"
-
-const periods = ['24h', '7d', '30d', '90d', 'all']
-
-const periodLabels = {
-  '24h': 'Last 24h',
-  '7d': 'Last 7 days',
-  '30d': 'Last 30 days',
-  '90d': 'Last 90 days',
-  'all': 'All time'
-}
+import { PeriodToggle } from "./PeriodToggle"
 
 export const Analytics = () => {
   const [period, setPeriod] = useState('7d')
@@ -31,22 +22,7 @@ export const Analytics = () => {
             <IoMdAnalytics className='mr-2' />
             Analytics
           </div>
-          <div className='flex gap-1'>
-            {periods.map(p => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className='px-2 py-0.5 text-xs rounded'
-                css={{
-                  background: p === period ? 'var(--primaryColor)' : 'var(--backgroundColorLight)',
-                  color: p === period ? '#000' : 'var(--textColor)',
-                  '&:hover': { background: p === period ? 'var(--primaryColor)' : 'var(--backgroundColorLight2)' }
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
+          <PeriodToggle period={period} setPeriod={setPeriod} />
         </div>
 
         <OverviewPanel period={period} />
