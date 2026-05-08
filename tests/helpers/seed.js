@@ -18,6 +18,7 @@ export async function createTestArtifact(db, overrides = {}) {
     dimensions: '10 x 10 cm',
     isHighlight: overrides.isHighlight ?? true,
     problematic: false,
+    quality_score: overrides.quality_score ?? 6,
     location: {
       country: overrides.country || 'Egypt',
       county: '', city: '', state: '', subregion: '', region: '', river: '', locale: '',
