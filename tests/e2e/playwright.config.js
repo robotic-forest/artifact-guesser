@@ -4,17 +4,15 @@ export default defineConfig({
   testDir: './flows',
   timeout: 60000,
   retries: 0,
+  globalSetup: './global-setup.js',
+  globalTeardown: './global-teardown.js',
   use: {
     baseURL: 'http://localhost:3099',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
-  webServer: {
-    command: 'cd ../.. && MONGODB_DATABASE=ag_test npm run dev -- -p 3099',
-    port: 3099,
-    reuseExistingServer: true,
-    timeout: 90000,
-  },
+  // Server lifecycle handled by global-setup/teardown so we share the
+  // Next.js + MongoMemoryServer harness with the Vitest API tests.
   projects: [
     {
       name: 'chromium',
