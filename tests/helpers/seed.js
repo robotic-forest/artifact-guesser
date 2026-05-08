@@ -7,7 +7,8 @@
 
 import { ObjectId } from 'mongodb';
 
-const WORKING_IMAGE = 'https://images.metmuseum.org/CRDImages/as/original/DP251139.jpg';
+// 1x1 transparent PNG — local, instant, won't depend on external CDN reachability in CI.
+const WORKING_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 export async function createTestArtifact(db, overrides = {}) {
   const artifact = {
@@ -47,17 +48,11 @@ export async function createTestArtifact(db, overrides = {}) {
 export async function createTestArtifacts(db, count = 5, overrides = {}) {
   const artifacts = [];
   const countries = ['Egypt', 'Iraq', 'Iran', 'Greece', 'Italy', 'China', 'Japan', 'Mexico'];
-  const museums = [
-    'https://images.metmuseum.org/CRDImages/as/original/DP251139.jpg',
-    'https://openaccess-cdn.clevelandart.org/1947.177.a/1947.177.a_web.jpg',
-    'https://media.britishmuseum.org/media/image/some-test.jpg',
-  ];
-
   for (let i = 0; i < count; i++) {
     const a = await createTestArtifact(db, {
       name: `Test Artifact ${i + 1}`,
       country: countries[i % countries.length],
-      images: [museums[i % museums.length]],
+      // Use the default WORKING_IMAGE (data: URL) so CI doesn't rely on external CDNs.
       sourceId: `test-seed-${i}-${Date.now()}`,
       ...overrides,
     });
