@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { MdChat } from 'react-icons/md'
 
 export const MultiplayerGameView = ({ game }) => {
@@ -71,15 +72,25 @@ const Rounds = ({ game, nameFor }) => (
           border: '1px outset',
           borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
         }}>
-          <div className='flex items-center mb-2'>
-            <div className='w-8 text-center font-bold' css={{ opacity: 0.8 }}>R{r.round}</div>
-            <div className='flex-1 text-xs ml-2 truncate'>
-              <b>{artifact?.name || r.artifactId}</b>
+          <div className='flex items-center mb-2 gap-2'>
+            <div className='w-8 text-center font-bold flex-shrink-0' css={{ opacity: 0.8 }}>R{r.round}</div>
+            <ArtifactThumb artifact={artifact} artifactId={r.artifactId} />
+            <div className='flex-1 text-xs truncate'>
+              {artifact ? (
+                <Link
+                  href={`/artifacts/${r.artifactId}`}
+                  css={{ color: 'inherit', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                >
+                  <b>{artifact.name || r.artifactId}</b>
+                </Link>
+              ) : (
+                <b>{r.artifactId}</b>
+              )}
               {artifact && (
-                <span className='ml-2' css={{ color: 'var(--textLowOpacity)' }}>
-                  · {artifact.location?.country || '?'}
-                  {artifact.dates?.year && ` · ${artifact.dates.year}`}
-                </span>
+                <div className='text-[10px]' css={{ color: 'var(--textLowOpacity)' }}>
+                  {artifact.location?.country || '?'}
+                  {artifact.dates?.year != null && ` · ${artifact.dates.year < 0 ? -artifact.dates.year + ' BCE' : artifact.dates.year + ' CE'}`}
+                </div>
               )}
             </div>
           </div>
@@ -154,3 +165,17 @@ const ChatPanel = ({ chat, hasLobbyId }) => (
     </div>
   </div>
 )
+
+const ArtifactThumb = ({ artifact, artifactId }) => {
+  const src = artifact?.images?.thumbnail || artifact?.images?.external?.[0] || null
+  const inner = (
+    <div css={{
+      width: 48, height: 48, flexShrink: 0,
+      background: src ? `center / cover no-repeat url("${src}")` : 'var(--backgroundColorLight)',
+      border: '1px solid #00000077',
+    }} />
+  )
+  return artifact
+    ? <Link href={`/artifacts/${artifactId}`} css={{ display: 'block' }}>{inner}</Link>
+    : inner
+}

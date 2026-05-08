@@ -76,9 +76,20 @@ export const track = (type, data = {}) => {
   })
 }
 
+// Per-session pageview dedup: don't double-record the same path within a session
+// or refire within 5 minutes. Matches GoatCounter's once-per-load semantics.
+const PAGEVIEW_DEDUP_WINDOW_MS = 5 * 60 * 1000
+const lastPageviewByPath = new Map()
+
 /**
  * Track a pageview. Call this on route changes.
  */
 export const trackPageview = () => {
+  if (typeof window === 'undefined') return
+  const path = window.location.pathname
+  const now = Date.now()
+  const last = lastPageviewByPath.get(path)
+  if (last && now - last < PAGEVIEW_DEDUP_WINDOW_MS) return
+  lastPageviewByPath.set(path, now)
   track('pageview')
 }

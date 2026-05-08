@@ -219,7 +219,8 @@ export const MultiplayerProvider = ({ children }) => {
             setLobbyJoinStatus('success'); // Set status on successful create
             // Redirect the creator to the new lobby page
             console.log(`Redirecting to new lobby: /multiplayer/${newLobbyId}`);
-            router.push(`/multiplayer/${newLobbyId}`);
+            const targetPath = `/multiplayer/${newLobbyId}`;
+            if (router.asPath !== targetPath) router.push(targetPath);
           });
        }
     });
@@ -541,8 +542,10 @@ export const MultiplayerProvider = ({ children }) => {
           setChatMessages([]);
           setLobbyClients([]);
         });
-        // Navigate now that join is confirmed
-        router.push(`/multiplayer/${lobbyId}`);
+        // Navigate now that join is confirmed (skip if already there — avoids
+        // re-firing routeChangeComplete and inflating pageview counts)
+        const targetPath = `/multiplayer/${lobbyId}`;
+        if (router.asPath !== targetPath) router.push(targetPath);
       } else {
         console.warn('[MultiplayerContext] Received join-successful event without lobbyId.');
         setLobbyJoinStatus('idle'); // Reset status on error?

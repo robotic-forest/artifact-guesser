@@ -65,7 +65,42 @@ const recordEvent = async (req, res) => {
     || null
 
   const userAgent = req.headers['user-agent'] || null
-  const { isBot, reason: botReason } = detectBot(userAgent)
+  let { isBot, reason: botReason } = detectBot(userAgent)
+
+  // Dedup pageviews from the same anonymous ID + path within 30s — defense
+  // against client bugs or replayed events.
+  if (!isBot && type === 'pageview' && anonymousId && path) {
+    const recent = await db.collection('analyticsEvents').findOne(
+      {
+        type: 'pageview',
+        anonymousId,
+        path,
+        occurredAt: { $gte: new Date(Date.now() - 30 * 1000) },
+      },
+      { projection: { _id: 1 } },
+    )
+    if (recent) {
+      isBot = true
+      botReason = 'duplicate-pageview'
+    }
+  }
+
+  // Cold-scrape detection: brand-new anon hitting a deep detail URL with
+  // no referrer is almost always a UA-spoofing scraper. Real shared links
+  // carry a referrer; real navigation has prior pageviews.
+  if (!isBot && type === 'pageview' && anonymousId && path && !referrer) {
+    const isDeepDetail = /^\/(artifacts|games|multiplayer|challenge)\/[a-f0-9]{8,}/i.test(path)
+    if (isDeepDetail) {
+      const prior = await db.collection('analyticsEvents').findOne(
+        { anonymousId },
+        { projection: { _id: 1 } },
+      )
+      if (!prior) {
+        isBot = true
+        botReason = 'cold-deep-hit'
+      }
+    }
+  }
 
   const event = {
     type,
