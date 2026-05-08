@@ -24,6 +24,7 @@ import { modes } from "../gameui/ModeButton"
 import { useGlobalChat } from "@/contexts/GlobalChatContext";
 import { GlobalChat } from "../chat/GlobalChat";
 import { LobbyBrowser } from "../multiplayer/LobbyBrowser";
+import { DailyRunCTA } from "../daily/DailyRunCTA";
 
 export const Game = dynamic(() => Promise.resolve(GameComponent), { ssr: false })
 
@@ -137,6 +138,8 @@ const GameUI = () => {
         <>
           <MainHeader />
           <AuthHeader />
+
+          {!isViewingSummary && <DailyRunCTA />}
 
           {/* Show loading overlay until images are ready for the timer (and not summary) */}
           {!imagesReadyForTimer && !isViewingSummary && <LoadingArtifact className='fixed' msg={artifact && `Loading ${imgLength} Artifact Image${imgLength > 1 ? 's' : ''}`} />}
