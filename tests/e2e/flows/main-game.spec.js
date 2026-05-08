@@ -30,8 +30,8 @@ test.describe('Main Game', () => {
     // Wait for the header to load
     await page.waitForSelector('text=Artifact Guesser', { timeout: 15000 });
 
-    // The calendar icon button should link to /daily
-    const dailyLink = page.locator('a[href="/daily"]');
+    // At least one link to /daily exists (header button + CTA pill)
+    const dailyLink = page.locator('a[href="/daily"]').first();
     await expect(dailyLink).toBeVisible({ timeout: 5000 });
   });
 
