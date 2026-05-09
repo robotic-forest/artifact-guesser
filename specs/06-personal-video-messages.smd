@@ -1,0 +1,89 @@
+# Personal Video Messages
+
+A post-round modal that plays a short personal video from the creator, targeted at specific users (top players, loyal users, high-value churned users). Shown once per user, as a surprise-and-delight moment.
+
+## Goal
+
+Turn loyal and power users into genuine evangelists by giving them an unexpected personal thank-you. A short video (15-30s) from Sam addressing them by name, thanking them for their play, and inviting them to chat or try the new daily run.
+
+## UX
+
+1. User completes a round (or a full game — decide which trigger)
+2. If the account has `personalVideo` set and `personalVideoSeen` is false, show a modal
+3. Modal displays: "A message for {username}" with the video autoplay
+4. Video has audio (muted-by-default with unmute prompt, to respect autoplay policies)
+5. Close button, and optional "Reply to Sam" CTA (links to Discord or contact email)
+6. On close, flag `personalVideoSeen: true` on the account — never show again
+
+## Data Model
+
+Add fields to the `accounts` collection:
+
+```js
+{
+  personalVideo: {
+    url: "https://artifactguesser.com/personal/mekb.mp4",  // static asset
+    caption: "A message for mekb",                          // shown in modal
+    recordedAt: Date
+  },
+  personalVideoSeen: Boolean  // false or unset = not yet shown
+}
+```
+
+## API
+
+### POST /api/accounts/mark-video-seen
+- Authenticated
+- Sets `personalVideoSeen: true` on current user's account
+- Fire-and-forget, no response body needed
+
+### Admin: POST /api/admin/personal-video
+- Admin-only
+- Body: `{ accountId, url, caption }`
+- Sets the `personalVideo` field on target account, clears `personalVideoSeen`
+
+## Frontend
+
+### `<PersonalVideoModal />`
+- Mounted in the Layout (or game summary screen)
+- Reads `user.personalVideo` and `user.personalVideoSeen` from useUser hook
+- Renders a `<Dialog>` with:
+  - Heading: video.caption
+  - `<video>` element, autoplay, muted initially, controls visible
+  - "Thanks!" button that closes and calls mark-video-seen
+  - Optional "Reply to Sam on Discord" button linking to Discord invite
+
+### Trigger Point
+Show on **game summary mount** when a round is complete, only once per session to avoid annoyance. Only shows if the flag conditions are met.
+
+## Video Hosting
+
+Store videos as static files in `/public/personal/` or a CDN-backed path. Keep filenames predictable: `{username}.mp4` so Sam can match videos to users easily when uploading.
+
+File size target: under 5MB each. MP4/H.264 for broad compatibility.
+
+## Analytics
+
+Emit events:
+- `personal_video_shown` — when modal renders
+- `personal_video_completed` — when video finishes
+- `personal_video_dismissed` — if closed before completing
+- `personal_video_reply_clicked` — if Discord CTA used
+
+## Rollout
+
+Phase 1 (manual, high-touch):
+- Sam records videos for top 5-10 users (mekb, bananaburner, spleen, hellpancake, etc.)
+- Admin endpoint used to attach videos to accounts
+- Monitor analytics for reaction
+
+Phase 2 (optional, if successful):
+- Expand to more users (top 20, top 50)
+- Consider templated approach if production becomes bottleneck
+
+## Open Questions
+
+- [ ] Trigger: after every round, or only after completing a full game (5 rounds)?
+- [ ] Reply mechanism: Discord, email form, or just a closing message?
+- [ ] Should logged-out users ever see a generic welcome video? (probably no — personal is the point)
+- [ ] Re-show if user clears cookies / new device? (store seen state server-side on account, so no)

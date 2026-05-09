@@ -37,7 +37,7 @@ export const Statistics = () => {
       <div>
         <Analytics />
         <Games />
-        {/* <Behistun /> */}
+        <Behistun />
         {/* <Notes /> */}
       </div>
       <div>
