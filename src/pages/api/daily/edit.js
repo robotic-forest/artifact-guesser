@@ -2,6 +2,9 @@ import { initDB } from "@/lib/apiUtils/mongodb"
 import { withSessionRoute } from "@/lib/apiUtils/session"
 import { ObjectId } from "mongodb"
 import moment from "moment"
+import { postSystemChat } from "@/lib/apiUtils/systemChat"
+
+const DAILY_BROADCAST_FLOOR = 300
 
 /**
  * POST /api/daily/edit
@@ -45,6 +48,21 @@ const editDailyGame = async (req, res) => {
     { _id: new ObjectId(_id) },
     { $set: { ...data, roundData: processedRounds } }
   )
+
+  // Broadcast on the first time this game flips to completed — only for
+  // logged-in users (anon completions don't get announced; they may still
+  // claim and get a separate broadcast post-signup if we want — TODO).
+  const justCompleted = data.completed === true && !dailyGame.completed
+  if (justCompleted && user && typeof data.score === 'number') {
+    const username = user.username || 'A player'
+    if (username !== 'protocodex') {
+      if (data.score === 600) {
+        postSystemChat(`🎯 ${username} got a PERFECT 600/600 on today's run!`)
+      } else if (data.score >= DAILY_BROADCAST_FLOOR) {
+        postSystemChat(`${username} scored ${data.score}/600 on today's run — beat it at /daily`)
+      }
+    }
+  }
 
   res.json({ success: true })
 }

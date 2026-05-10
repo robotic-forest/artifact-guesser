@@ -8,6 +8,7 @@ import AAAAAA from '../art/AAAAAA'; // Import AAAAAA
 import { generateInsult } from '@/hooks/useInsult'; // Import generateInsult
 import useAAAAtoast from '@/hooks/useAAAAtoast'; // Import the new hook
 import { useGlobalChat } from '@/contexts/GlobalChatContext';
+import { GiGreekSphinx } from 'react-icons/gi';
 import { useMultiplayer } from '@/components/multiplayer/context/MultiplayerContext';
 import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
 import { ChatInput } from '@/components/multiplayer/chat/ChatInput';
@@ -256,7 +257,7 @@ const scrollbarCSS = {
                onContextMenu={(e) => onMessageContextMenu(e, msg)}
               >
                 {/* Render inactive messages with Markdown */}
-                {msg.username && <b className="mr-1">{msg.username}:</b>}
+                {msg.username && <b className="mr-1"><ChatUsername name={msg.username} />:</b>}
                 <ReactMarkdown
                   components={{
                     p: ({children}) => <>{children}</>, // Render paragraphs inline
@@ -407,7 +408,7 @@ const scrollbarCSS = {
             )}
             {globalChatMessages.map((c, i) => (
               <div key={c.id || i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }} onContextMenu={(e) => onMessageContextMenu(e, c)}>
-                {c.username && <b className="mr-1">{c.username}:</b>}
+                {c.username && <b className="mr-1"><ChatUsername name={c.username} />:</b>}
                 {/* Use ReactMarkdown to render the message */}
                 <ReactMarkdown
                   components={{
@@ -499,6 +500,38 @@ const scrollbarCSS = {
   }
 };
 
+// Render a chat username with optional decoration (admin tag, etc).
+const DevTag = () => (
+  <span
+    title="Site admin"
+    css={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 3,
+      marginLeft: 5,
+      padding: '1px 6px',
+      background: '#b8f0c2',
+      color: '#000',
+      borderRadius: 4,
+      fontSize: '0.75em',
+      fontWeight: 700,
+      letterSpacing: 0.3,
+      verticalAlign: '0.05em',
+      lineHeight: 1.2,
+    }}
+  >
+    <GiGreekSphinx size="1em" />
+    <span>dev</span>
+  </span>
+)
+
+const ChatUsername = ({ name }) => {
+  if (name === 'protocodex') {
+    return <span>{name}<DevTag /></span>
+  }
+  return <>{name}</>
+}
+
 const UsersDialog = ({ open, users, count, onClose }) => {
   if (!open) return null;
   return (
@@ -559,7 +592,7 @@ const UsersDialog = ({ open, users, count, onClose }) => {
             users.map(u => (
               <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
                 <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                {u.username}
+                <ChatUsername name={u.username} />
               </div>
             ))
           )}

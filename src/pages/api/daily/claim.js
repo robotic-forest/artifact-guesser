@@ -1,5 +1,8 @@
 import { initDB } from "@/lib/apiUtils/mongodb"
 import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
+import { postSystemChat } from "@/lib/apiUtils/systemChat"
+
+const DAILY_BROADCAST_FLOOR = 300
 
 /**
  * POST /api/daily/claim
@@ -45,6 +48,18 @@ const claim = async (req, res) => {
     { _id: anonDoc._id },
     { $set: { userId: user._id }, $unset: { anonymousId: '' } },
   )
+
+  // Announce the freshly-claimed completion if it scored well enough.
+  if (anonDoc.completed && typeof anonDoc.score === 'number') {
+    const username = user.username || 'A player'
+    if (username !== 'protocodex') {
+      if (anonDoc.score === 600) {
+        postSystemChat(`🎯 ${username} got a PERFECT 600/600 on today's run!`)
+      } else if (anonDoc.score >= DAILY_BROADCAST_FLOOR) {
+        postSystemChat(`${username} scored ${anonDoc.score}/600 on today's run — beat it at /daily`)
+      }
+    }
+  }
 
   res.json({ success: true, _id: anonDoc._id, score: anonDoc.score, completed: !!anonDoc.completed })
 }
