@@ -8,7 +8,7 @@ import { GoatStats } from "../info/GoatCounter"
 import { PeriodToggle } from "./PeriodToggle"
 
 export const Analytics = () => {
-  const [period, setPeriod] = useState('7d')
+  const [period, setPeriod] = useState('24h')
 
   return (
     <div className='mb-2' css={{

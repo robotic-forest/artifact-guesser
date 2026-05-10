@@ -51,6 +51,7 @@ const recordEvent = async (req, res) => {
     completed,
     challengeId,
     creatorTag,
+    dateKey,
     // Extra metadata
     ...extra
   } = req.body
@@ -128,6 +129,7 @@ const recordEvent = async (req, res) => {
   if (completed !== undefined) event.completed = completed
   if (challengeId) event.challengeId = challengeId
   if (creatorTag) event.creatorTag = creatorTag
+  if (dateKey) event.dateKey = dateKey
 
   try {
     await db.collection('analyticsEvents').insertOne(event)
