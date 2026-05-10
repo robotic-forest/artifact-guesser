@@ -114,7 +114,7 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
                 </MenuIconButton>
               </Link>
               {!isAdmin && (
-                <Link href='https://discord.gg/MvkqPTdcwm' css={{ '&:hover': { color: 'var(--textColor)'} }}>
+                <Link href='https://discord.gg/MvkqPTdcwm' target='_blank' rel='noopener noreferrer' css={{ '&:hover': { color: 'var(--textColor)'} }}>
                   <MenuIconButton tooltip='Join Discord' className='mb-3' theme={{
                     backgroundColor: '#5562ea',
                     primaryColor: '#5562ea',

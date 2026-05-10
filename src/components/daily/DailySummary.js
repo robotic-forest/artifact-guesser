@@ -28,19 +28,14 @@ export const DailySummary = () => {
       '@media (max-width: 800px)': { padding: '64px 6px 6px 6px' },
     }}>
       <Simulator
-        top={
-          <>
-            <DailyScore />
-            <DailyLeaderboard leaderboard={leaderboard} />
-          </>
-        }
+        top={<DailyScore leaderboard={leaderboard} />}
         bottom={<DailyRoundReview game={game} />}
       />
     </div>
   )
 }
 
-const DailyScore = () => {
+const DailyScore = ({ leaderboard }) => {
   const { game, daily } = useDaily()
   const { user } = useUser()
   const [signupOpen, setSignupOpen] = useState(false)
@@ -118,21 +113,15 @@ const DailyScore = () => {
     <>
       <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} />
       <div className='flex flex-col items-center relative'>
-        <div className='flex text-2xl mt-4 font-mono font-bold'>
+        <div className='flex items-center text-2xl mt-4 mb-4 font-mono font-bold flex-wrap justify-center'>
           <div className='mr-4 mt-1'>
             <IconGenerator />
           </div>
-          TODAY'S RUN
+          <span>TODAY'S RUN</span>
+          <span className='ml-3 text-base font-normal text-white'>{dateStr}</span>
           <div className='ml-4 mt-1' css={{ transform: 'scaleX(-1)' }}>
             <IconGenerator />
           </div>
-        </div>
-
-        <div className='text-white/60 text-sm mt-2 mb-2'>
-          {dateStr}
-        </div>
-        <div className='text-white/50 text-xs mb-4'>
-          Same run for everyone today
         </div>
 
         <FancyBorderButton disabled style={{ marginBottom: 16 }}>
@@ -145,6 +134,8 @@ const DailyScore = () => {
             </span>
           </div>
         </FancyBorderButton>
+
+        <DailyLeaderboard leaderboard={leaderboard} />
 
         {!user?.isLoggedIn && (
           <div className='mb-6 mt-2 text-center text-md'>
@@ -161,13 +152,26 @@ const DailyScore = () => {
         {/* Share card preview + primary CTA */}
         <div className='mb-6 w-full max-w-lg flex flex-col items-center'>
           {teaseImg && (
-            <img
-              src={`/api/og/daily?score=${game.score}&by=${encodeURIComponent(user?.username || '')}&dateKey=${daily?.dateKey || ''}&tease=${encodeURIComponent(teaseImg)}`}
-              className='w-full shadow-lg mb-4'
-              css={{ border: '1px solid rgba(255,255,255,0.15)' }}
-              alt='Share card preview'
-            />
+            <>
+              <div className='text-white text-base mb-2 text-center font-bold uppercase tracking-wider'>
+                Your share card
+              </div>
+              <div className='text-white text-base mb-3 text-center max-w-md'>
+                This image previews on Twitter, Discord, iMessage and more when your link is shared
+              </div>
+              <img
+                src={`/api/og/daily?score=${game.score}&by=${encodeURIComponent(user?.username || '')}&dateKey=${daily?.dateKey || ''}&tease=${encodeURIComponent(teaseImg)}`}
+                className='w-full shadow-lg mb-4'
+                css={{ border: '1px solid rgba(255,255,255,0.15)' }}
+                alt='Share card preview'
+              />
+            </>
           )}
+
+          <div className='text-white text-base mb-8 text-center max-w-md'>
+            <b>Send the link to a friend</b> — they'll play the <b>exact same three artifacts</b>{' '}
+            you just played and you can compare scores.
+          </div>
 
           <SimulatorButton
             onClick={handleCopyLink}
@@ -186,16 +190,6 @@ const DailyScore = () => {
             </span>
           </SimulatorButton>
 
-          <div className='text-white/40 text-xs mt-2 text-center'>
-            Send to a friend — they'll play the same artifacts and compare scores
-          </div>
-
-          <button
-            onClick={handleNativeShare}
-            className='mt-3 text-sm text-blue-300 hover:text-blue-400 hover:underline transition-colors'
-          >
-            or share on social
-          </button>
         </div>
 
         {/* Secondary actions */}
@@ -210,19 +204,6 @@ const DailyScore = () => {
           </Link>
         </div>
 
-        <div className='mb-6 text-center text-white/50 text-sm max-w-md'>
-          <div className='mb-3'>Come back tomorrow for a new daily challenge!</div>
-          <div css={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12 }}>
-            Enjoying Artifact Guesser?{' '}
-            <Link
-              href='/support'
-              className='text-blue-300 hover:text-blue-400 hover:underline'
-              onClick={() => track('support_cta_clicked', { runType: 'daily', placement: 'daily_summary' })}
-            >
-              Help keep it running
-            </Link>
-          </div>
-        </div>
       </div>
     </>
   )
@@ -232,13 +213,13 @@ const DailyLeaderboard = ({ leaderboard }) => {
   if (!leaderboard?.scores?.length) return null
 
   return (
-    <div className='flex flex-col items-center mb-8'>
+    <div className='flex flex-col items-center mb-8 w-full max-w-lg'>
       <div className='flex text-xl my-4 font-mono font-bold'>
         <FaTrophy className='mr-3 text-yellow-400' />
         DAILY LEADERBOARD
         <FaTrophy className='ml-3 text-yellow-400' />
       </div>
-      <div className='w-full max-w-md'>
+      <div className='w-full'>
         {leaderboard.scores.map((entry, i) => (
           <div
             key={i}

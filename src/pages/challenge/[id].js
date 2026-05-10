@@ -2,6 +2,7 @@ import { ChallengeGame } from "@/components/daily/ChallengeGame"
 import Head from "next/head"
 import { initDB } from "@/lib/apiUtils/mongodb"
 import { ObjectId } from "mongodb"
+import { stripUnrenderableImages } from "@/lib/apiUtils/artifactImages"
 
 export default function ChallengePage({ og, challengeId }) {
   return (
@@ -41,6 +42,7 @@ export const getServerSideProps = async (ctx) => {
   let challengerUsername = 'Your friend'
   let challengerScore = ''
   let dateKey = ''
+  let teaseImage = ''
 
   try {
     const db = await initDB()
@@ -50,6 +52,19 @@ export const getServerSideProps = async (ctx) => {
       challengerScore = String(challenge.challengerScore)
       dateKey = challenge.dateKey || ''
     }
+
+    // Sample a random highlight artifact image for the share card so
+    // Discord/Twitter unfurls show an actual artifact, not a black panel.
+    for (let i = 0; i < 5 && !teaseImage; i++) {
+      const [artifact] = await db.collection('artifacts').aggregate([
+        { $match: { isHighlight: true, problematic: { $ne: true } } },
+        { $sample: { size: 1 } },
+      ]).toArray()
+      if (!artifact) continue
+      stripUnrenderableImages(artifact)
+      const imgs = artifact?.images?.external || []
+      if (imgs.length) teaseImage = imgs[Math.floor(Math.random() * imgs.length)]
+    }
   } catch {}
 
   const ogParams = new URLSearchParams()
@@ -57,6 +72,7 @@ export const getServerSideProps = async (ctx) => {
   if (challengerScore) ogParams.set('score', challengerScore)
   if (challengerUsername) ogParams.set('by', challengerUsername)
   if (dateKey) ogParams.set('dateKey', dateKey)
+  if (teaseImage) ogParams.set('tease', teaseImage)
 
   const title = challengerScore
     ? `${challengerUsername} challenges you! ${challengerScore}/600 on Today's Run`

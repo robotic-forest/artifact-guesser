@@ -63,7 +63,7 @@ export const MainHeader = ({ settings }) => {
           >
             <FaTrophy />
           </MenuIconButton>
-          <Link href='https://discord.gg/MvkqPTdcwm'>
+          <Link href='https://discord.gg/MvkqPTdcwm' target='_blank' rel='noopener noreferrer'>
             <MenuIconButton className='ml-1.5' css={{ border: '1px solid #ffffff33' }} tooltip='Join Discord' theme={{
               textColor: '#ffffff',
               primaryColor: '#5562ea',

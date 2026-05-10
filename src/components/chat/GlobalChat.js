@@ -171,6 +171,7 @@ const scrollbarCSS = {
     if (canChat) setIsActive(true); // Only activate if connected
   };
   const handleMouseLeave = () => {
+    if (showUsersDialog) return; // Keep chat active while the user-list dialog is open
     if (containerRef.current && !containerRef.current.contains(document.activeElement)) {
       setIsActive(false);
     }
@@ -187,6 +188,7 @@ const scrollbarCSS = {
      if (canChat) setIsActive(true); // Only activate if connected
   };
   const handleBlur = (event) => {
+    if (showUsersDialog) return;
     if (containerRef.current && !containerRef.current.contains(event.relatedTarget)) {
       setIsActive(false);
     }
@@ -212,7 +214,7 @@ const scrollbarCSS = {
         className={inactiveBaseClasses}
         // onMouseEnter moved to inner div
         // onClick moved to inner div
-        title={!canChat ? "Connecting..." : "Click or hover to open chat"} // Tooltip
+        title={!canChat ? "Connecting..." : undefined}
       >
         <div
           className="flex flex-col items-start"
@@ -369,9 +371,7 @@ const scrollbarCSS = {
                   onClick={(e) => e.stopPropagation()}
                   title="Go to Multiplayer Area"
                 >
-                  <span className="hidden sm:inline">Go to Multiplayer Area</span>
-                  <span className="sm:hidden">Multiplayer</span>
-                  <span className="ml-1">→</span>
+                  Multiplayer<span className="ml-1">→</span>
                 </button>
               </Link>
             </div>
@@ -492,8 +492,8 @@ const scrollbarCSS = {
             </div>
           )}
           {/* Note: The "Connecting..." overlay is handled in the inactive state now */}
+          <UsersDialog open={showUsersDialog} users={globalUsers} count={globalUserCount} onClose={() => setShowUsersDialog(false)} />
         </div>
-        <UsersDialog open={showUsersDialog} users={globalUsers} count={globalUserCount} onClose={() => setShowUsersDialog(false)} />
       </div>
     );
   }
@@ -518,6 +518,7 @@ const UsersDialog = ({ open, users, count, onClose }) => {
       <div
         onClick={(e) => e.stopPropagation()}
         css={{
+          position: 'relative',
           background: 'var(--backgroundColor)',
           border: '1px solid var(--borderColor)',
           borderRadius: 6,
@@ -529,14 +530,27 @@ const UsersDialog = ({ open, users, count, onClose }) => {
           flexDirection: 'column',
         }}
       >
-        <div className="flex items-center justify-between p-3 border-b" css={{ borderColor: 'var(--borderColor)' }}>
-          <div className="font-bold flex items-center">
-            <span className="inline-block w-2.5 h-2.5 bg-green-500 border border-black rounded-full mr-2"></span>
-            {count} {count === 1 ? 'user' : 'users'} online
-          </div>
-          <button onClick={onClose} className="text-lg leading-none px-2" title="Close">×</button>
+        <button
+          onClick={onClose}
+          className="leading-none"
+          title="Close"
+          css={{
+            position: 'absolute',
+            top: 4,
+            right: 6,
+            fontSize: 20,
+            lineHeight: 1,
+            padding: '2px 6px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >×</button>
+        <div className="flex items-center p-3">
+          <span className="inline-block w-2.5 h-2.5 bg-green-500 border border-black rounded-full mr-2"></span>
+          {count} {count === 1 ? 'user' : 'users'} online
         </div>
-        <div className="overflow-y-auto p-2" css={{ flex: 1 }}>
+        <div className="overflow-y-auto p-2 pt-0" css={{ flex: 1 }}>
           {users.length === 0 ? (
             <div className="text-xs italic p-2" css={{ color: 'var(--textLowOpacity)' }}>
               No users to display.
@@ -545,7 +559,7 @@ const UsersDialog = ({ open, users, count, onClose }) => {
             users.map(u => (
               <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
                 <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                <b>{u.username}</b>
+                {u.username}
               </div>
             ))
           )}
