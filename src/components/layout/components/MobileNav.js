@@ -19,6 +19,7 @@ import { accountTheme } from "@/pages/accounts"
 import { dashboardTheme } from "@/pages/dashboard"
 import { SignupDialog } from "@/components/dialogs/SignupDialog"
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
+import { useActiveRun } from "@/hooks/useActiveRun"
 import { PiRedditLogoFill } from "react-icons/pi"
 import { TbPigMoney } from "react-icons/tb"
 
@@ -28,6 +29,10 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
   const [signupOpen, setSignupOpen] = useState(false)
 
   const game = process.browser && localStorage.getItem('game')
+  const { kind: activeKind, url: activeUrl } = useActiveRun()
+  const resumeLabel = activeKind === 'daily'
+    ? 'Resume Daily Run'
+    : (activeKind === 'personal' || game) ? 'Resume Game' : 'Play Game'
 
   return (
     <>
@@ -60,10 +65,10 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
         </IconButton>
       </div>
 
-      {user && !user?.isLoggedIn && !open && !loginOpen && !signupOpen && (
+      {user && !open && !loginOpen && !signupOpen && (
         <div className='fixed bottom-1 right-1 p-2' css={{ zIndex: 99 }}>
-          <Link href='/' css={{ '&:hover': { color: 'var(--textColor)'}, width: '100%', maxWidth: 400 }}>
-            <Button tooltip='Resume Game' css={{
+          <Link href={activeUrl} css={{ '&:hover': { color: 'var(--textColor)'}, width: '100%', maxWidth: 400 }}>
+            <Button tooltip={resumeLabel} css={{
               background: '#000000',
               color: '#ffffff',
               '&:hover': {
@@ -72,7 +77,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
               }
             }}>
               <GiGreekSphinx className='mr-2' />
-              {game ? 'Resume' : 'Play'} Game
+              {resumeLabel}
             </Button>
           </Link>
         </div>
@@ -101,9 +106,9 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                   background: 'var(--backgroundColorBarelyDark)'
                 }}>
                   <div className='grid grid-cols-2 gap-2'>
-                    <MenuButton theme={theme} url='/'>
+                    <MenuButton theme={theme} url={activeUrl}>
                       <GiGreekSphinx className='mr-2' />
-                      {game ? 'Resume' : 'Play'} Game
+                      {resumeLabel}
                     </MenuButton>
                     <MenuButton theme={dashboardTheme} url='/multiplayer'>
                       <GiGreekSphinx className='mr-2' />

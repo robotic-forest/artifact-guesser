@@ -32,6 +32,7 @@ export const MultiplayerProvider = ({ children }) => {
   const [socketInstance, setSocketInstance] = useState(null);
   const [lobbyClients, setLobbyClients] = useState([]); // State for clients in the current lobby
   const [globalUserCount, setGlobalUserCount] = useState(0); // State for global user count
+  const [globalUsers, setGlobalUsers] = useState([]); // [{ userId, username }]
   const [isLeaving, setIsLeaving] = useState(false); // Add state to track leave process
   const prevIsLoggedInRef = useRef(user?.isLoggedIn); // Ref to track previous login state
   const currentLobbyIdRef = useRef(currentLobbyId); // Ref to track current lobby ID for socket listener
@@ -280,10 +281,17 @@ export const MultiplayerProvider = ({ children }) => {
       setChatMessages(prev => prev.filter(msg => msg.id !== id));
     });
 
-    // Listener for global user count updates
-    newSocket.on('global-user-count-update', (count) => {
-      startTransition(() => { // Wrap state update
-        setGlobalUserCount(count);
+    // Listener for global user count updates. Server sends an array of
+    // { userId, username }; older builds sent just a number — handle both.
+    newSocket.on('global-user-count-update', (payload) => {
+      startTransition(() => {
+        if (Array.isArray(payload)) {
+          setGlobalUsers(payload);
+          setGlobalUserCount(payload.length);
+        } else {
+          setGlobalUserCount(typeof payload === 'number' ? payload : 0);
+          setGlobalUsers([]);
+        }
       });
     });
 
@@ -596,6 +604,7 @@ export const MultiplayerProvider = ({ children }) => {
         setCurrentLobbyId(null); // Clear lobby ID on logout
         setLobbyClients([]);
         setGlobalUserCount(0); // Reset global count
+        setGlobalUsers([]);
         setLobbyJoinStatus('idle'); // Reset join status
         // Reset game state as well
         setGameState({
@@ -770,6 +779,7 @@ export const MultiplayerProvider = ({ children }) => {
     _socket: socketInstance,
     chatMessages,
     globalUserCount, // Expose global user count
+    globalUsers,     // Expose [{ userId, username }] for the global chat user list
     gameState,
     revealImage, // Expose reveal state
     acknowledgeGameSummary, // Expose the new action

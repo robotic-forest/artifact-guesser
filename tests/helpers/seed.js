@@ -7,8 +7,7 @@
 
 import { ObjectId } from 'mongodb';
 
-// 1x1 transparent PNG — local, instant, won't depend on external CDN reachability in CI.
-const WORKING_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+const WORKING_IMAGE = 'https://images.metmuseum.org/CRDImages/as/original/DP251139.jpg';
 
 export async function createTestArtifact(db, overrides = {}) {
   const artifact = {

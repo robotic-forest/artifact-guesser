@@ -51,7 +51,8 @@ const scrollbarCSS = {
     isLoadingMore,
     loadOlderMessages,
   } = useGlobalChat();
-  const { _socket, isConnected, isRegistered, globalUserCount } = useMultiplayer(); // Need socket, connection status, and user count
+  const { _socket, isConnected, isRegistered, globalUserCount, globalUsers } = useMultiplayer();
+  const [showUsersDialog, setShowUsersDialog] = useState(false);
   const { user, isAdmin } = useUser(); // Get user state and admin flag
   // Removed signupOpen state
   const router = useRouter(); // Get router instance
@@ -227,7 +228,12 @@ const scrollbarCSS = {
             {/* Show user count in inactive view if connected */}
              {canChat && (
                // Apply lobby theme styles consistently
-               <div className="p-1 px-2 text-xs italic flex items-center" css={{ background: backgroundColor || 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)' }}>
+               <div
+                 className="p-1 px-2 text-xs italic flex items-center cursor-pointer"
+                 css={{ background: backgroundColor || 'var(--backgroundColor)', color: 'var(--textColorLowOpacity)', border: '1px solid var(--borderColor)' }}
+                 title="Click to see users"
+                 onClick={(e) => { e.stopPropagation(); if (globalUserCount > 0) setShowUsersDialog(true); }}
+               >
                  <span className="inline-block w-2.5 h-2.5 bg-green-500 border border-black rounded-full mr-3"></span>
                  {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
                </div>
@@ -324,6 +330,7 @@ const scrollbarCSS = {
             </button>
           </div>
         )}
+        <UsersDialog open={showUsersDialog} users={globalUsers} count={globalUserCount} onClose={() => setShowUsersDialog(false)} />
       </div>
     );
   } else {
@@ -353,18 +360,29 @@ const scrollbarCSS = {
               <b className='ml-1'>Global Chat</b>
               <Link href="/multiplayer" passHref>
                 <button
-                  className="px-3 py-1 rounded text-black text-sm shadow"
-                  style={{ backgroundColor: '#91c3cb' }}
-                  onClick={(e) => e.stopPropagation()} // Prevent chat activation on button click, allow Link navigation
+                  className="rounded text-black text-sm shadow flex items-center"
+                  css={{
+                    backgroundColor: '#91c3cb',
+                    padding: '4px 12px',
+                    '@media (max-width: 568px)': { padding: '4px 8px' },
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  title="Go to Multiplayer Area"
                 >
-                  Go to Multiplayer Area
+                  <span className="hidden sm:inline">Go to Multiplayer Area</span>
+                  <span className="sm:hidden">Multiplayer</span>
+                  <span className="ml-1">→</span>
                 </button>
               </Link>
             </div>
            )}
 
-           {/* User Count Display */}
-           <div className="text-xs text-black/60 mb-1 ml-1 flex items-center">
+           {/* User Count Display — click to see who's online */}
+           <div
+             className="text-xs text-black/60 mb-1 ml-1 flex items-center cursor-pointer hover:text-black"
+             title="Click to see users"
+             onClick={(e) => { e.stopPropagation(); if (globalUserCount > 0) setShowUsersDialog(true); }}
+           >
              <span className="inline-block w-2.5 h-2.5 bg-green-500 border border-black rounded-full mr-1.5"></span>
              {globalUserCount} {globalUserCount === 1 ? 'user' : 'users'} online
            </div>
@@ -475,8 +493,64 @@ const scrollbarCSS = {
           )}
           {/* Note: The "Connecting..." overlay is handled in the inactive state now */}
         </div>
-        {/* Removed Signup Dialog */}
+        <UsersDialog open={showUsersDialog} users={globalUsers} count={globalUserCount} onClose={() => setShowUsersDialog(false)} />
       </div>
     );
   }
+};
+
+const UsersDialog = ({ open, users, count, onClose }) => {
+  if (!open) return null;
+  return (
+    <div
+      onClick={onClose}
+      css={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        css={{
+          background: 'var(--backgroundColor)',
+          border: '1px solid var(--borderColor)',
+          borderRadius: 6,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          width: '100%',
+          maxWidth: 360,
+          maxHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <div className="flex items-center justify-between p-3 border-b" css={{ borderColor: 'var(--borderColor)' }}>
+          <div className="font-bold flex items-center">
+            <span className="inline-block w-2.5 h-2.5 bg-green-500 border border-black rounded-full mr-2"></span>
+            {count} {count === 1 ? 'user' : 'users'} online
+          </div>
+          <button onClick={onClose} className="text-lg leading-none px-2" title="Close">×</button>
+        </div>
+        <div className="overflow-y-auto p-2" css={{ flex: 1 }}>
+          {users.length === 0 ? (
+            <div className="text-xs italic p-2" css={{ color: 'var(--textLowOpacity)' }}>
+              No users to display.
+            </div>
+          ) : (
+            users.map(u => (
+              <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
+                <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                <b>{u.username}</b>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
