@@ -14,7 +14,7 @@ const dailyLeaderboard = async (req, res) => {
   const dateKey = req.query.dateKey || today
 
   const topScores = await db.collection('dailyGames').aggregate([
-    { $match: { dateKey, completed: true } },
+    { $match: { dateKey, completed: true, userId: { $exists: true, $ne: null } } },
     { $sort: { score: -1, completedAt: 1 } }, // Highest score first, earliest completion as tiebreaker
     { $limit: 20 },
     { $project: { userId: 1, score: 1, completedAt: 1 } }
@@ -33,12 +33,16 @@ const dailyLeaderboard = async (req, res) => {
   const userMap = {}
   users.forEach(u => { userMap[u._id.toString()] = u.username })
 
-  const scores = topScores.map((s, i) => ({
-    rank: i + 1,
-    username: userMap[s.userId] || 'Anonymous',
-    score: s.score,
-    completedAt: s.completedAt
-  }))
+  // Drop entries whose userId doesn't resolve to a real account (orphaned
+  // dailyGames left behind by deleted users) instead of showing 'Anonymous'.
+  const scores = topScores
+    .filter(s => userMap[s.userId])
+    .map((s, i) => ({
+      rank: i + 1,
+      username: userMap[s.userId],
+      score: s.score,
+      completedAt: s.completedAt
+    }))
 
   res.json({ dateKey, scores })
 }

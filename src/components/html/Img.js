@@ -1,8 +1,11 @@
 import { ImageViewDialog } from "@/components/dialogs/ImageDialog"
 import { useState } from "react"
 
-export const Img = ({ src, source, ...p }) => {
+export const Img = ({ src, source, alt, ...p }) => {
   const [imageView, setImageView] = useState(false)
+  const [errored, setErrored] = useState(false)
+
+  if (errored) return null
 
   return (
     <>
@@ -13,8 +16,10 @@ export const Img = ({ src, source, ...p }) => {
       />
       <img
         src={src}
+        alt={alt}
         css={{ cursor: 'pointer' }}
         onClick={() => setImageView(src)}
+        onError={() => setErrored(true)}
         {...p}
       />
     </>

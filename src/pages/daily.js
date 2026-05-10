@@ -53,7 +53,7 @@ export const getServerSideProps = async (ctx) => {
       ? `${sharedBy ? `${sharedBy} ` : ''}scored ${sharedScore}/600 on Today's Run — can you beat it?`
       : "Today's Run - Artifact Guesser",
     description: isShare
-      ? `Play the same 3 artifacts and compare your score. Artifact Guesser — GeoGuessr for archaeology.`
+      ? `Play the same 3 artifacts and compare your score. Guess the date and origin of historical artifacts.`
       : "Play today's daily challenge. Same 3 artifacts for everyone — compare your score!",
     url: `${baseUrl}/daily`,
     image: ogImage,

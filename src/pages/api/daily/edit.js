@@ -1,29 +1,39 @@
 import { initDB } from "@/lib/apiUtils/mongodb"
-import { verifyAuth, withSessionRoute } from "@/lib/apiUtils/session"
+import { withSessionRoute } from "@/lib/apiUtils/session"
 import { ObjectId } from "mongodb"
 import moment from "moment"
 
 /**
  * POST /api/daily/edit
  *
- * Updates a logged-in user's daily game (round guesses, score, completion).
+ * Updates a daily game (round guesses, score, completion).
+ * Owner is either the session user OR an anonymous client identified
+ * by `anonymousId` in the body — the same id that created the doc via
+ * /api/daily/current. Mismatched ownership 403s.
  */
 const editDailyGame = async (req, res) => {
-  const user = verifyAuth(req, res)
-  if (!user) return
-
+  const user = req.session?.user
   const db = await initDB()
-  const { _id, ...data } = req.body
+  const { _id, anonymousId: bodyAnonId, ...data } = req.body
 
   if (!_id) return res.status(400).json({ error: 'Missing _id' })
+  if (!user && !bodyAnonId) {
+    return res.status(401).json({ error: 'Auth or anonymousId required' })
+  }
 
   const dailyGame = await db.collection('dailyGames').findOne({ _id: new ObjectId(_id) })
   if (!dailyGame) return res.status(404).json({ error: 'Daily game not found' })
-  if (dailyGame.userId !== user._id) {
-    return res.status(403).json({ error: 'Not your game' })
+
+  if (user) {
+    if (dailyGame.userId !== user._id) {
+      return res.status(403).json({ error: 'Not your game' })
+    }
+  } else {
+    if (!dailyGame.anonymousId || dailyGame.anonymousId !== bodyAnonId) {
+      return res.status(403).json({ error: 'Not your game' })
+    }
   }
 
-  // Strip artifact objects from roundData before saving
   const processedRounds = data.roundData.map(round => {
     const { artifact, ...rest } = round
     return rest

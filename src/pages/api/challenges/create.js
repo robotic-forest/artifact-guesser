@@ -22,7 +22,7 @@ const createChallenge = async (req, res) => {
   const db = await initDB()
   const user = req.session?.user
 
-  const { dateKey, score, username } = req.body
+  const { dateKey, score, username, anonymousId } = req.body
 
   if (!dateKey || score === undefined) {
     return res.status(400).json({ error: 'dateKey and score are required' })
@@ -34,6 +34,24 @@ const createChallenge = async (req, res) => {
     return res.status(404).json({ error: 'Daily challenge not found for this date' })
   }
 
+  // Dedup: one challenge per (player, dateKey). Pre-create effects, strict-
+  // mode double-mounts, and rapid clicks should all yield the same challenge.
+  // Logged-in users keyed by userId, anonymous by their persistent anonymousId.
+  const dedupQuery = user?._id
+    ? { challengerUserId: user._id, dateKey }
+    : (anonymousId ? { challengerAnonId: anonymousId, dateKey } : null)
+
+  if (dedupQuery) {
+    const existing = await db.collection('challenges').findOne(dedupQuery, { projection: { _id: 1 } })
+    if (existing) {
+      await db.collection('challenges').updateOne(
+        { _id: existing._id },
+        { $set: { challengerScore: score, challengerUsername: username || (user ? 'A friend' : 'Someone') } },
+      )
+      return res.json({ challengeId: existing._id.toString() })
+    }
+  }
+
   const challenge = {
     type: 'daily',
     dateKey,
@@ -41,6 +59,7 @@ const createChallenge = async (req, res) => {
     artifactIds: daily.artifactIds,
     rounds: daily.rounds,
     challengerUserId: user?._id || null,
+    challengerAnonId: !user && anonymousId ? anonymousId : null,
     challengerUsername: username || (user ? 'A friend' : 'Someone'),
     challengerScore: score,
     createdAt: new Date()

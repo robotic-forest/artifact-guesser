@@ -38,50 +38,25 @@ export const DailyProvider = ({ children }) => {
 
     const fetchDaily = async () => {
       try {
-        const { data } = await axios.get('/api/daily/current')
+        // Anonymous players get a persistent anonymousId so their server-side
+        // dailyGame doc survives refresh and resists trivial replay attempts.
+        const anonymousId = (() => {
+          try {
+            let id = localStorage.getItem('ag_anon_id')
+            if (!id) {
+              id = crypto.randomUUID()
+              localStorage.setItem('ag_anon_id', id)
+            }
+            return id
+          } catch { return null }
+        })()
+        const params = anonymousId ? { anonymousId } : {}
+        const { data } = await axios.get('/api/daily/current', { params })
         setDaily(data.daily)
 
         if (data.game) {
-          // Logged-in user — server gave us the game
           initGame(data.game)
           if (!data.game.completed) {
-            track('daily_run_started', { runType: 'daily', dateKey: data.daily.dateKey })
-          }
-        } else if (data.artifact) {
-          // Not logged in — check localStorage for existing daily game.
-          // Once completed (even without login), the same game is re-hydrated
-          // so non-logged-in users can't replay the daily for a better score.
-          // They can still game this by clearing storage / using incognito,
-          // but that's an intentional soft-lock — the real sign is a signup CTA.
-          const localKey = `daily_${data.daily.dateKey}`
-          const localGame = JSON.parse(localStorage.getItem(localKey))
-
-          if (localGame) {
-            initGame(localGame)
-            if (!localGame.completed) {
-              track('daily_run_started', { runType: 'daily', dateKey: data.daily.dateKey })
-            }
-          } else {
-            // Start fresh local daily game
-            const newGame = {
-              dateKey: data.daily.dateKey,
-              startedAt: new Date().toISOString(),
-              round: 1,
-              rounds: 3,
-              score: 0,
-              completed: false,
-              artifactIds: data.daily.artifactIds,
-              roundData: [
-                {
-                  round: 1,
-                  artifactId: data.daily.artifactIds[0],
-                  artifact: data.artifact,
-                  guessed: false
-                }
-              ]
-            }
-            localStorage.setItem(localKey, JSON.stringify(newGame))
-            initGame(newGame)
             track('daily_run_started', { runType: 'daily', dateKey: data.daily.dateKey })
           }
         }
@@ -103,9 +78,8 @@ export const DailyProvider = ({ children }) => {
   }
 
   const updateGame = async (updatedGame) => {
-    if (user?.isLoggedIn && updatedGame._id) {
+    if (updatedGame._id) {
       try {
-        // Strip artifacts before sending to server
         const payload = { ...updatedGame }
         if (Array.isArray(payload.roundData)) {
           payload.roundData = payload.roundData.map(r => {
@@ -113,14 +87,14 @@ export const DailyProvider = ({ children }) => {
             return rest
           })
         }
+        if (!user?.isLoggedIn) {
+          try { payload.anonymousId = localStorage.getItem('ag_anon_id') } catch {}
+        }
         await axios.post('/api/daily/edit', payload)
       } catch (err) {
         console.error('Failed to save daily game:', err)
         toast.error('Failed to save progress')
       }
-    } else if (daily?.dateKey) {
-      // Save to localStorage for non-logged-in users
-      localStorage.setItem(`daily_${daily.dateKey}`, JSON.stringify(updatedGame))
     }
     setGame(updatedGame)
   }
@@ -277,6 +251,16 @@ export const DailyProvider = ({ children }) => {
     }
   }, [isViewingSummary, daily?.dateKey, leaderboard])
 
+  const refreshLeaderboard = useCallback(async () => {
+    if (!daily?.dateKey) return
+    try {
+      const res = await axios.get(`/api/daily/leaderboard?dateKey=${daily.dateKey}`)
+      setLeaderboard(res.data)
+    } catch (err) {
+      console.error('Failed to refresh leaderboard:', err)
+    }
+  }, [daily?.dateKey])
+
   return (
     <DailyContext.Provider value={{
       game,
@@ -300,6 +284,7 @@ export const DailyProvider = ({ children }) => {
       imagesReadyForTimer,
       setImagesReadyForTimer,
       leaderboard,
+      refreshLeaderboard,
       // Stubs to satisfy components that read from useGame
       selectedTimer: null,
       handleSetSelectedTimer: () => {},

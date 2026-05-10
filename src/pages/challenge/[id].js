@@ -3,6 +3,23 @@ import Head from "next/head"
 import { initDB } from "@/lib/apiUtils/mongodb"
 import { ObjectId } from "mongodb"
 import { stripUnrenderableImages } from "@/lib/apiUtils/artifactImages"
+import axios from "axios"
+
+const TRUSTED_DOMAINS = ['media.britishmuseum.org', 'art.thewalters.org']
+const isImageOk = async (url) => {
+  try {
+    const hostname = new URL(url).hostname
+    if (TRUSTED_DOMAINS.some(d => hostname.includes(d))) return true
+    const res = await axios.head(url, {
+      timeout: 4000,
+      validateStatus: () => true,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ArtifactGuesser/1.0)' },
+    })
+    if (res.status < 200 || res.status >= 400) return false
+    const ct = String(res.headers['content-type'] || '').toLowerCase()
+    return ct.startsWith('image/')
+  } catch { return false }
+}
 
 export default function ChallengePage({ og, challengeId }) {
   return (
@@ -53,17 +70,20 @@ export const getServerSideProps = async (ctx) => {
       dateKey = challenge.dateKey || ''
     }
 
-    // Sample a random highlight artifact image for the share card so
-    // Discord/Twitter unfurls show an actual artifact, not a black panel.
-    for (let i = 0; i < 5 && !teaseImage; i++) {
+    // Sample + HEAD-probe a random highlight artifact image so the OG
+    // unfurl always has a real image (Met / Cleveland occasionally serve
+    // HTML error pages with image URLs, which ORB-blocks and renders black).
+    for (let i = 0; i < 8 && !teaseImage; i++) {
       const [artifact] = await db.collection('artifacts').aggregate([
         { $match: { isHighlight: true, problematic: { $ne: true } } },
         { $sample: { size: 1 } },
       ]).toArray()
       if (!artifact) continue
       stripUnrenderableImages(artifact)
-      const imgs = artifact?.images?.external || []
-      if (imgs.length) teaseImage = imgs[Math.floor(Math.random() * imgs.length)]
+      const imgs = (artifact?.images?.external || []).sort(() => Math.random() - 0.5)
+      for (const img of imgs.slice(0, 3)) {
+        if (await isImageOk(img)) { teaseImage = img; break }
+      }
     }
   } catch {}
 
@@ -80,7 +100,7 @@ export const getServerSideProps = async (ctx) => {
 
   const og = {
     title,
-    description: 'Play the same 3 artifacts and see if you can beat their score. Artifact Guesser — GeoGuessr for archaeology.',
+    description: 'Play the same 3 artifacts and see if you can beat their score. Guess the date and origin of historical artifacts.',
     url: `${baseUrl}/challenge/${id}`,
     image: `${baseUrl}/api/og/daily?${ogParams.toString()}`,
   }

@@ -153,21 +153,24 @@ const dailyCurrent = async (req, res) => {
     await db.collection('dailyChallenges').insertOne(daily)
   }
 
-  // If user is logged in, find or create their daily game
-  if (user) {
-    let dailyGame = await db.collection('dailyGames').findOne({
-      userId: user._id,
-      dateKey
-    })
+  // Resolve the player key: logged-in users keyed by userId, anonymous
+  // players keyed by their persistent anonymousId so replays through the
+  // same browser pick up the same dailyGame doc (and locked summary).
+  const anonymousId = !user ? (req.query?.anonymousId || null) : null
+  const playerQuery = user
+    ? { userId: user._id, dateKey }
+    : (anonymousId ? { anonymousId, dateKey } : null)
+
+  if (playerQuery) {
+    let dailyGame = await db.collection('dailyGames').findOne(playerQuery)
 
     if (!dailyGame) {
-      // Create a new daily game for this user
       const firstArtifact = await db.collection('artifacts').findOne({
         _id: new ObjectId(daily.artifactIds[0])
       })
 
       dailyGame = {
-        userId: user._id,
+        ...(user ? { userId: user._id } : { anonymousId }),
         dateKey,
         dailyChallengeId: daily._id.toString(),
         startedAt: new Date(),
@@ -186,11 +189,8 @@ const dailyCurrent = async (req, res) => {
 
       const { insertedId } = await db.collection('dailyGames').insertOne(dailyGame)
       dailyGame._id = insertedId
-
-      // Hydrate the first artifact
       dailyGame.roundData[0].artifact = stripUnrenderableImages(firstArtifact)
     } else {
-      // Hydrate artifacts for existing rounds
       const artifactIds = dailyGame.roundData.map(r => new ObjectId(r.artifactId))
       const artifacts = await db.collection('artifacts').find({ _id: { $in: artifactIds } }).toArray()
 
@@ -210,8 +210,8 @@ const dailyCurrent = async (req, res) => {
     })
   }
 
-  // Not logged in — return the daily challenge info with the first artifact
-  // so they can play without an account (stored in localStorage on client)
+  // Anonymous caller without anonymousId — return the daily definition + first
+  // artifact so the client can populate state and re-request with the id.
   const firstArtifact = await db.collection('artifacts').findOne({
     _id: new ObjectId(daily.artifactIds[0])
   })

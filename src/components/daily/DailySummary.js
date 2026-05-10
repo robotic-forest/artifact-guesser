@@ -1,5 +1,5 @@
 import { useDaily } from "./DailyProvider"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import useUser from "@/hooks/useUser"
 import { SignupDialog } from "../dialogs/SignupDialog"
 import { Simulator, SimulatorButton } from "../art/Simulator"
@@ -36,11 +36,39 @@ export const DailySummary = () => {
 }
 
 const DailyScore = ({ leaderboard }) => {
-  const { game, daily } = useDaily()
+  const { game, daily, refreshLeaderboard } = useDaily()
   const { user } = useUser()
   const [signupOpen, setSignupOpen] = useState(false)
   const [challengeUrl, setChallengeUrl] = useState(null)
   const [teaseImg, setTeaseImg] = useState('')
+  const [shareCardErrored, setShareCardErrored] = useState(false)
+  const claimedRef = useRef(false)
+
+  // Anonymous-completed daily → user signs up → transfer server-side doc to
+  // their account so the score lands on today's leaderboard.
+  useEffect(() => {
+    if (!user?.isLoggedIn) return
+    if (!game?.completed) return
+    if (!daily?.dateKey) return
+    if (claimedRef.current) return
+
+    let anonymousId = null
+    try { anonymousId = localStorage.getItem('ag_anon_id') } catch {}
+    if (!anonymousId) return
+
+    claimedRef.current = true
+    axios.post('/api/daily/claim', { dateKey: daily.dateKey, anonymousId })
+      .then(() => {
+        toast.success('Score saved to the leaderboard!')
+        refreshLeaderboard?.()
+      })
+      .catch(err => {
+        const code = err?.response?.data?.error
+        if (code === 'Daily already claimed') return
+        if (code === 'No anonymous daily run found for this device') return
+        console.error('Failed to claim daily run:', err)
+      })
+  }, [user?.isLoggedIn, game?.completed, daily?.dateKey])
 
   // Fetch a random artifact image for the share card (not from today's run)
   useEffect(() => {
@@ -58,20 +86,30 @@ const DailyScore = ({ leaderboard }) => {
   // Pre-create the challenge as soon as the summary renders so the Share
   // Challenge click handler can fire navigator.share synchronously (no
   // awaits between click and share = user-gesture token stays valid).
+  // Abort in-flight request on cleanup so React strict-mode double-effects
+  // don't create duplicate challenge docs.
+  const challengeCreatedRef = useRef(false)
   useEffect(() => {
-    if (!daily?.dateKey || challengeUrl) return
-    let cancelled = false
+    if (!daily?.dateKey || challengeUrl || challengeCreatedRef.current) return
+    challengeCreatedRef.current = true
+    const controller = new AbortController()
+    let anonymousId = null
+    try { if (!user?.isLoggedIn) anonymousId = localStorage.getItem('ag_anon_id') } catch {}
     axios.post('/api/challenges/create', {
       dateKey: daily.dateKey,
       score: game.score,
-      username: user?.username || 'A friend'
-    })
+      username: user?.username || 'A friend',
+      anonymousId,
+    }, { signal: controller.signal })
       .then(({ data }) => {
-        if (cancelled) return
         setChallengeUrl(`${window.location.origin}/challenge/${data.challengeId}`)
       })
-      .catch(err => console.warn('Challenge pre-create failed:', err))
-    return () => { cancelled = true }
+      .catch(err => {
+        if (axios.isCancel?.(err) || err?.name === 'CanceledError') return
+        challengeCreatedRef.current = false // allow retry on real failures
+        console.warn('Challenge pre-create failed:', err)
+      })
+    return () => controller.abort()
   }, [daily?.dateKey])
 
   const shareText = `I scored ${game.score}/600 on Today's Run at Artifact Guesser. Can you beat me?`
@@ -137,21 +175,55 @@ const DailyScore = ({ leaderboard }) => {
 
         <DailyLeaderboard leaderboard={leaderboard} />
 
-        {!user?.isLoggedIn && (
-          <div className='mb-6 mt-2 text-center text-md'>
+        {!user?.isLoggedIn && game?.completed && (
+          <div
+            className='mb-6 mt-2 w-full max-w-lg p-4 rounded text-center'
+            css={{
+              background: 'linear-gradient(135deg, rgba(228,193,244,0.15), rgba(204,165,222,0.05))',
+              border: '1px solid rgba(228,193,244,0.5)',
+            }}
+          >
+            <div className='text-white text-lg font-bold mb-1'>
+              Save your <span css={{ color: calcDailyScoreColor(game?.score) }}>{game.score}</span> / 600 to the leaderboard
+            </div>
+            <div className='text-white/70 text-sm mb-3'>
+              Sign up in 10 seconds — your run today gets recorded and you can track your streak.
+            </div>
             <button
               onClick={() => setSignupOpen(true)}
-              className='bg-[#E4C1F4] text-black rounded px-4 py-1 font-bold mr-2 hover:bg-[#CCA5DE] transition-colors'
+              className='text-lg'
+              css={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '8px 22px',
+                color: '#1a0f1f',
+                fontWeight: 800,
+                letterSpacing: 0.3,
+                border: '3px outset',
+                borderColor: '#ffffff77 #00000077 #00000077 #ffffff77',
+                cursor: 'pointer',
+                background: 'linear-gradient(120deg, #ffd97d 0%, #f5b8e8 50%, #b58bff 100%)',
+                boxShadow: '0 0 60px 0 #b58bff44, 0 0 30px 0 #f5b8e833',
+                '&:hover': {
+                  filter: 'brightness(1.1)',
+                  borderColor: '#ffffffaa #000000aa #000000aa #ffffffaa',
+                },
+                '&:active': {
+                  border: '3px inset',
+                  borderColor: '#00000077 #ffffff77 #ffffff77 #00000077',
+                },
+              }}
             >
-              Sign Up
+              <FaTrophy css={{ marginRight: 10, color: '#7a2d6b' }} />
+              Sign Up &amp; Save My Score
             </button>
-            to save your score on the leaderboard!
           </div>
         )}
 
         {/* Share card preview + primary CTA */}
         <div className='mb-6 w-full max-w-lg flex flex-col items-center'>
-          {teaseImg && (
+          {teaseImg && !shareCardErrored && (
             <>
               <div className='text-white text-base mb-2 text-center font-bold uppercase tracking-wider'>
                 Your share card
@@ -164,6 +236,7 @@ const DailyScore = ({ leaderboard }) => {
                 className='w-full shadow-lg mb-4'
                 css={{ border: '1px solid rgba(255,255,255,0.15)' }}
                 alt='Share card preview'
+                onError={() => setShareCardErrored(true)}
               />
             </>
           )}

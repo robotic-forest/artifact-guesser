@@ -38,17 +38,12 @@ export const DailyRunCTA = () => {
         <IoCalendar size={14} />
         <span>Play Today's Run</span>
         {top && (
-          <span css={{
-            marginLeft: 2,
-            padding: '1px 7px',
-            background: 'rgba(0,0,0,0.25)',
-            borderRadius: 999,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 0.3,
-          }}>
-            {top.score} · {top.username}
-          </span>
+          <>
+            <span css={{ opacity: 0.7 }}>·</span>
+            <span css={{ fontSize: 12, fontWeight: 600, opacity: 0.95 }}>
+              Current Highscore: {top.score} / 600
+            </span>
+          </>
         )}
       </div>
     </Link>
