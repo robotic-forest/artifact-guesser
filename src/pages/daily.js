@@ -9,6 +9,7 @@ export default function DailyPage({ og }) {
         <meta name="viewport" content="initial-scale=1.0, maximum-scale=1, width=device-width" />
         <meta key="name" name="name" content={og.title} />
         <meta key="description" name="description" content={og.description} />
+        <link rel="canonical" href={og.canonicalUrl} />
 
         <meta key="ogTitle" property="og:title" content={og.title} />
         <meta key="ogDescription" property="og:description" content={og.description} />
@@ -51,11 +52,12 @@ export const getServerSideProps = async (ctx) => {
   const og = {
     title: isShare
       ? `${sharedBy ? `${sharedBy} ` : ''}scored ${sharedScore}/600 on Today's Run — can you beat it?`
-      : "Today's Run - Artifact Guesser",
+      : 'Daily Artifact Challenge — Artifact Guesser',
     description: isShare
       ? `Play the same 3 artifacts and compare your score. Guess the date and origin of historical artifacts.`
-      : "Play today's daily challenge. Same 3 artifacts for everyone — compare your score!",
+      : 'Take today\'s daily artifact challenge. Guess the date and origin of 3 historical artifacts — same puzzle for everyone. Free to play, new artifacts every day.',
     url: `${baseUrl}/daily`,
+    canonicalUrl: `${baseUrl}/daily`,
     image: ogImage,
   }
 
