@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Block API routes, admin, and internal tooling from crawling
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /accounts/
+Disallow: /favorites
+Disallow: /games/
+Disallow: /confirm
+Disallow: /auth
+Disallow: /experiments
+
+# Sitemap
+Sitemap: https://artifactguesser.com/sitemap.xml
