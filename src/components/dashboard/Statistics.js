@@ -4,7 +4,7 @@ import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
 // useGames and GiAbstract034 moved to Games.js
 import { FaUser } from "react-icons/fa"
 import { GiAmphora } from "react-icons/gi" // GiAbstract034 removed
-import { AllAccountActions } from "@/components/dashbaord/AllAcountActions"
+import { AllAccountActions } from "@/components/dashboard/AllAcountActions"
 // useSWR moved to Games.js for platform stats
 // import Link from "next/link"
 // import { IconButton } from "@/components/buttons/IconButton"

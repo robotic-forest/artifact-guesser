@@ -1,5 +1,5 @@
 import { IconGenerator } from "@/components/art/IconGenerator";
-import { Statistics } from "@/components/dashbaord/Statistics";
+import { Statistics } from "@/components/dashboard/Statistics";
 import { Layout } from "@/components/layout/Layout";
 import { MdDashboard } from "react-icons/md";
 import { GlobalChat } from "@/components/chat/GlobalChat";

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { artifactsTheme } from "@/pages/artifacts"
 import { createStyles } from "@/components/GlobalStyles"
-import { Collosi } from "@/components/dashbaord/Collosi"
+import { Collosi } from "@/components/dashboard/Collosi"
 
 export const FuturePlans = () => {
 

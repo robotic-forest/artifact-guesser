@@ -8,7 +8,7 @@ import { accountTheme } from '..'
 import { GameList } from '@/pages/games'
 import { GiAbstract034 } from 'react-icons/gi'
 import FilterBar from '@/components/datatable/FilterBar'
-import { PlayerJourney } from '@/components/dashbaord/PlayerJourney'
+import { PlayerJourney } from '@/components/dashboard/PlayerJourney'
 
 export default function Account() {
   const { account } = useAccount()

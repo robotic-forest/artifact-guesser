@@ -3,20 +3,20 @@ import { artifactsTheme } from "./artifacts"
 import { IconGenerator } from "@/components/art/IconGenerator"
 import { PiRedditLogoFill } from "react-icons/pi"
 import { useArtifacts } from "@/hooks/artifacts/useArtifacts"
-// import { ArtifactCountMap } from "@/components/dashbaord/ArtifactCountMap" // Removed direct import
+// import { ArtifactCountMap } from "@/components/dashboard/ArtifactCountMap" // Removed direct import
 import { SiKofi } from "react-icons/si"
 import { MenuButton } from "@/components/layout/components/MobileNav"
 import dynamic from 'next/dynamic'; // Added dynamic import
-// import { Collosi } from "@/components/dashbaord/Collosi" // Removed direct import
+// import { Collosi } from "@/components/dashboard/Collosi" // Removed direct import
 
 // Dynamically import ArtifactCountMap with ssr: false
-const ArtifactCountMap = dynamic(() => import('@/components/dashbaord/ArtifactCountMap').then(mod => mod.ArtifactCountMap), {
+const ArtifactCountMap = dynamic(() => import('@/components/dashboard/ArtifactCountMap').then(mod => mod.ArtifactCountMap), {
   ssr: false,
   loading: () => <div className='p-4' style={{ background: 'var(--backgroundColor)' }}>Loading Map...</div>
 });
 
 // Dynamically import Collosi with ssr: false
-const Collosi = dynamic(() => import('@/components/dashbaord/Collosi').then(mod => mod.Collosi), {
+const Collosi = dynamic(() => import('@/components/dashboard/Collosi').then(mod => mod.Collosi), {
   ssr: false,
   loading: () => <div className='p-4' style={{ background: 'var(--backgroundColor)' }}>Loading 3D Preview...</div>
 });
