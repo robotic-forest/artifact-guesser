@@ -7,7 +7,7 @@ export default function Home({ og }) {
   return (
     <>
       <Head>
-        <title>Artifact Guesser</title>
+        <title>Artifact Guesser — Free Daily Artifact Guessing Game</title>
         <meta name="viewport" content="initial-scale=1.0, maximum-scale=1, width=device-width" />
         <meta key="name" name="name" content='Artifact Guesser' />
         <meta key="description" name="description" content={og.description} />
