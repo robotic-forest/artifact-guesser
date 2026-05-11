@@ -56,23 +56,23 @@ export default function handler(req) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              fontSize: 30,
+              fontSize: 38,
               letterSpacing: 4,
               fontWeight: 700,
-              marginBottom: 24,
+              marginBottom: 28,
             }}
           >
-            <img src={`${origin}/icon-sm.png`} style={{ width: 36, height: 36, marginRight: 24 }} />
+            <img src={`${origin}/icon-sm.png`} style={{ width: 44, height: 44, marginRight: 24 }} />
             ARTIFACT GUESSER
           </div>
 
           <div
             style={{
               display: 'flex',
-              fontSize: 72,
+              fontSize: 96,
               fontWeight: 900,
               letterSpacing: -2,
-              marginBottom: 18,
+              marginBottom: 24,
               lineHeight: 1,
               color: '#4f95ff',
             }}
@@ -83,10 +83,10 @@ export default function handler(req) {
           <div
             style={{
               display: 'flex',
-              fontSize: 30,
-              color: 'rgba(255,255,255,0.85)',
+              fontSize: 38,
+              color: 'rgba(255,255,255,0.9)',
               lineHeight: 1.25,
-              marginBottom: 36,
+              marginBottom: 44,
             }}
           >
             Date and place real museum artifacts from across human history.
@@ -96,7 +96,7 @@ export default function handler(req) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              fontSize: 22,
+              fontSize: 30,
               color: '#ffc045',
               fontWeight: 700,
             }}

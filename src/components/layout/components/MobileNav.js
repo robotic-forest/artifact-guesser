@@ -71,6 +71,9 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
             <Button tooltip={resumeLabel} css={{
               background: '#000000',
               color: '#ffffff',
+              borderRadius: 6,
+              padding: '6px 12px',
+              lineHeight: 1,
               '&:hover': {
                 background: '#ffffff',
                 color: '#000000',

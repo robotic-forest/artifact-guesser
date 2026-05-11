@@ -70,25 +70,25 @@ export default function handler(req) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              fontSize: 24,
+              fontSize: 32,
               letterSpacing: 4,
               fontWeight: 700,
-              marginBottom: 18,
-              color: 'rgba(255,255,255,0.85)',
+              marginBottom: 22,
+              color: 'rgba(255,255,255,0.9)',
             }}
           >
-            <img src={`${origin}/icon-sm.png`} style={{ width: 28, height: 28, marginRight: 18 }} />
+            <img src={`${origin}/icon-sm.png`} style={{ width: 36, height: 36, marginRight: 20 }} />
             ARTIFACT GUESSER
           </div>
 
           <div
             style={{
               display: 'flex',
-              fontSize: 52,
+              fontSize: 64,
               fontWeight: 900,
               letterSpacing: -1,
               lineHeight: 1.1,
-              marginBottom: 26,
+              marginBottom: 30,
               color: '#ffffff',
             }}
           >
@@ -99,10 +99,10 @@ export default function handler(req) {
             <div
               style={{
                 display: 'flex',
-                fontSize: 28,
+                fontSize: 38,
                 color: '#4f95ff',
                 fontWeight: 700,
-                marginBottom: 14,
+                marginBottom: 18,
               }}
             >
               {[country, yearLabel].filter(Boolean).join(' · ')}
@@ -113,9 +113,9 @@ export default function handler(req) {
             <div
               style={{
                 display: 'flex',
-                fontSize: 22,
-                color: 'rgba(255,255,255,0.55)',
-                marginBottom: 28,
+                fontSize: 28,
+                color: 'rgba(255,255,255,0.6)',
+                marginBottom: 32,
               }}
             >
               {source}
@@ -125,7 +125,7 @@ export default function handler(req) {
           <div
             style={{
               display: 'flex',
-              fontSize: 22,
+              fontSize: 30,
               color: '#ffc045',
               fontWeight: 700,
               marginTop: 'auto',
