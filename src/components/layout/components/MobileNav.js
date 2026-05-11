@@ -22,6 +22,7 @@ import { LoginDialog } from "@/components/dialogs/LoginDialog"
 import { useActiveRun } from "@/hooks/useActiveRun"
 import { PiRedditLogoFill } from "react-icons/pi"
 import { TbPigMoney } from "react-icons/tb"
+import { MdArticle } from "react-icons/md"
 
 export const MobileNav = ({ user, isAdmin, logout }) => {
   const [open, setOpen] = useState(false)
@@ -135,6 +136,10 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       <GiAmphora className='mr-2' />
                       Artifacts DB
                     </MenuButton>
+                    <MenuButton url='/blog'>
+                      <MdArticle className='mr-2' />
+                      Blog
+                    </MenuButton>
                     <MenuButton url='/about'>
                       <BiQuestionMark className='mr-2' />
                       About
@@ -208,6 +213,10 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                       <GiAmphora className='mr-2' />
                       Artifacts DB
                     </MenuButton>
+                    <MenuButton url='/blog'>
+                      <MdArticle className='mr-2' />
+                      Blog
+                    </MenuButton>
                     <MenuButton url='/about'>
                       <BiQuestionMark className='mr-2' />
                       About
@@ -242,18 +251,11 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
                   </div>
                 </div>
                 <div className='grid grid-cols-2 gap-2 mt-2'>
-                  <MenuButtonUI variant='outlined' onClick={() => { setOpen(false); setLoginOpen(true)}}>
-                    Log in
+                  <MenuButtonUI variant='outlined' onClick={() => { setOpen(false); setSignupOpen(true) }}>
+                    Sign Up
                   </MenuButtonUI>
-                  <MenuButtonUI
-                    onClick={() => { setOpen(false); setSignupOpen(true) }}
-                    css={{
-                      background: '#E4C1F4',
-                      color: '#000000',
-                      ':hover': { background: '#CCA5DE' }
-                    }}
-                  >
-                    <b>Sign Up</b>
+                  <MenuButtonUI variant='outlined' onClick={() => { setOpen(false); setLoginOpen(true) }}>
+                    Log In
                   </MenuButtonUI>
                 </div>
               </div>
@@ -265,92 +267,44 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
   )
 }
 
-export const MenuButton = p => (
-  <Link href={p.url} target={p.target} css={{ width: '100%', ...(p.style || {}) }}>
-    <MenuButtonUI {...p} />
-  </Link>
-)
-
-const MenuButtonUI = ({ theme, children, ...props }) => {
+export const MenuButton = ({ url, target, children, theme, style, ...props }) => {
   const styles = theme && css`
     ${themeCSS(theme)}
     background-color: var(--backgroundColor);
     color: var(--textColor);
-    min-width: 100%;
+    font-size: var(--fs);
   `
 
   return (
-    <Button {...props} color={theme?.backgroundColor} css={{
-      ...styles,
-      ...props.css,
-      minWidth: '100%'
-    }}>
-      {children}
-    </Button>
-  )
-}
-
-const ResponsiveMenu = ({ children, onClose, style }) => {
-  return (
-    <DropDownContainer css={style}>
-      <div className='bg' onClick={onClose} />
-      <div className='menu'>
+    <Link href={url} target={target}>
+      <Button css={{
+        width: '100%',
+        justifyContent: 'flex-start',
+        ...styles,
+        ...props.css
+      }} style={style}>
         {children}
-      </div>
-    </DropDownContainer>
+      </Button>
+    </Link>
   )
 }
 
-const DropDownContainer = styled.div`
+const MenuButtonUI = styled(Button)`
+  width: 100%;
+  justify-content: center;
+`
+
+const ResponsiveMenu = styled.div`
   position: fixed;
   top: 0;
-  opacity: 1;
-  animation: fadeIn 0.2s;
-  z-index: 1098;
-  color: var(--textColor);
-
-  @media (min-width: 600px) {
-    right: 336px;
-  }
-
-  @keyframes fadeIn {
-    0%   { opacity: 0 }
-    100% { opacity: 1 }
-  }
-
-  @keyframes slideUp {
-    0%   { top: 12px; }
-    100% { top: 0px; }
-  }
-
-  & > .bg {
-    height: 100vh;
-    width: 100vw !important;
-    z-index: 1099;
-    top: 0;
-    left: 0;
-    position: fixed;
-    background: var(--backgroundLowOpacity);
-  }
-
-  & > .menu {
-    width: 320px;
-
-    @media (max-width: 600px) {
-      width: calc(100vw - 16px)
-    }
-
-    border: 1px solid var(--textVeryLowOpacity);
-    background: var(--backgroundColor);
-    border-radius: 5px;
-    position: absolute;
-    z-index: 1100;
-    top: 0px;
-    margin: 8px;
-    padding: 8px;
-
-    box-shadow: 0 10px 20px -5px var(--textSuperLowOpacity);
-
-    animation: slideUp 0.1s;
-  }
+  right: 0;
+  width: 300px;
+  max-width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+  padding: 12px;
+  background: var(--backgroundColor);
+  border-left: 1px solid var(--textSuperLowOpacity);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.3);
 `
