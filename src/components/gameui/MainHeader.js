@@ -12,9 +12,23 @@ import { useGame } from "../game/GameProvider"
 import { useState } from "react"
 import { LeaderBoard } from "./LeaderBoard"
 
+// Icon + label child for the daily button. A standalone component so it stays
+// a single element (IconButton clones its child) and harmlessly absorbs the
+// injected `hover` prop instead of leaking it onto a DOM node.
+const DailyRunLabel = () => (
+  <span className='flex items-center whitespace-nowrap'>
+    <IoCalendar className='mr-1.5' />
+    Daily Run
+  </span>
+)
+
 export const MainHeader = ({ settings }) => {
   const { game } = useGame()
   const [leaderBoardOpen, setLeaderBoardOpen] = useState(false)
+
+  // Round 1 has the big CTA, so keep the button icon-only; from round 2 on the
+  // big CTA is gone, so label it to stay discoverable.
+  const showDailyLabel = game?.round > 1
 
   return (
     <>
@@ -38,16 +52,17 @@ export const MainHeader = ({ settings }) => {
               className='ml-1.5'
               css={{
                 border: '1px solid #00000033',
+                ...(showDailyLabel ? { padding: '0 10px' } : {}),
                 '@media (max-width: 600px)': { marginLeft: 0 }
               }}
               tooltip="Today's Run"
               theme={{
-                textColor: '#ffffff',
+                textColor: '#000000',
                 primaryColor: '#4f95ff',
                 backgroundColor: '#4f95ff'
               }}
             >
-              <IoCalendar />
+              {showDailyLabel ? <DailyRunLabel /> : <IoCalendar />}
             </MenuIconButton>
           </Link>
           <MenuIconButton

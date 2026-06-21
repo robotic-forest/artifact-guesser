@@ -18,6 +18,20 @@ import toast from "react-hot-toast"
 import axios from "axios"
 import { calcScoreColors } from "../game/GameSummary"
 import { track } from "@/lib/analytics"
+import { BabelTrigger } from "@/lib/babel/react"
+
+// Trigger config for the easter egg. Override `show` for fancier rules
+// (e.g. only on weekends, only for perfect scores, etc.).
+const BABEL_TRIGGER_OPTIONS = {
+  message: 'Fool! You have summoned the Tower of Babel!',
+  script: 'cuneiform',
+  assets: {
+    background: '/babel/babel-bg.webp',
+    foreground: '/babel/babel-fg.webp',
+    audio: '/babel/song.mp3',
+    statueImages: ['/babel/ea-nasir.png', '/babel/eannatum.webp'],
+  },
+}
 
 export const DailySummary = () => {
   const { game, daily, leaderboard } = useDaily()
@@ -364,6 +378,18 @@ const DailyRoundReview = ({ game }) => {
             </div>
           )
         })}
+      </div>
+      {/* The tower hides in the corner. Click it and… something happens. */}
+      <div css={{ position: 'relative', width: '100%', height: 0 }}>
+        <BabelTrigger
+          show={() => true}
+          src='/babel/babel-fg.webp'
+          alt=''
+          size={56}
+          position='bottom-right'
+          offset={{ bottom: -8, right: 8 }}
+          options={BABEL_TRIGGER_OPTIONS}
+        />
       </div>
     </div>
   )

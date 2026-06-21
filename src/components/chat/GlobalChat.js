@@ -40,9 +40,21 @@ const scrollbarCSS = {
  }
  
  // Removed className and style props
- export const GlobalChat = ({ notFixed, showHeader, backgroundColor }) => {
+ export const GlobalChat = ({ notFixed, showHeader, backgroundColor, controlledActive, onRequestClose }) => {
    const { triggerAAAAtoast, showConfetti } = useAAAAtoast(); // Initialize the hook
-   const [isActive, setIsActive] = useState(false);
+   // Controlled mode: when `controlledActive` is provided (mobile, driven by the
+   // OnlineUsersPill toggle), the parent owns open/closed state. Otherwise the
+   // chat manages its own hover/focus-driven active state as before.
+   const isControlled = controlledActive !== undefined;
+   const [internalActive, setInternalActive] = useState(false);
+   const isActive = isControlled ? controlledActive : internalActive;
+   const setIsActive = (val) => {
+     if (isControlled) {
+       if (!val) onRequestClose?.();
+     } else {
+       setInternalActive(val);
+     }
+   };
    const {
     globalChatMessages,
     joinGlobalChat,
@@ -134,6 +146,9 @@ const scrollbarCSS = {
 
   // Effect to handle clicks outside the component
   useEffect(() => {
+    // In controlled (mobile) mode the pill is the only toggle — a pointerdown on
+    // the pill counts as "outside" and would fight the toggle, so skip this.
+    if (isControlled) return;
     const handleClickOutside = (event) => {
       // Removed signupOpen check as dialog is no longer used
       if (isActive && containerRef.current && !containerRef.current.contains(event.target)) {
@@ -149,7 +164,7 @@ const scrollbarCSS = {
     return () => {
       document.removeEventListener('pointerdown', handleClickOutside, true);
     };
-  }, [isActive]); // Re-run this effect when isActive changes
+  }, [isActive, isControlled]); // Re-run this effect when isActive changes
 
   // Close admin context menu on any pointerdown outside the menu
   useEffect(() => {
@@ -169,9 +184,11 @@ const scrollbarCSS = {
 
   // --- Handlers for Active/Inactive State (adapted from FixedChat) ---
   const handleMouseEnter = () => {
+    if (isControlled) return; // controlled (mobile): pill owns open/close
     if (canChat) setIsActive(true); // Only activate if connected
   };
   const handleMouseLeave = () => {
+    if (isControlled) return;
     if (showUsersDialog) return; // Keep chat active while the user-list dialog is open
     if (containerRef.current && !containerRef.current.contains(document.activeElement)) {
       setIsActive(false);
@@ -186,9 +203,11 @@ const scrollbarCSS = {
     }
   };
   const handleFocus = () => {
+     if (isControlled) return;
      if (canChat) setIsActive(true); // Only activate if connected
   };
   const handleBlur = (event) => {
+    if (isControlled) return;
     if (showUsersDialog) return;
     if (containerRef.current && !containerRef.current.contains(event.relatedTarget)) {
       setIsActive(false);
@@ -208,6 +227,9 @@ const scrollbarCSS = {
 
   // --- Active/Inactive Toggle ---
   if (!isActive) {
+    // In controlled (mobile) mode the OnlineUsersPill stands in for the inactive
+    // view, so render nothing here when collapsed.
+    if (isControlled) return null;
     // --- Inactive View ---
     return (
       <div
@@ -498,6 +520,32 @@ const scrollbarCSS = {
       </div>
     );
   }
+};
+
+// Compact "N users online" chip — the exact green-dot indicator from the chat's
+// inactive view, used as a toggle for the expanded chat on mobile. Clicking it
+// opens the chat; clicking again (active=true) closes it.
+export const OnlineUsersPill = ({ active, onClick, backgroundColor }) => {
+  const { _socket, isConnected, isRegistered, globalUserCount } = useMultiplayer();
+  const canChat = _socket && isConnected && isRegistered;
+  return (
+    <div
+      className="p-1 px-2 text-xs italic flex items-center cursor-pointer select-none"
+      css={{
+        background: backgroundColor || 'var(--backgroundColor)',
+        color: 'var(--textColorLowOpacity)',
+        border: '1px solid var(--borderColor)',
+        outline: active ? '2px solid var(--textColorLowOpacity)' : 'none',
+      }}
+      title={canChat ? 'Toggle chat' : 'Connecting...'}
+      onClick={onClick}
+    >
+      <span className="inline-block w-2.5 h-2.5 bg-green-500 border border-black rounded-full mr-2"></span>
+      {canChat
+        ? <>{globalUserCount} online</>
+        : 'Connecting...'}
+    </div>
+  );
 };
 
 // Render a chat username with optional decoration (admin tag, etc).

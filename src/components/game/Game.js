@@ -22,7 +22,7 @@ import { ImageView, defaultMapValue } from "../artifacts/Artifact"
 import useMeasure from "react-use-measure"
 import { modes } from "../gameui/ModeButton"
 import { useGlobalChat } from "@/contexts/GlobalChatContext";
-import { GlobalChat } from "../chat/GlobalChat";
+import { GlobalChat, OnlineUsersPill } from "../chat/GlobalChat";
 import { LobbyBrowser } from "../multiplayer/LobbyBrowser";
 import { DailyRunCTA } from "../daily/DailyRunCTA";
 
@@ -70,6 +70,7 @@ const GameUI = () => {
   const [ref, bounds] = useMeasure();
   const { height: windowHeight, width: windowWidth } = bounds
   const [value, setValue] = useState(defaultMapValue)
+  const [mobileChatOpen, setMobileChatOpen] = useState(false) // mobile: chat toggled via OnlineUsersPill
   const [hoverCountry, setHoverCountry] = useState();
   const [initialCenteringDone, setInitialCenteringDone] = useState(false); // Track initial centering
 
@@ -139,7 +140,8 @@ const GameUI = () => {
           <MainHeader />
           <AuthHeader />
 
-          {!isViewingSummary && <DailyRunCTA />}
+          {/* Big CTA only on round 1; after that the labeled top-bar button carries it */}
+          {!isViewingSummary && game?.round === 1 && <DailyRunCTA />}
 
           {/* Show loading overlay until images are ready for the timer (and not summary) */}
           {!imagesReadyForTimer && !isViewingSummary && <LoadingArtifact className='fixed' msg={artifact && `Loading ${imgLength} Artifact Image${imgLength > 1 ? 's' : ''}`} />}
@@ -196,11 +198,20 @@ const GameUI = () => {
             <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{
               '@media (max-width: 500px)': { width: '100vw' }
             }}>
-              <div className='block md:hidden w-full mb-1'>
-                <GlobalChat notFixed showHeader />
-              </div>
+              {/* Mobile only: expanded chat, shown when the pill is toggled on */}
+              {mobileChatOpen && (
+                <div className='block md:hidden w-full mb-1'>
+                  <GlobalChat notFixed showHeader controlledActive onRequestClose={() => setMobileChatOpen(false)} />
+                </div>
+              )}
 
-              <div className='flex items-end mb-1'>
+              <div className='flex items-end mb-1 w-full justify-between md:justify-end'>
+                {/* Mobile only: chat toggle pill, floats left on the same row as zoom + round/score */}
+                <div className='md:hidden'>
+                  <OnlineUsersPill active={mobileChatOpen} onClick={() => setMobileChatOpen(o => !o)} />
+                </div>
+
+                <div className='flex items-end'>
                 <div
                   className='flex items-end'
                   css={{
@@ -249,6 +260,7 @@ const GameUI = () => {
                   </div>
                 )}
                 <GameInfo />
+                </div>
               </div>
 
               <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full' css={{

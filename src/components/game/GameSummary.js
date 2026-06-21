@@ -13,6 +13,18 @@ import { FancyBorderButton } from "../art/FancyBorder"
 import dynamic from 'next/dynamic'; // Import dynamic
 import { useHighscore } from "@/hooks/games/useHighscore"
 import { IconGenerator } from "../art/IconGenerator"
+import { BabelTrigger } from "@/lib/babel/react"
+
+const BABEL_TRIGGER_OPTIONS = {
+  message: 'Fool! You have summoned the Tower of Babel!',
+  script: 'cuneiform',
+  assets: {
+    background: '/babel/babel-bg.webp',
+    foreground: '/babel/babel-fg.webp',
+    audio: '/babel/song.mp3',
+    statueImages: ['/babel/ea-nasir.png', '/babel/eannatum.webp'],
+  },
+}
 import AAAAAA, { Shake } from "../art/AAAAAA"
 import useAAAAtoast from '@/hooks/useAAAAtoast'; // Import the hook
 import { MasonryLayout } from "../layout/MasonryLayout"
@@ -494,6 +506,18 @@ const RoundReview = ({ game }) => {
           )
         })}
       </div>
+      {/* The tower hides in the corner. Click it and… something happens. */}
+      <div css={{ position: 'relative', width: '100%', height: 0 }}>
+        <BabelTrigger
+          show={() => true}
+          src='/babel/babel-fg.webp'
+          alt=''
+          size={56}
+          position='bottom-right'
+          offset={{ bottom: -8, right: 8 }}
+          options={BABEL_TRIGGER_OPTIONS}
+        />
+      </div>
     </div>
   )
 }
@@ -568,9 +592,13 @@ const GoatKofiAsk = () => {
           </button>
         </div>
       )}
-      <div className='w-full flex justify-center items-center p-3 mb-4'>
-        <CirclePic pic={KOFI_PICS[0]} style={{ marginRight: 10 }} />
-        <Link href='https://ko-fi.com/protocodex' target='_blank' css={{ textDecoration: 'none', '&:hover': { color: 'inherit' } }}>
+      <div className='w-full flex flex-wrap justify-center items-center p-3 mb-4'>
+        <CirclePic pic={KOFI_PICS[0]} style={{ marginRight: 10, '@media (max-width: 600px)': { order: 2, margin: '0 5px' } }} />
+        <Link href='https://ko-fi.com/protocodex' target='_blank' css={{
+          textDecoration: 'none', '&:hover': { color: 'inherit' },
+          // On mobile, take the whole first line so the 3 circles wrap below.
+          '@media (max-width: 600px)': { order: 1, flexBasis: '100%', display: 'flex', justifyContent: 'center', marginBottom: 10 },
+        }}>
           <div className='rounded' css={{ background: '#f1d18b', padding: '10px 20px' }}>
             <span className='text-black font-bold'>
               Hi, I'm Sam. Having fun? Please buy treats for my goats!
@@ -583,8 +611,8 @@ const GoatKofiAsk = () => {
             </MolochButton>
           </div>
         </Link>
-        <CirclePic pic={KOFI_PICS[1]} style={{ marginLeft: 6 }} />
-        <CirclePic pic={KOFI_PICS[2]} style={{ marginLeft: 6 }} />
+        <CirclePic pic={KOFI_PICS[1]} style={{ marginLeft: 6, '@media (max-width: 600px)': { order: 3, margin: '0 5px' } }} />
+        <CirclePic pic={KOFI_PICS[2]} style={{ marginLeft: 6, '@media (max-width: 600px)': { order: 4, margin: '0 5px' } }} />
       </div>
     </>
   )
