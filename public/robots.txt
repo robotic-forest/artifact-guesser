@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Keep crawlers off API, admin, and user-specific thin pages
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /accounts/
+Disallow: /favorites
+Disallow: /games/
+Disallow: /confirm
+Disallow: /auth
+Disallow: /experiments
+
+Sitemap: https://artifactguesser.com/sitemap.xml

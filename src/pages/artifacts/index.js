@@ -2,6 +2,7 @@ import { Layout } from "@/components/layout/Layout"
 import { ArtifactsList } from "@/components/artifacts/list/ArtifactList"
 import useUser from "@/hooks/useUser"
 import { GiAmphora } from "react-icons/gi"
+import Head from "next/head"
 
 export const artifactsTheme =  {
   backgroundColor: '#dfbf9e',
@@ -13,6 +14,10 @@ export default () => {
   const { user, isAdmin } = useUser()
 
   return (
+    <>
+    <Head>
+      <link rel="canonical" href="https://artifactguesser.com/artifacts" />
+    </Head>
     <Layout title='Artifacts List' theme={artifactsTheme} contentCSS={{ marginBottom: 32 }}>
       <ArtifactsList
         title={(
@@ -38,5 +43,6 @@ export default () => {
         }}
       />
     </Layout>
+    </>
   )
 }

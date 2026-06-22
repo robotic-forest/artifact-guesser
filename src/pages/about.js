@@ -1,4 +1,5 @@
 import { Layout } from "@/components/layout/Layout"
+import Head from "next/head"
 import { artifactsTheme } from "./artifacts"
 import { IconGenerator } from "@/components/art/IconGenerator"
 import { PiRedditLogoFill } from "react-icons/pi"
@@ -26,6 +27,10 @@ export default () => {
   const { artifacts } = useArtifacts({ stats: true })
 
   return (
+    <>
+    <Head>
+      <link rel="canonical" href="https://artifactguesser.com/about" />
+    </Head>
     <Layout title='About' theme={artifactsTheme} contentCSS={{
       fontFamily: 'monospace',
       background: 'linear-gradient(180deg, var(--backgroundColor), var(--backgroundColorDark))',
@@ -149,5 +154,6 @@ export default () => {
         </div>
       </div>
     </Layout>
+    </>
   )
 }

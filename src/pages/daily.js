@@ -13,6 +13,7 @@ export default function DailyPage({ og }) {
         <meta key="ogTitle" property="og:title" content={og.title} />
         <meta key="ogDescription" property="og:description" content={og.description} />
         <meta key="ogUrl" property="og:url" content={og.url} />
+        <link key="canonical" rel="canonical" href={og.url} />
         <meta key="ogType" property="og:type" content="website" />
         <meta key="ogImage" property="og:image" content={og.image} />
         <meta key="ogImageWidth" property="og:image:width" content="1200" />
@@ -50,11 +51,11 @@ export const getServerSideProps = async (ctx) => {
 
   const og = {
     title: isShare
-      ? `${sharedBy ? `${sharedBy} ` : ''}scored ${sharedScore}/600 on Today's Run — can you beat it?`
+      ? `${sharedBy ? `${sharedBy} ` : ''}scored ${sharedScore}/600 on Today's Run, can you beat it?`
       : "Today's Run - Artifact Guesser",
     description: isShare
       ? `Play the same 3 artifacts and compare your score. Guess the date and origin of historical artifacts.`
-      : "Play today's daily challenge. Same 3 artifacts for everyone — compare your score!",
+      : "Play today's daily challenge. Same 3 artifacts for everyone, compare your score.",
     url: `${baseUrl}/daily`,
     image: ogImage,
   }
