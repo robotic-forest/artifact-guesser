@@ -67,7 +67,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
 
       {user && !open && !loginOpen && !signupOpen && (
         <div className='fixed bottom-1 right-1 p-2' css={{ zIndex: 99 }}>
-          <Link href={activeUrl} css={{ '&:hover': { color: 'var(--textColor)'}, width: '100%', maxWidth: 400 }}>
+          <Link href={activeUrl} css={{ '&:hover': { color: 'var(--textColor)'}, display: 'inline-flex', maxWidth: 400 }}>
             <Button tooltip={resumeLabel} css={{
               background: '#000000',
               color: '#ffffff',
