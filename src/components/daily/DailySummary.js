@@ -201,7 +201,7 @@ const DailyScore = ({ leaderboard }) => {
               Save your <span css={{ color: calcDailyScoreColor(game?.score) }}>{game.score}</span> / 600 to the leaderboard
             </div>
             <div className='text-white/70 text-sm mb-3'>
-              Sign up in 10 seconds — your run today gets recorded and you can track your streak.
+              Sign up in 10 seconds and your run today gets recorded.
             </div>
             <button
               onClick={() => setSignupOpen(true)}

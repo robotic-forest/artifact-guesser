@@ -100,11 +100,16 @@ export const buildArtifactSeo = (artifact, baseUrl, id) => {
   const thumb = artifact?.images?.thumbnail || artifact?.images?.external?.[0] || ''
   const url = `${baseUrl}/artifacts/${id}`
 
+  // Crawler-facing image goes through our own /api/img passthrough (some museum
+  // CDNs block server-side fetches, blanking the card). In-browser display still
+  // hotlinks the CDN directly elsewhere.
+  const image = thumb ? `${baseUrl}/api/img?url=${encodeURIComponent(thumb)}` : ''
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'VisualArtwork',
     name: cleanText(artifact.name),
-    image: thumb || undefined,
+    image: image || undefined,
     description: cleanText(artifact.description) || undefined,
     dateCreated: dateLabel(artifact.time) || undefined,
     artMedium: cleanText(artifact.medium) || undefined,
@@ -118,7 +123,7 @@ export const buildArtifactSeo = (artifact, baseUrl, id) => {
     title: genTitle(a),
     description: genDescription(a),
     url,
-    image: thumb,
+    image,
     // Round-trip drops the `undefined` (empty) fields — getServerSideProps props
     // must be JSON-serializable, and it gives us the "omit empty" behavior too.
     jsonLd: JSON.parse(JSON.stringify(jsonLd)),

@@ -11,8 +11,16 @@ const STATIC = [
 
 export const getServerSideProps = async ({ res }) => {
   const db = await initDB()
+  // Submit only genuinely-unique pages: quality_score >= 6 is a *visual* gate;
+  // requiring a real (non-empty) description adds a *text-uniqueness* gate so we
+  // don't promote the ~20% of pages that fall back to structured boilerplate
+  // ("Faience. The Met. Egyptian Art"). All pages stay crawlable regardless;
+  // this only governs what we actively submit.
   const ids = await db.collection('artifacts')
-    .find({ quality_score: { $gte: 6 } }, { projection: { _id: 1 } })
+    .find(
+      { quality_score: { $gte: 6 }, description: { $type: 'string', $nin: [null, ''] } },
+      { projection: { _id: 1 } }
+    )
     .toArray()
 
   const urls = [
