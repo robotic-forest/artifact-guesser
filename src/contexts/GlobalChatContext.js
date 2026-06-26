@@ -20,10 +20,16 @@ export const GlobalChatProvider = ({ children }) => {
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  // Event/system broadcasts have no username (e.g. "MP game ended ...", and
+  // daily-score posts). They drown out real chat, so they're disabled for now —
+  // we drop the username-less ones on the client (they originate in the
+  // mainframe). Remove this guard to bring event messages back.
+  const isRealChat = (msg) => !!msg?.username;
+
   // Handle initial history / paginated loads (array of messages)
   const handleChatHistory = useCallback((payload) => {
     if (!payload || !payload.messages) return;
-    const globalMessages = payload.messages.filter(msg => msg.lobby === 'global');
+    const globalMessages = payload.messages.filter(msg => msg.lobby === 'global' && isRealChat(msg));
     // console.log('[GlobalChatContext] Received chat-history:', globalMessages.length, 'messages, hasMore:', payload.hasMore);
     setGlobalChatMessages(globalMessages);
     setHasMoreMessages(payload.hasMore ?? false);
@@ -31,11 +37,11 @@ export const GlobalChatProvider = ({ children }) => {
 
   // Handle single new message (incremental update)
   const handleChatMessage = useCallback((payload) => {
-    if (typeof payload === 'object' && payload !== null && !Array.isArray(payload) && payload.lobby === 'global') {
+    if (typeof payload === 'object' && payload !== null && !Array.isArray(payload) && payload.lobby === 'global' && isRealChat(payload)) {
       // console.log('[GlobalChatContext] Received single global message:', payload);
       setGlobalChatMessages(prev => [...prev, payload]);
     }
-    // Ignore arrays (legacy) and non-global messages
+    // Ignore arrays (legacy), non-global, and system/event (no-username) messages
   }, []);
 
   // Handle message deletion
