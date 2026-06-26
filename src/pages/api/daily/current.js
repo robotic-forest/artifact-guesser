@@ -165,11 +165,7 @@ const dailyCurrent = async (req, res) => {
     let dailyGame = await db.collection('dailyGames').findOne(playerQuery)
 
     if (!dailyGame) {
-      const firstArtifact = await db.collection('artifacts').findOne({
-        _id: new ObjectId(daily.artifactIds[0])
-      })
-
-      dailyGame = {
+      const newDoc = {
         ...(user ? { userId: user._id } : { anonymousId }),
         dateKey,
         dailyChallengeId: daily._id.toString(),
@@ -187,18 +183,33 @@ const dailyCurrent = async (req, res) => {
         ]
       }
 
-      const { insertedId } = await db.collection('dailyGames').insertOne(dailyGame)
-      dailyGame._id = insertedId
-      dailyGame.roundData[0].artifact = stripUnrenderableImages(firstArtifact)
-    } else {
-      const artifactIds = dailyGame.roundData.map(r => new ObjectId(r.artifactId))
-      const artifacts = await db.collection('artifacts').find({ _id: { $in: artifactIds } }).toArray()
-
-      dailyGame.roundData = dailyGame.roundData.map(round => {
-        const artifact = artifacts.find(a => a._id.toString() === round.artifactId)
-        return { ...round, artifact: stripUnrenderableImages(artifact) }
-      })
+      try {
+        const { insertedId } = await db.collection('dailyGames').insertOne(newDoc)
+        newDoc._id = insertedId
+        dailyGame = newDoc
+      } catch (err) {
+        // Concurrent double-load created this player's daily first — use theirs.
+        // (Unique indexes are per-player: {userId,dateKey} or {anonymousId,dateKey}.)
+        if (err?.code === 11000) {
+          dailyGame = await db.collection('dailyGames').findOne(playerQuery)
+        } else {
+          throw err
+        }
+      }
     }
+
+    if (!dailyGame) {
+      return res.status(500).json({ error: 'Could not load or create daily game' })
+    }
+
+    // Hydrate roundData with full artifact objects (works for a fresh single-round
+    // doc or a resumed multi-round one).
+    const artifactIds = dailyGame.roundData.map(r => new ObjectId(r.artifactId))
+    const artifacts = await db.collection('artifacts').find({ _id: { $in: artifactIds } }).toArray()
+    dailyGame.roundData = dailyGame.roundData.map(round => {
+      const artifact = artifacts.find(a => a._id.toString() === round.artifactId)
+      return { ...round, artifact: stripUnrenderableImages(artifact) }
+    })
 
     return res.json({
       daily: {

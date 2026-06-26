@@ -1,4 +1,4 @@
-import { Game } from "@/components/game/Game"
+import { HomeEntry } from "@/components/game/HomeEntry"
 import Head from "next/head"
 import { initDB } from "@/lib/apiUtils/mongodb"
 import { pickProbedTease } from "@/lib/apiUtils/teaseImage"
@@ -32,7 +32,7 @@ export default function Home({ og, jsonLd }) {
           />
         ))}
       </Head>
-      <Game />
+      <HomeEntry />
     </>
   )
 }
