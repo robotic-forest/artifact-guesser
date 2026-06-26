@@ -13,6 +13,9 @@ const dailyLeaderboard = async (req, res) => {
   const today = new Date().toISOString().slice(0, 10)
   const dateKey = req.query.dateKey || today
 
+  // Total completed daily games that day (anon + logged-in).
+  const totalGames = await db.collection('dailyGames').countDocuments({ dateKey, completed: true })
+
   const topScores = await db.collection('dailyGames').aggregate([
     { $match: { dateKey, completed: true, userId: { $exists: true, $ne: null } } },
     { $sort: { score: -1, completedAt: 1 } }, // Highest score first, earliest completion as tiebreaker
@@ -21,7 +24,7 @@ const dailyLeaderboard = async (req, res) => {
   ]).toArray()
 
   if (topScores.length === 0) {
-    return res.json({ dateKey, scores: [] })
+    return res.json({ dateKey, totalGames, scores: [] })
   }
 
   // Fetch usernames
@@ -44,7 +47,7 @@ const dailyLeaderboard = async (req, res) => {
       completedAt: s.completedAt
     }))
 
-  res.json({ dateKey, scores })
+  res.json({ dateKey, totalGames, scores })
 }
 
 export default dailyLeaderboard
