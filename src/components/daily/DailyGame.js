@@ -19,7 +19,7 @@ import { DailyHeader } from "./DailyHeader"
 import { ImageView, defaultMapValue } from "../artifacts/Artifact"
 import useMeasure from "react-use-measure"
 import { useGlobalChat } from "@/contexts/GlobalChatContext"
-import { GlobalChat } from "../chat/GlobalChat"
+import { GlobalChat, OnlineUsersPill, ChatPreview } from "../chat/GlobalChat"
 import { LobbyBrowser } from "../multiplayer/LobbyBrowser"
 
 export const DailyGame = dynamic(() => Promise.resolve(DailyGameComponent), { ssr: false })
@@ -63,6 +63,7 @@ const DailyGameUI = () => {
   const [value, setValue] = useState(defaultMapValue)
   const [hoverCountry, setHoverCountry] = useState()
   const [initialCenteringDone, setInitialCenteringDone] = useState(false)
+  const [mobileChatOpen, setMobileChatOpen] = useState(false) // mobile: chat toggled via OnlineUsersPill
 
   // Reset centering when round changes
   useEffect(() => {
@@ -149,37 +150,48 @@ const DailyGameUI = () => {
         <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{
           '@media (max-width: 500px)': { width: '100vw' }
         }}>
+          {/* Mobile only: expanded chat when toggled on, else a preview of the
+              last couple messages above the online pill. */}
           <div className='block md:hidden w-full mb-1'>
-            <GlobalChat notFixed showHeader />
+            {mobileChatOpen
+              ? <GlobalChat notFixed showHeader controlledActive onRequestClose={() => setMobileChatOpen(false)} />
+              : <ChatPreview onClick={() => setMobileChatOpen(true)} />}
           </div>
 
-          <div className='flex items-end mb-1'>
-            <div
-              className='flex items-end'
-              css={{ '@media (min-width: 600px)': { display: 'none' } }}
-            >
-              <IconButton
-                className='mr-1'
-                onClick={() => setValue(v => ({
-                  ...v,
-                  scale: v.scale * 1.2,
-                  translation: { x: v.translation.x - 50, y: v.translation.y - 50 }
-                }))}
-              >
-                <BiPlus />
-              </IconButton>
-              <IconButton
-                className='mr-1'
-                onClick={() => setValue(v => ({
-                  ...v,
-                  scale: v.scale / 1.2,
-                  translation: { x: v.translation.x + 50, y: v.translation.y + 50 }
-                }))}
-              >
-                <BiMinus />
-              </IconButton>
+          <div className='flex items-end mb-1 w-full justify-between md:justify-end'>
+            {/* Mobile only: chat toggle pill, floats left on the same row as zoom + round/score */}
+            <div className='md:hidden'>
+              <OnlineUsersPill active={mobileChatOpen} onClick={() => setMobileChatOpen(o => !o)} />
             </div>
-            <DailyGameInfo />
+
+            <div className='flex items-end'>
+              <div
+                className='flex items-end'
+                css={{ '@media (min-width: 600px)': { display: 'none' } }}
+              >
+                <IconButton
+                  className='mr-1'
+                  onClick={() => setValue(v => ({
+                    ...v,
+                    scale: v.scale * 1.2,
+                    translation: { x: v.translation.x - 50, y: v.translation.y - 50 }
+                  }))}
+                >
+                  <BiPlus />
+                </IconButton>
+                <IconButton
+                  className='mr-1'
+                  onClick={() => setValue(v => ({
+                    ...v,
+                    scale: v.scale / 1.2,
+                    translation: { x: v.translation.x + 50, y: v.translation.y + 50 }
+                  }))}
+                >
+                  <BiMinus />
+                </IconButton>
+              </div>
+              <DailyGameInfo />
+            </div>
           </div>
 
           <div className='bg-black rounded border border-white/30 mb-1 overflow-hidden relative w-full' css={{

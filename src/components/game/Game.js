@@ -22,7 +22,7 @@ import { ImageView, defaultMapValue } from "../artifacts/Artifact"
 import useMeasure from "react-use-measure"
 import { modes } from "../gameui/ModeButton"
 import { useGlobalChat } from "@/contexts/GlobalChatContext";
-import { GlobalChat, OnlineUsersPill } from "../chat/GlobalChat";
+import { GlobalChat, OnlineUsersPill, ChatPreview } from "../chat/GlobalChat";
 import { LobbyBrowser } from "../multiplayer/LobbyBrowser";
 import { DailyRunCTA } from "../daily/DailyRunCTA";
 
@@ -198,12 +198,13 @@ const GameUI = () => {
             <div className='fixed p-1 pt-0 bottom-0 right-0 z-10 flex flex-col items-end select-none w-[400px]' css={{
               '@media (max-width: 500px)': { width: '100vw' }
             }}>
-              {/* Mobile only: expanded chat, shown when the pill is toggled on */}
-              {mobileChatOpen && (
-                <div className='block md:hidden w-full mb-1'>
-                  <GlobalChat notFixed showHeader controlledActive onRequestClose={() => setMobileChatOpen(false)} />
-                </div>
-              )}
+              {/* Mobile only: expanded chat when toggled on, else a preview of the
+                  last couple messages above the online pill. */}
+              <div className='block md:hidden w-full mb-1'>
+                {mobileChatOpen
+                  ? <GlobalChat notFixed showHeader controlledActive onRequestClose={() => setMobileChatOpen(false)} />
+                  : <ChatPreview onClick={() => setMobileChatOpen(true)} />}
+              </div>
 
               <div className='flex items-end mb-1 w-full justify-between md:justify-end'>
                 {/* Mobile only: chat toggle pill, floats left on the same row as zoom + round/score */}

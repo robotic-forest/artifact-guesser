@@ -146,17 +146,15 @@ const scrollbarCSS = {
 
   // Effect to handle clicks outside the component
   useEffect(() => {
-    // In controlled (mobile) mode the pill is the only toggle — a pointerdown on
-    // the pill counts as "outside" and would fight the toggle, so skip this.
-    if (isControlled) return;
     const handleClickOutside = (event) => {
-      // Removed signupOpen check as dialog is no longer used
-      if (isActive && containerRef.current && !containerRef.current.contains(event.target)) {
-        setIsActive(false);
-        // Consider if leaveGlobalChat should be called here?
-        // Maybe not, user might just be clicking away temporarily.
-        // Let's stick to FixedChat's behavior for now.
-      }
+      if (!isActive) return;
+      // Clicks inside the chat don't close it.
+      if (containerRef.current && containerRef.current.contains(event.target)) return;
+      // Clicks on the OnlineUsersPill toggle are handled by the pill itself —
+      // ignore them here so click-outside and the toggle don't double-fire and
+      // immediately reopen (controlled/mobile mode).
+      if (event.target?.closest && event.target.closest('[data-chat-toggle]')) return;
+      setIsActive(false);
     };
     if (isActive) {
       document.addEventListener('pointerdown', handleClickOutside, true);
@@ -164,7 +162,7 @@ const scrollbarCSS = {
     return () => {
       document.removeEventListener('pointerdown', handleClickOutside, true);
     };
-  }, [isActive, isControlled]); // Re-run this effect when isActive changes
+  }, [isActive]); // Re-run this effect when isActive changes
 
   // Close admin context menu on any pointerdown outside the menu
   useEffect(() => {
@@ -273,7 +271,6 @@ const scrollbarCSS = {
                    background: backgroundColor || 'var(--backgroundColor)',
                    color: 'var(--textColor)', // Use theme text color
                    border: '1px solid var(--borderColor)', // Use theme border color
-                   marginTop: '2px', // Add slight spacing
                   borderRadius: '3px' // Add slight rounding
                }}
                onContextMenu={(e) => onMessageContextMenu(e, msg)}
@@ -530,6 +527,7 @@ export const OnlineUsersPill = ({ active, onClick, backgroundColor }) => {
   const canChat = _socket && isConnected && isRegistered;
   return (
     <div
+      data-chat-toggle
       className="p-1 px-2 text-xs italic flex items-center cursor-pointer select-none"
       css={{
         background: backgroundColor || 'var(--backgroundColor)',
@@ -547,6 +545,45 @@ export const OnlineUsersPill = ({ active, onClick, backgroundColor }) => {
     </div>
   );
 };
+
+// Compact read-only preview of the last few chat messages, shown above the
+// OnlineUsersPill on mobile so recent activity stays visible without expanding.
+// Renders nothing when there are no user messages yet. Tapping it opens the chat.
+export const ChatPreview = ({ count = 2, onClick, backgroundColor }) => {
+  const { globalChatMessages } = useGlobalChat()
+  const msgs = globalChatMessages.filter((m) => m.username).slice(-count)
+  if (!msgs.length) return null
+  return (
+    <div onClick={onClick} className='w-full flex flex-col items-start cursor-pointer'>
+      {msgs.map((msg, i) => (
+        <div
+          key={msg.id || i}
+          className='p-1 px-2 text-sm'
+          css={{
+            background: backgroundColor || 'var(--backgroundColor)',
+            color: 'var(--textColor)',
+            border: '1px solid var(--borderColor)',
+            borderRadius: 3,
+            maxWidth: '100%',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {msg.username && <b className='mr-1'><ChatUsername name={msg.username} />:</b>}
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => <>{children}</>,
+              a: ({ node, ...props }) => <a {...props} style={{ color: '#578cff', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer" />,
+            }}
+          >
+            {msg.message}
+          </ReactMarkdown>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 // Render a chat username with optional decoration (admin tag, etc).
 const DevTag = () => (
