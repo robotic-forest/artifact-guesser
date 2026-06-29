@@ -114,7 +114,7 @@ const fmtDateKey = (key) =>
 
 const DailyLeaderboardPanel = () => {
   const [dateKey, setDateKey] = useState(dateKeyToday())
-  const { data } = useSWR(`/api/daily/leaderboard?dateKey=${dateKey}`)
+  const { data } = useSWR(`/api/daily/leaderboard?dateKey=${dateKey}&includeAnon=1`)
   const isToday = dateKey >= dateKeyToday()
   const top5 = (data?.scores || []).slice(0, 5)
 
