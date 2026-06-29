@@ -481,13 +481,20 @@ export const ImageView = ({
   const renderImgs = imgs?.filter(img => !errorImgs.includes(img)) || [];
   const totalImages = renderImgs.length;
 
-  // Reset state when images change (new round)
+  // Stable key for the image set: depend on the URL *values*, not the array
+  // reference. A new `imgs` reference on every render (e.g. when the parent
+  // re-renders a lot) would otherwise re-fire the reset below, which fights the
+  // "all loaded" completion effect and trips React's max-update-depth guard.
+  const imgsKey = JSON.stringify(imgs || []);
+
+  // Reset state when the actual image set changes (new round)
   useEffect(() => {
     setLoadedCount(0);
     setErrorImgs([]);
     setImageLoadEventSent(false);
     setAllLoaded(false); // Reset all loaded state
-  }, [imgs]); // Dependency on imgs array reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imgsKey]);
 
   // Effect to handle completion
   useEffect(() => {
