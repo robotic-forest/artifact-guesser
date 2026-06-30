@@ -617,7 +617,35 @@ const ChatUsername = ({ name }) => {
   return <>{name}</>
 }
 
+// Country code (ISO alpha-2) -> flag emoji.
+const countryFlag = (cc) => {
+  if (!cc || cc.length !== 2) return null
+  const base = 0x1F1E6
+  return String.fromCodePoint(...[...cc.toUpperCase()].map(c => base + c.charCodeAt(0) - 65))
+}
+
+// Compact "online for" label from a connectedAt timestamp.
+const onlineFor = (ts, now) => {
+  if (!ts) return null
+  const s = Math.max(0, Math.floor((now - ts) / 1000))
+  if (s < 60) return `${s}s`
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m}m`
+  const h = Math.floor(m / 60)
+  const rem = m % 60
+  return rem ? `${h}h ${rem}m` : `${h}h`
+}
+
 const UsersDialog = ({ open, users, count, onClose }) => {
+  // Tick so the online-duration label updates while the dialog is open.
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!open) return
+    setNow(Date.now())
+    const id = setInterval(() => setNow(Date.now()), 15000)
+    return () => clearInterval(id)
+  }, [open])
+
   if (!open) return null;
   return (
     <div
@@ -674,12 +702,22 @@ const UsersDialog = ({ open, users, count, onClose }) => {
               No users to display.
             </div>
           ) : (
-            users.map(u => (
-              <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
-                <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                <ChatUsername name={u.username} />
-              </div>
-            ))
+            users.map(u => {
+              const isAnon = (u.username || '').startsWith('anonymous_')
+              const tag = isAnon ? (u.username.split('_').pop() || null) : null
+              const meta = [tag, countryFlag(u.country), u.device, onlineFor(u.connectedAt, now)].filter(Boolean)
+              return (
+                <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
+                  <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                  {isAnon ? <span>Guest</span> : <ChatUsername name={u.username} />}
+                  {meta.length > 0 && (
+                    <span className="ml-1" css={{ color: 'var(--textLowOpacity)' }}>
+                      {' · '}{meta.join(' · ')}
+                    </span>
+                  )}
+                </div>
+              )
+            })
           )}
         </div>
       </div>
