@@ -320,7 +320,22 @@ const DailyScore = ({ leaderboard }) => {
 }
 
 const DailyLeaderboard = ({ leaderboard }) => {
+  const { user } = useUser()
+  const { game } = useDaily()
+
   if (!leaderboard?.scores?.length) return null
+
+  // Non-logged-in players: locally splice in where their score WOULD land — a
+  // hypothetical entry that is NOT submitted, marked with a green outline. Ties
+  // rank below existing entries (those players finished earlier).
+  let scores = leaderboard.scores
+  if (!user?.isLoggedIn && typeof game?.score === 'number') {
+    const me = { username: 'You', score: game.score, isMe: true }
+    const merged = [...leaderboard.scores]
+    const at = merged.findIndex(e => e.score < me.score)
+    merged.splice(at === -1 ? merged.length : at, 0, me)
+    scores = merged.map((e, i) => ({ ...e, rank: i + 1 }))
+  }
 
   return (
     <div className='flex flex-col items-center mb-8 w-full max-w-lg'>
@@ -330,27 +345,35 @@ const DailyLeaderboard = ({ leaderboard }) => {
         <FaTrophy className='ml-3 text-yellow-400' />
       </div>
       <div className='w-full'>
-        {leaderboard.scores.map((entry, i) => (
-          <div
-            key={i}
-            className='flex items-center justify-between px-4 py-2 mb-1 rounded'
-            css={{
-              background: i === 0 ? '#c9ae5f33' : i < 3 ? '#ffffff11' : '#ffffff08',
-              border: i === 0 ? '1px solid #c9ae5f55' : '1px solid transparent'
-            }}
-          >
-            <div className='flex items-center'>
-              <span className='w-8 text-white/50 font-mono text-sm'>#{entry.rank}</span>
-              <span className={i === 0 ? 'font-bold text-yellow-300' : ''}>
-                {entry.username}
-              </span>
+        {scores.map((entry, i) => {
+          const isTop = i === 0
+          // "Mine" = the hypothetical anon entry, or the logged-in player's own
+          // row. Green-outline it — unless it's #1, which keeps the gold.
+          const isMine = entry.isMe || (user?.isLoggedIn && entry.username === user?.username)
+          const green = isMine && !isTop
+          return (
+            <div
+              key={i}
+              className='flex items-center justify-between px-4 py-2 mb-1 rounded'
+              css={{
+                background: green ? '#5ea66c22' : isTop ? '#c9ae5f33' : i < 3 ? '#ffffff11' : '#ffffff08',
+                border: green ? '2px solid #6ee07f' : isTop ? '1px solid #c9ae5f55' : '1px solid transparent',
+              }}
+            >
+              <div className='flex items-center'>
+                <span className='w-8 text-white/50 font-mono text-sm'>#{entry.rank}</span>
+                <span className={isTop ? 'font-bold text-yellow-300' : ''}>
+                  {entry.username}
+                  {entry.isMe && <span className='text-white text-xs ml-2'>(not saved)</span>}
+                </span>
+              </div>
+              <div className='font-mono'>
+                <b css={{ color: calcDailyScoreColor(entry.score) }}>{entry.score}</b>
+                <span className='text-white/40'> / 600</span>
+              </div>
             </div>
-            <div className='font-mono'>
-              <b css={{ color: calcDailyScoreColor(entry.score) }}>{entry.score}</b>
-              <span className='text-white/40'> / 600</span>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
