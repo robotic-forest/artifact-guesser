@@ -716,17 +716,18 @@ const UsersDialog = ({ open, users, count, onClose }) => {
             <div className="text-xs italic p-2" css={{ color: 'var(--textLowOpacity)' }}>
               No users to display.
             </div>
-          ) : (
+          ) : isAdmin ? (
+            // Admin: full per-user detail (Guest tag, country, device, online time).
             users.map(u => {
               const isAnon = (u.username || '').startsWith('anonymous_')
               const tag = isAnon ? (u.username.split('_').pop() || null) : null
               const flag = countryFlag(u.country)
-              const items = isAdmin ? [
+              const items = [
                 tag,
                 flag && <span key="flag" title={countryName(u.country)} css={{ cursor: 'help' }}>{flag}</span>,
                 u.device,
                 onlineFor(u.connectedAt, now),
-              ].filter(Boolean) : []
+              ].filter(Boolean)
               return (
                 <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
                   <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
@@ -739,7 +740,27 @@ const UsersDialog = ({ open, users, count, onClose }) => {
                 </div>
               )
             })
-          )}
+          ) : (() => {
+            // Non-admin: guests summarized to one line, then the named users.
+            const anon = users.filter(u => (u.username || '').startsWith('anonymous_'))
+            const named = users.filter(u => !(u.username || '').startsWith('anonymous_'))
+            return (
+              <>
+                {anon.length > 0 && (
+                  <div className="px-2 py-1 text-sm flex items-center" css={{ color: 'var(--textLowOpacity)' }}>
+                    <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                    {anon.length} anonymous {anon.length === 1 ? 'user' : 'users'}
+                  </div>
+                )}
+                {named.map(u => (
+                  <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
+                    <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                    <ChatUsername name={u.username} />
+                  </div>
+                ))}
+              </>
+            )
+          })()}
         </div>
       </div>
     </div>
