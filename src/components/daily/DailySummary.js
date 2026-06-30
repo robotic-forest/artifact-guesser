@@ -19,6 +19,7 @@ import axios from "axios"
 import { calcScoreColors } from "../game/GameSummary"
 import { track } from "@/lib/analytics"
 import { BabelTrigger } from "@/lib/babel/react"
+import { useActiveRun } from "@/hooks/useActiveRun"
 
 // Trigger config for the easter egg. Override `show` for fancier rules
 // (e.g. only on weekends, only for perfect scores, etc.).
@@ -56,6 +57,17 @@ const DailyScore = ({ leaderboard }) => {
   const [challengeUrl, setChallengeUrl] = useState(null)
   const [teaseImg, setTeaseImg] = useState('')
   const [shareCardErrored, setShareCardErrored] = useState(false)
+
+  // Does the player have a personal (endless) game to resume? Logged-in users:
+  // server-truth via active-run; anon: their localStorage game. New players get
+  // a prominent "Start New Game" instead of "Resume". Both link to `/`, which
+  // resumes-or-starts, so the label/size is the only difference.
+  const { kind: activeKind } = useActiveRun()
+  const [hasLocalGame, setHasLocalGame] = useState(false)
+  useEffect(() => {
+    try { setHasLocalGame(!!localStorage.getItem('game')) } catch {}
+  }, [])
+  const hasPersonalGame = user?.isLoggedIn ? activeKind === 'personal' : hasLocalGame
   const claimedRef = useRef(false)
 
   // Anonymous-completed daily → user signs up → transfer server-side doc to
@@ -235,8 +247,31 @@ const DailyScore = ({ leaderboard }) => {
           </div>
         )}
 
-        {/* Share card preview + primary CTA */}
+        {/* Play-on CTA above the share card. Returning players get a green
+            "Resume Personal Game" matched to the Copy Challenge Link button; new
+            players get a brighter, bigger "Start New Game" to draw them in. */}
         <div className='mb-6 w-full max-w-lg flex flex-col items-center'>
+          <Link href='/' className='w-full flex justify-center'>
+            <SimulatorButton css={{
+              background: hasPersonalGame ? '#5ea66c' : '#7bef8d',
+              color: '#000000',
+              boxShadow: hasPersonalGame
+                ? '0 0 120px 0 #5ea66c44, 0 0 60px 0 #5ea66c33'
+                : '0 0 140px 0 #7bef8d66, 0 0 70px 0 #7bef8d44',
+              ':hover': { filter: 'brightness(1.1)', transition: 'all 0.2s' },
+              width: '100%',
+              maxWidth: 400,
+              padding: '8px 16px',
+            }}>
+              <span css={{ fontSize: hasPersonalGame ? 18 : 26 }}>
+                <b>{hasPersonalGame ? 'Resume Personal Game' : 'Start New Game'}</b>
+              </span>
+            </SimulatorButton>
+          </Link>
+        </div>
+
+        {/* Share card preview + primary CTA */}
+        <div className='mb-6 w-full max-w-lg flex flex-col items-center' css={{ marginTop: 30 }}>
           {teaseImg && !shareCardErrored && (
             <>
               <div className='text-white text-base mb-2 text-center font-bold uppercase tracking-wider'>
@@ -277,18 +312,6 @@ const DailyScore = ({ leaderboard }) => {
             </span>
           </SimulatorButton>
 
-        </div>
-
-        {/* Secondary actions */}
-        <div className='flex items-center justify-center flex-wrap gap-4 mb-6'>
-          <Link href='/'>
-            <SimulatorButton css={{
-              boxShadow: '0 0 80px 0 #ffffff44',
-              ':hover': { filter: 'brightness(1.1)', transition: 'all 0.2s' }
-            }}>
-              <b>Resume Personal Game</b>
-            </SimulatorButton>
-          </Link>
         </div>
 
       </div>
