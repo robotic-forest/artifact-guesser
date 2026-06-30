@@ -1,6 +1,6 @@
 import snoowrap from 'snoowrap'
 import { initDB } from '@/lib/apiUtils/mongodb'
-import { verifyAuth } from '@/lib/apiUtils/session'
+import { verifyAuth, withSessionRoute } from '@/lib/apiUtils/session'
 
 const REFRESH_TTL_MS = 60 * 1000
 
@@ -61,4 +61,4 @@ const handler = async (req, res) => {
   res.send({ success: true, posts })
 }
 
-export default handler
+export default withSessionRoute(handler)
