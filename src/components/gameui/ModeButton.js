@@ -6,6 +6,7 @@ export const ModeButton = ({ mode, onClick, className, css }) => {
   const { color, description, type } = modes[mode]
   const isEaNasirMode = mode === 'Ea Nasir Mode';
   const isSpecialMode = type === 'Special';
+  const isExtremeMode = mode === 'Extreme Mode';
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -24,7 +25,7 @@ export const ModeButton = ({ mode, onClick, className, css }) => {
       )}
       <button
         onClick={onClick}
-        className={`relative flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg ${isSpecialMode ? 'border-2 border-white/20' : 'border-4 border-white/40'} ${className}`}
+        className={`relative flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg ${isExtremeMode ? 'border-2 border-white' : isSpecialMode ? 'border-2 border-white/20' : 'border-4 border-white/40'} ${className}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         css={{
