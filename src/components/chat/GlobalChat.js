@@ -648,6 +648,10 @@ const onlineFor = (ts, now) => {
 }
 
 const UsersDialog = ({ open, users, count, onClose }) => {
+  // The country / device / online-time detail is admin-only; everyone else just
+  // sees the names. (Note: the data is still broadcast to all clients — see the
+  // mainframe if it ever needs to be hidden server-side too.)
+  const { isAdmin } = useUser()
   // Tick so the online-duration label updates while the dialog is open.
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -717,12 +721,12 @@ const UsersDialog = ({ open, users, count, onClose }) => {
               const isAnon = (u.username || '').startsWith('anonymous_')
               const tag = isAnon ? (u.username.split('_').pop() || null) : null
               const flag = countryFlag(u.country)
-              const items = [
+              const items = isAdmin ? [
                 tag,
                 flag && <span key="flag" title={countryName(u.country)} css={{ cursor: 'help' }}>{flag}</span>,
                 u.device,
                 onlineFor(u.connectedAt, now),
-              ].filter(Boolean)
+              ].filter(Boolean) : []
               return (
                 <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
                   <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
