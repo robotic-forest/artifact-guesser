@@ -624,6 +624,17 @@ const countryFlag = (cc) => {
   return String.fromCodePoint(...[...cc.toUpperCase()].map(c => base + c.charCodeAt(0) - 65))
 }
 
+// Country code -> full English name (for the flag's hover title), via the
+// built-in Intl API so we don't ship a country list. Falls back to the code.
+let _regionNames = null
+const countryName = (cc) => {
+  if (!cc) return null
+  try {
+    if (!_regionNames) _regionNames = new Intl.DisplayNames(['en'], { type: 'region' })
+    return _regionNames.of(cc.toUpperCase()) || cc
+  } catch { return cc }
+}
+
 // Compact "online for" label from a connectedAt timestamp.
 const onlineFor = (ts, now) => {
   if (!ts) return null
@@ -705,14 +716,20 @@ const UsersDialog = ({ open, users, count, onClose }) => {
             users.map(u => {
               const isAnon = (u.username || '').startsWith('anonymous_')
               const tag = isAnon ? (u.username.split('_').pop() || null) : null
-              const meta = [tag, countryFlag(u.country), u.device, onlineFor(u.connectedAt, now)].filter(Boolean)
+              const flag = countryFlag(u.country)
+              const items = [
+                tag,
+                flag && <span key="flag" title={countryName(u.country)} css={{ cursor: 'help' }}>{flag}</span>,
+                u.device,
+                onlineFor(u.connectedAt, now),
+              ].filter(Boolean)
               return (
                 <div key={u.userId} className="px-2 py-1 text-sm flex items-center">
                   <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
                   {isAnon ? <span>Guest</span> : <ChatUsername name={u.username} />}
-                  {meta.length > 0 && (
+                  {items.length > 0 && (
                     <span className="ml-1" css={{ color: 'var(--textLowOpacity)' }}>
-                      {' · '}{meta.join(' · ')}
+                      {items.map((it, i) => <span key={i}>{' · '}{it}</span>)}
                     </span>
                   )}
                 </div>
