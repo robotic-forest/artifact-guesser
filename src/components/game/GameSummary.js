@@ -384,7 +384,7 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
              <div className="text-center w-full">
                or try a different mode!
                <div className='flex flex-wrap justify-center mt-3 mb-2'>
-                 {Object.keys(modes).filter(m => m !== game.mode && !modes[m]?.type).map(mode => (
+                 {Object.keys(modes).filter(m => m !== game.mode && (!modes[m]?.type || modes[m]?.type === 'Special')).map(mode => (
                    <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => startNewGame({ mode: mode, timer: selectedTimer })} />
                  ))}
                </div>
@@ -428,12 +428,6 @@ const GameScore = ({ game, startNewGame, selectedTimer, handleSetSelectedTimer, 
                      );
                    }
                  }} />
-                 ))}
-               </div>
-               <b>Special Modes!</b>
-               <div className='flex flex-wrap justify-center mt-3 mb-2'>
-                 {Object.keys(modes).filter(m => m !== game.mode && modes[m]?.type === 'Special').map(mode => (
-                   <ModeButton key={mode} mode={mode} className='mb-2 mr-2' onClick={() => startNewGame({ mode: mode, timer: selectedTimer })} />
                  ))}
                </div>
              </div>

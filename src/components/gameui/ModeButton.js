@@ -25,12 +25,13 @@ export const ModeButton = ({ mode, onClick, className, css }) => {
       )}
       <button
         onClick={onClick}
-        className={`relative flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg ${isExtremeMode ? 'border-2 border-white' : isSpecialMode ? 'border-2 border-white/20' : 'border-4 border-white/40'} ${className}`}
+        className={`relative flex flex-col items-start px-2 py-1 text-lg text-left rounded-lg ${isExtremeMode ? '' : isSpecialMode ? 'border-2 border-white/20' : 'border-4 border-white/40'} ${className}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         css={{
           background: color,
           color: isSpecialMode ? 'white' : 'black',
+          ...(isExtremeMode ? { border: '2px solid #ffffff' } : {}),
           '&:hover': {
             filter: 'brightness(1.15)'
           },
