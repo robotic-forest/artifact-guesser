@@ -28,6 +28,7 @@ export const MultiplayerProvider = ({ children }) => {
   });
   const [isConnected, setIsConnected] = useState(false); // Start as false
   const [isRegistered, setIsRegistered] = useState(false); // New state for registration status
+  const [maintenanceMode, setMaintenanceMode] = useState(false); // Server-signalled "renovation" screen (shadow ban)
   const [chatMessages, setChatMessages] = useState([]);
   const [socketInstance, setSocketInstance] = useState(null);
   const [lobbyClients, setLobbyClients] = useState([]); // State for clients in the current lobby
@@ -105,6 +106,11 @@ export const MultiplayerProvider = ({ children }) => {
          newSocket.emit('register-client', { userId: anonymousId, username: anonymousId });
          // Note: isRegistered will be set to true in the 'client-registered' handler
       }
+    });
+
+    // Server signals that multiplayer is under "renovation" for this client.
+    newSocket.on('mp-maintenance', () => {
+      setMaintenanceMode(true);
     });
 
     // Listen for registration confirmation
@@ -769,6 +775,7 @@ export const MultiplayerProvider = ({ children }) => {
     currentLobbyId,
     isConnected,
     isRegistered, // Expose registration status
+    maintenanceMode, // Expose "renovation" screen flag (shadow ban)
     isLeaving, // Expose leaving status
     setIsLeaving, // Expose setter for the leaving status reset on destination page
     lobbyClients, // Expose client list

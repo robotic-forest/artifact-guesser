@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import sha1 from 'sha1'
 import { sendEmail } from '@/lib/apiUtils/email'
+import { containsBadWord } from '@/lib/usernameFilter'
 import { initDB } from './mongodb'
 
 /* Type (
@@ -19,6 +20,8 @@ import { initDB } from './mongodb'
 export const createAccount = async (newAccount, options) => {
   const db = await initDB()
   const data = newAccount
+
+  if (containsBadWord(data.username)) return [null, 'That username is not allowed.']
 
   const escEmail = data.email?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const accountWithEmail = escEmail && await db.collection('accounts').findOne({ email: { $regex: new RegExp(`^${escEmail}$`, 'i') } })

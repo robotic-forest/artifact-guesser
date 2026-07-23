@@ -4,6 +4,7 @@ import { Layout } from "@/components/layout/Layout";
 import { MdDashboard } from "react-icons/md";
 import { GlobalChat } from "@/components/chat/GlobalChat";
 import { LobbyBrowser } from "@/components/multiplayer/LobbyBrowser";
+import { ShadowBans } from "@/components/dashboard/ShadowBans";
 
 export const dashboardTheme = {
   backgroundColor: '#78c9ab',
@@ -33,6 +34,9 @@ const DashboardPage = () => {
         </div>
       </div>
       <Statistics />
+      <div className='mt-4'>
+        <ShadowBans backgroundColor='var(--backgroundColorDark)' />
+      </div>
       <div css={{
         position: 'fixed',
         bottom: 8,

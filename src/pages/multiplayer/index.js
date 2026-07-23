@@ -12,7 +12,7 @@ import { useMultiplayer } from "@/components/multiplayer/context/MultiplayerCont
 const MultiplayerPageContent = () => {
   const router = useRouter(); // Get router instance
   const [isNavigating, setIsNavigating] = useState(false); // State for navigation status
-  const { currentLobbyId, isConnected, isRegistered, isLeaving, setIsLeaving } = useMultiplayer(); // Get isLeaving and setIsLeaving
+  const { currentLobbyId, isConnected, isRegistered, isLeaving, setIsLeaving, maintenanceMode } = useMultiplayer(); // Get isLeaving and setIsLeaving
 
   // Reset the isLeaving flag when landing on this page
   useEffect(() => {
@@ -48,6 +48,18 @@ const MultiplayerPageContent = () => {
       router.events.off('routeChangeError', handleRouteChangeError);
     };
   }, [router.events]); // Dependency on router.events
+
+  // Multiplayer under "renovation" for this client (shadow ban).
+  if (maintenanceMode) {
+    return (
+      <div className="relative">
+        <div className="flex flex-col items-center justify-center h-screen text-black text-center px-6">
+          <div className="text-2xl font-bold mb-2">Multiplayer is undergoing temporary renovation</div>
+          <div className="text-lg opacity-80">Pending a new release. Check back soon!</div>
+        </div>
+      </div>
+    );
+  }
 
   // 1. Handle initial connection/registration phase
   if (!isConnected || !isRegistered || (currentLobbyId && isNavigating)) {

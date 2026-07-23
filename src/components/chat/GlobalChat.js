@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'; // Import hooks
+import axios from 'axios';
 import dynamic from 'next/dynamic'; // Import dynamic
 import { useRouter } from 'next/router'; // Import useRouter
 import Link from 'next/link'; // Import Link
@@ -426,7 +427,16 @@ const scrollbarCSS = {
               </div>
             )}
             {globalChatMessages.map((c, i) => (
-              <div key={c.id || i} className='py-1' style={{ color: c.username ? 'inherit' : '#666' }} onContextMenu={(e) => onMessageContextMenu(e, c)}>
+              <div
+                key={c.id || i}
+                className='py-1'
+                style={{
+                  color: c.username ? 'inherit' : '#666',
+                  ...(c.shadowBanned && { background: 'rgba(220,53,69,0.12)', borderLeft: '3px solid #dc3545', paddingLeft: 6, borderRadius: 3 }),
+                }}
+                onContextMenu={(e) => onMessageContextMenu(e, c)}
+              >
+                {c.shadowBanned && <span title="Shadow-banned: only you (admins) can see this" className="mr-1" style={{ fontSize: 11, opacity: 0.8 }}>👻</span>}
                 {c.username && <b className="mr-1"><ChatUsername name={c.username} />:</b>}
                 {/* Use ReactMarkdown to render the message */}
                 <ReactMarkdown
@@ -736,6 +746,19 @@ const UsersDialog = ({ open, users, count, onClose }) => {
                     <span className="ml-1" css={{ color: 'var(--textLowOpacity)' }}>
                       {items.map((it, i) => <span key={i}>{' · '}{it}</span>)}
                     </span>
+                  )}
+                  {!isAnon && (
+                    <button
+                      title={`Shadow ban ${u.username}`}
+                      onClick={async () => {
+                        try {
+                          await axios.post('/api/admin/shadow-bans', { username: u.username })
+                          toast.success(`Shadow-banned ${u.username}`)
+                        } catch { toast.error('Failed to shadow ban') }
+                      }}
+                      className="ml-auto"
+                      css={{ cursor: 'pointer', fontSize: 13, opacity: 0.5, '&:hover': { opacity: 1 } }}
+                    >👻</button>
                   )}
                 </div>
               )
