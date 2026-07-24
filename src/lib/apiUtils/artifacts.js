@@ -4,7 +4,7 @@ import { countriesWithContinents } from "../countries"
 
 // Era buckets for weighted sampling in general modes.
 // Weights compensate for the corpus bias toward post-1500 content.
-const ERA_BUCKETS = [
+export const ERA_BUCKETS = [
   { name: 'Prehistoric',        start: -10000, end: -3000, weight: 6 },
   { name: 'Bronze Age',         start: -3000,  end: -1200, weight: 5 },
   { name: 'Iron Age',           start: -1200,  end: -600,  weight: 5 },
