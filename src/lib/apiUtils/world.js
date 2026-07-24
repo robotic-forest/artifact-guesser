@@ -164,7 +164,9 @@ export const toExhibit = (a) => {
     start: a.time?.start ?? null,
     end: a.time?.end ?? null,
     era: eraFor(a.time?.start)?.name || null,
-    dateText: a.time?.description || null,
+    // Several adapters shout these ("MIDDLE BRONZE AGE II"), and the label is
+    // the only text in the world.
+    dateText: softenLabel(a.time?.description) || null,
     quality: a.quality_score ?? null,
     source: { name: a.source?.name || null, url: a.source?.url || null },
     href: `https://artifactguesser.com/artifacts/${a._id}`,
