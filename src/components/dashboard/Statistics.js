@@ -19,6 +19,7 @@ import { Collosi } from "./Collosi"
 import { Analytics } from "./Analytics"
 import { AccountInsights } from "./AccountInsights"
 import { ArtifactInsights } from "./ArtifactInsights"
+import { ShadowBans } from "./ShadowBans"
 // modes and Dropdown moved to Games.js
 import { Games } from "./Games/Games" // Updated import path
 
@@ -65,6 +66,7 @@ export const Statistics = () => {
         />
         {/* <Collosi className='flex justify-end mb-2' /> */}
 
+        <ShadowBans />
       </div>
     </div>
   )
