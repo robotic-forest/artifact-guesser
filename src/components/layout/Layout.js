@@ -40,9 +40,10 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
         <meta name="viewport" content="initial-scale=1.0, maximum-scale=1, width=device-width" />
       </Head>
       <div className='relative flex w-[100%] min-h-[100vh]' css={createStyles(theme)}>
-        {/* Mobile Menu. Carries the menu button and Play Game, both of which
-            would strand an embedder's visitor inside a panel. */}
-        {!embedded && <MobileNav {...u} />}
+        {/* Mobile Menu. Still rendered when embedded: it also carries the
+            play-game buttons, which stay (opening in a new tab). MobileNav
+            hides its own menu button. */}
+        <MobileNav {...u} />
 
         {/* Desktop Menu */}
         {user?.isLoggedIn && !noNav && !embedded && (

@@ -21,10 +21,14 @@ import { SignupDialog } from "@/components/dialogs/SignupDialog"
 import { LoginDialog } from "@/components/dialogs/LoginDialog"
 import { useActiveRun } from "@/hooks/useActiveRun"
 import { PiRedditLogoFill } from "react-icons/pi"
+import { useEmbedded } from "@/hooks/useEmbedded"
 import { TbPigMoney } from "react-icons/tb"
 
 export const MobileNav = ({ user, isAdmin, logout }) => {
   const [open, setOpen] = useState(false)
+  // Framed by someone else: the menu would strand them inside a panel, so it
+  // goes, but the play buttons stay and leave for a real tab instead.
+  const embedded = useEmbedded()
   const [loginOpen, setLoginOpen] = useState(false)
   const [signupOpen, setSignupOpen] = useState(false)
 
@@ -40,7 +44,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
       <LoginDialog open={loginOpen} onClose={() => setLoginOpen(false)} />
 
       <div className='absolute top-1 left-1 m-2' css={{
-        display: user?.isLoggedIn ? 'none' : 'block',
+        display: (user?.isLoggedIn && !embedded) ? 'none' : 'block',
         '@media (max-width: 600px)': {
           display: 'block'
         },
@@ -50,9 +54,9 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
       </div>
 
       <div className='absolute top-1 right-1 m-2' css={{
-        display: user?.isLoggedIn ? 'none' : 'block',
+        display: (user?.isLoggedIn || embedded) ? 'none' : 'block',
         '@media (max-width: 600px)': {
-          display: 'block'
+          display: embedded ? 'none' : 'block'
         },
         zIndex: 99,
       }}>
@@ -67,7 +71,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
 
       {user && !open && !loginOpen && !signupOpen && (
         <div className='fixed bottom-1 right-1 p-2' css={{ zIndex: 99 }}>
-          <Link href={activeUrl} css={{ '&:hover': { color: 'var(--textColor)'}, display: 'inline-flex', maxWidth: 400 }}>
+          <Link href={activeUrl} target={embedded ? '_blank' : undefined} css={{ '&:hover': { color: 'var(--textColor)'}, display: 'inline-flex', maxWidth: 400 }}>
             <Button tooltip={resumeLabel} css={{
               background: '#000000',
               color: '#ffffff',
@@ -86,7 +90,7 @@ export const MobileNav = ({ user, isAdmin, logout }) => {
         </div>
       )}
 
-      {open && (
+      {open && !embedded && (
         <ResponsiveMenu onClose={() => setOpen(false)} style={{
           display: user?.isLoggedIn ? 'none' : 'block',
           '@media (max-width: 600px)': {

@@ -3,10 +3,12 @@ import { useRouter } from "next/router"
 import { GiAmphora } from "react-icons/gi"
 import useUser from "@/hooks/useUser"
 import { IconButton } from "@/components/buttons/IconButton"
+import { useEmbedded } from "@/hooks/useEmbedded"
 
 export const ArtifactNav = ({ artifact: a, previousRoute }) => {
   const { user } = useUser()
   const router = useRouter()
+  const embedded = useEmbedded()
 
   return (
     <div className='absolute top-1 left-1.5 z-10 flex items-center' css={{
@@ -15,7 +17,13 @@ export const ArtifactNav = ({ artifact: a, previousRoute }) => {
         padding: '8px 0 0 40px',
       }
     }}>
-      <IconButton onClick={() => router.push(previousRoute?.includes('/artifacts?') ? previousRoute : '/artifacts')} css={{
+      <IconButton onClick={() => {
+        const to = previousRoute?.includes('/artifacts?') ? previousRoute : '/artifacts'
+        // Same reasoning as the play buttons: inside someone else's frame this
+        // would replace the artifact they came to see with our index.
+        if (embedded) window.open(to, '_blank', 'noopener,noreferrer')
+        else router.push(to)
+      }} css={{
         background: 'black',
         color: 'white',
         border: '1px solid #ffffff55',

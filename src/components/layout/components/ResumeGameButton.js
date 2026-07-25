@@ -2,13 +2,15 @@ import { IconButton } from "@/components/buttons/IconButton"
 import Link from "next/link"
 import { GiGreekSphinx } from "react-icons/gi"
 import { useActiveRun } from "@/hooks/useActiveRun"
+import { useEmbedded } from "@/hooks/useEmbedded"
 
 export const ResumeGameButton = ({ className }) => {
   const { kind, url } = useActiveRun()
+  const embedded = useEmbedded()
   const tooltip = kind === 'daily' ? 'Resume Daily Run' : 'Resume Game'
 
   return (
-    <Link href={url} css={{ '&:hover': { color: 'var(--textColor)'} }}>
+    <Link href={url} target={embedded ? '_blank' : undefined} css={{ '&:hover': { color: 'var(--textColor)'} }}>
       <IconButton tooltip={tooltip} className={className} css={{
         background: '#000000',
         color: '#ffffff',

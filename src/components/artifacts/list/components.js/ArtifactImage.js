@@ -5,10 +5,12 @@ import { formatDateRange } from "@/lib/artifactUtils"
 import Link from "next/link"
 import toast from "react-hot-toast"
 import { BiLinkExternal } from "react-icons/bi"
+import { useEmbedded } from "@/hooks/useEmbedded"
 import { FaRedditAlien } from "react-icons/fa"
 import { IoCheckmarkSharp } from "react-icons/io5"
 
 export const ArtifactImage = ({ artifact, immersive, newTab }) => {
+  const embedded = useEmbedded()
   const { isAdmin } = useUser()
   const { updateArtifact } = useArtifact({ artifact })
 
@@ -57,7 +59,7 @@ export const ArtifactImage = ({ artifact, immersive, newTab }) => {
           }
         }}
         href={`/artifacts/${artifact._id}`}
-        target={newTab ? '_blank' : '_self'}
+        target={(newTab || embedded) ? '_blank' : '_self'}
       >
         <div className='absolute top-2 right-2'>
           <a

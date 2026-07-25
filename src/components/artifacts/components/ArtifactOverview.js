@@ -1,6 +1,7 @@
 import { formatLocation, formatTime } from "@/lib/artifactUtils"
 import { DetailsDoubleItemAlt } from "@/components/info/Details"
 import { FavoritesToggle } from "./FavoritesToggle"
+import { useEmbedded } from "@/hooks/useEmbedded"
 import { useArtifact } from "@/hooks/artifacts/useArtifact"
 import useUser from "@/hooks/useUser"
 import { IconButton } from "@/components/buttons/IconButton"
@@ -8,6 +9,7 @@ import { FaShare } from "react-icons/fa"
 import toast from "react-hot-toast"
 
 export const ArtifactOverview = ({ artifact, style }) => {
+  const embedded = useEmbedded()
   const { updateArtifact } = useArtifact({ artifact })
   const { isAdmin } = useUser()
 
@@ -58,7 +60,7 @@ export const ArtifactOverview = ({ artifact, style }) => {
           >
             <FaShare style={{ fontSize: 11 }} />
           </IconButton>
-          <FavoritesToggle artifactId={artifact?._id} />
+          {!embedded && <FavoritesToggle artifactId={artifact?._id} />}
         </div>
       </div>
       <div>
