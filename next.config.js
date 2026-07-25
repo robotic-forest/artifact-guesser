@@ -10,6 +10,11 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Dev-only. Lets the dev server be reached through a subdomain
+  // (ag.ptcx.is -> localhost:5000) so the protocodex ziggurat world can frame
+  // an artifact page from a phone before this is deployed. No effect on a
+  // production build.
+  allowedDevOrigins: ['ag.ptcx.is'],
 }
 
 module.exports = nextConfig

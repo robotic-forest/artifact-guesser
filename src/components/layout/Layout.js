@@ -20,11 +20,14 @@ import { BsDiscord } from "react-icons/bs"
 import { BiQuestionMark } from "react-icons/bi"
 import { PiRedditLogoFill } from "react-icons/pi"
 import { TbPigMoney } from "react-icons/tb"
+import { useEmbedded } from "@/hooks/useEmbedded"
 
 export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
   const u = useUser()
   const { logout, user, isAdmin } = u
   const router = useRouter()
+  // ?xframe=1: another site is framing this page, so drop our own navigation.
+  const embedded = useEmbedded()
   useTheme(theme)
 
   const noauthroutes = ['/', '/artifacts', '/about', '/games/[id]', '/artifacts/[id]', '/moloch', '/support']
@@ -37,11 +40,12 @@ export const Layout = ({ title, theme, children, contentCSS, noNav }) => {
         <meta name="viewport" content="initial-scale=1.0, maximum-scale=1, width=device-width" />
       </Head>
       <div className='relative flex w-[100%] min-h-[100vh]' css={createStyles(theme)}>
-        {/* Mobile Menu */}
-        <MobileNav {...u} />
+        {/* Mobile Menu. Carries the menu button and Play Game, both of which
+            would strand an embedder's visitor inside a panel. */}
+        {!embedded && <MobileNav {...u} />}
 
         {/* Desktop Menu */}
-        {user?.isLoggedIn && !noNav && (
+        {user?.isLoggedIn && !noNav && !embedded && (
           <div className='sticky top-0 h-[100vh] min-h-[100vh] flex flex-col justify-between items-center' css={{
             background: 'var(--backgroundColorSlightlyLight)',
             '@media (max-width: 600px)': {
