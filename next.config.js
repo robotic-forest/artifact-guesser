@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // The dev overlay and its compile pill sit inside anything that frames an
+  // AG page, where they read as our chrome rather than as tooling.
+  devIndicators: false,
   compiler: {
     emotion: true,
   },
