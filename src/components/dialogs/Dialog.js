@@ -6,6 +6,7 @@ import useMeasure from 'react-use-measure'
 import { useMediaQuery } from 'react-responsive'
 import useWindowDimensions from '@/hooks/useWindowDimensions'
 import { IoMdClose } from 'react-icons/io'
+import { useEmbedded } from '@/hooks/useEmbedded'
 import { IconButton } from '../buttons/IconButton'
 import { Button } from '../buttons/Button'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -194,6 +195,8 @@ const DialogComponent = ({
   const [boxVisible, setBoxVisible] = useState(false)
   const [backdropPointer, setBackdropPointer] = useState(false)
 
+  const embedded = useEmbedded()
+
   useHotkeys('esc', () => closeDialog())
 
   useEffect(() => {
@@ -321,13 +324,13 @@ const DialogComponent = ({
               {noBoxBg ? null : title
                 ? <TitleContainer { ...{ fullScreen } }>
                     <span className='title'>{title}</span>
-                    {!noClose && <Close { ...{ fullScreen } }>
+                    {!noClose && <Close { ...{ fullScreen, embedded } }>
                       <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--backgroundColorDark)' } }}>
                         <IoMdClose />
                       </IconButton>
                     </Close>}
                   </TitleContainer>
-                : (noClose || noTitle) ? null : <Close { ...{ fullScreen } }>
+                : (noClose || noTitle) ? null : <Close { ...{ fullScreen, embedded } }>
                     <IconButton onClick={closeDialog} css={{ '&:hover': { background: 'var(--backgroundColorDark)' } }}>
                       <IoMdClose />
                     </IconButton>
@@ -521,10 +524,15 @@ const TitleContainer = styled.div`
   }
 `
 
+// Embedders put their own close button in the top right, because that is where
+// a panel's close belongs. A full-screen dialog landing its own X in the same
+// corner stacks two of them, and the one underneath reads as our chrome
+// reappearing. Ours moves to the left instead of disappearing: it still has to
+// be possible to leave the zoomed view.
 const Close = styled.div`
   @media (max-width: ${p => p.fullScreen ? '5000000' : '500'}px), (min-aspect-ratio: ${p => p.fullScreen ? '16/9' : ''}) {
     position: fixed;
-    right: 0;
+    ${p => p.embedded ? 'left: 0;' : 'right: 0;'}
     top: 0;
     padding: 8px;
     box-sizing: content-box;
@@ -534,5 +542,5 @@ const Close = styled.div`
   margin-left: auto;
   position: absolute;
   top: 6px;
-  right: 6px;
+  ${p => p.embedded ? 'left: 6px;' : 'right: 6px;'}
 `
